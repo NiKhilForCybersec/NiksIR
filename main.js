@@ -1,4 +1,4 @@
-/* SOC Analyst Guide by NIK - Main JavaScript */
+/* SOC Analyst Guide - Main JavaScript */
 /* ===================================== */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -27,6 +27,31 @@ function initSidebar() {
         section.classList.add('expanded');
       }
     }
+  });
+  
+  // Initialize sidebar toggle
+  initSidebarToggle();
+}
+
+/* Sidebar Toggle */
+function initSidebarToggle() {
+  const sidebar = document.querySelector('.sidebar');
+  const toggleBtn = document.querySelector('.sidebar-toggle');
+  
+  if (!toggleBtn || !sidebar) return;
+  
+  // Check localStorage for saved state
+  const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+  if (isCollapsed) {
+    document.body.classList.add('sidebar-collapsed');
+  }
+  
+  toggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+    
+    // Save state to localStorage
+    const collapsed = document.body.classList.contains('sidebar-collapsed');
+    localStorage.setItem('sidebarCollapsed', collapsed);
   });
 }
 

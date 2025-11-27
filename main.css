@@ -240,7 +240,75 @@ code {
   height: 100vh;
   overflow-y: auto;
   z-index: 100;
+  transition: transform var(--transition-normal), width var(--transition-normal);
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: fixed;
+  top: var(--space-md);
+  left: var(--sidebar-width);
+  z-index: 101;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  transform: translateX(-1px);
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--blue);
+}
+
+.sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
   transition: transform var(--transition-normal);
+}
+
+/* Collapsed Sidebar State */
+.sidebar.collapsed {
+  transform: translateX(calc(-1 * var(--sidebar-width)));
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.sidebar.collapsed ~ .sidebar-toggle {
+  left: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.sidebar.collapsed ~ .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* Body class for collapsed state */
+body.sidebar-collapsed .sidebar {
+  transform: translateX(calc(-1 * var(--sidebar-width)));
+}
+
+body.sidebar-collapsed .main-content {
+  margin-left: 0;
+  max-width: 100%;
+}
+
+body.sidebar-collapsed .sidebar-toggle {
+  left: 0;
+}
+
+body.sidebar-collapsed .sidebar-toggle svg {
+  transform: rotate(180deg);
 }
 
 .sidebar-header {
@@ -372,12 +440,13 @@ code {
   flex: 1;
   margin-left: var(--sidebar-width);
   min-height: 100vh;
+  transition: margin-left var(--transition-normal);
+  padding: var(--space-2xl) var(--space-3xl);
 }
 
 .content-wrapper {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: var(--space-2xl) var(--space-xl);
 }
 
 .content-header {
@@ -1496,9 +1565,19 @@ li::marker {
   z-index: 99;
 }
 
+@media (max-width: 1200px) {
+  .main-content {
+    padding: var(--space-xl) var(--space-2xl);
+  }
+}
+
 @media (max-width: 1024px) {
   :root {
     --sidebar-width: 260px;
+  }
+  
+  .sidebar-toggle {
+    display: none;
   }
   
   .menu-toggle, .mobile-menu-btn {
@@ -1518,6 +1597,12 @@ li::marker {
   }
   
   .main-content {
+    margin-left: 0;
+    padding: var(--space-xl) var(--space-lg);
+    padding-top: calc(var(--space-xl) + 60px);
+  }
+  
+  body.sidebar-collapsed .main-content {
     margin-left: 0;
   }
   

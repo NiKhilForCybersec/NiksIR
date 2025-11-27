@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDR Threat Hunting | SOC Analyst Guide</title>
+  <meta name="description" content="EDR threat hunting: proactive endpoint hunting techniques, behavioral patterns, and hunting queries.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔍</span> EDR Fundamentals</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link active"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>EDR Hunting</span>
+        </nav>
+        <h1>EDR Threat Hunting</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 4.6</span>
+          <span class="meta-item">~16 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#approach">Hunting Approach</a></li>
+          <li><a href="#process-hunting">Process Hunting</a></li>
+          <li><a href="#network-hunting">Network Hunting</a></li>
+          <li><a href="#file-hunting">File Hunting</a></li>
+          <li><a href="#queries">Hunting Queries</a></li>
+        </ul>
+      </div>
+
+      <section id="approach">
+        <h2>EDR Hunting Approach</h2>
+        <p>
+          EDR platforms provide rich telemetry for proactive threat hunting. 
+          Unlike reactive alert investigation, hunting seeks threats that 
+          evaded detection.
+        </p>
+
+        <h3>Hunting Data Sources</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Type</th>
+                <th>What to Hunt</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Process Events</strong></td>
+                <td>Suspicious parent-child, unusual commands</td>
+              </tr>
+              <tr>
+                <td><strong>Network Events</strong></td>
+                <td>Beaconing, unusual destinations, C2 patterns</td>
+              </tr>
+              <tr>
+                <td><strong>File Events</strong></td>
+                <td>Suspicious writes, script drops, staging</td>
+              </tr>
+              <tr>
+                <td><strong>Registry Events</strong></td>
+                <td>Persistence mechanisms</td>
+              </tr>
+              <tr>
+                <td><strong>Authentication</strong></td>
+                <td>Credential use patterns</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Hunt Types</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Anomaly Hunting</h4>
+            <p>Find outliers and unusual patterns</p>
+            <ul>
+              <li>Rare processes</li>
+              <li>First-time executions</li>
+              <li>Statistical anomalies</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>TTP Hunting</h4>
+            <p>Search for known attack techniques</p>
+            <ul>
+              <li>MITRE ATT&CK patterns</li>
+              <li>Known tool signatures</li>
+              <li>Attack chain indicators</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="process-hunting">
+        <h2>Process Hunting</h2>
+
+        <h3>Suspicious Process Patterns</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>Indicates</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Office → cmd/PowerShell</td>
+                <td>Macro execution</td>
+              </tr>
+              <tr>
+                <td>Browser → script interpreter</td>
+                <td>Drive-by download</td>
+              </tr>
+              <tr>
+                <td>svchost from wrong path</td>
+                <td>Process masquerading</td>
+              </tr>
+              <tr>
+                <td>Rare process, many hosts</td>
+                <td>Potential malware spread</td>
+              </tr>
+              <tr>
+                <td>PowerShell -enc with long string</td>
+                <td>Encoded commands</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Rare processes across environment</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find processes seen on very few devices</span>
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> 
+    DeviceCount = <span class="fn">dcount</span>(DeviceName),
+    Devices = <span class="fn">make_set</span>(DeviceName, <span class="nu">5</span>),
+    ExecutionCount = <span class="fn">count</span>()
+    <span class="kw">by</span> FileName, FolderPath
+| <span class="kw">where</span> DeviceCount == <span class="nu">1</span> <span class="kw">and</span> ExecutionCount < <span class="nu">5</span>
+| <span class="kw">order by</span> ExecutionCount <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">First-time process executions</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Processes seen for first time in last 24h</span>
+<span class="kw">let</span> Baseline = DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+| <span class="kw">distinct</span> FileName, SHA256;
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti Baseline <span class="kw">on</span> FileName, SHA256
+| <span class="kw">summarize</span> FirstSeen = <span class="fn">min</span>(TimeGenerated), 
+    DeviceCount = <span class="fn">dcount</span>(DeviceName) <span class="kw">by</span> FileName, SHA256
+| <span class="kw">order by</span> DeviceCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="network-hunting">
+        <h2>Network Hunting</h2>
+
+        <h3>Beaconing Detection</h3>
+        <p>
+          C2 beacons often have regular intervals. Hunt for processes with 
+          consistent connection timing.
+        </p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Potential beaconing (regular intervals)</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> Connections = <span class="fn">make_list</span>(TimeGenerated) 
+    <span class="kw">by</span> DeviceName, InitiatingProcessFileName, RemoteIP
+| <span class="kw">where</span> <span class="fn">array_length</span>(Connections) > <span class="nu">10</span>
+| <span class="kw">extend</span> Intervals = <span class="fn">series_stats_dynamic</span>(
+    <span class="fn">series_subtract</span>(Connections, <span class="fn">array_shift_left</span>(Connections, <span class="nu">1</span>))
+)
+| <span class="kw">extend</span> AvgInterval = Intervals.avg, StdDev = Intervals.stdev
+| <span class="kw">extend</span> CoeffVariation = StdDev / AvgInterval
+| <span class="kw">where</span> CoeffVariation < <span class="nu">0.3</span>  <span class="cm">// Low variation = regular beaconing</span>
+| <span class="kw">project</span> DeviceName, InitiatingProcessFileName, RemoteIP, 
+    AvgInterval, CoeffVariation</code>
+          </div>
+        </div>
+
+        <h3>Unusual Destinations</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Connections to rare external IPs</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    DeviceCount = <span class="fn">dcount</span>(DeviceName),
+    Devices = <span class="fn">make_set</span>(DeviceName, <span class="nu">5</span>),
+    Processes = <span class="fn">make_set</span>(InitiatingProcessFileName, <span class="nu">5</span>)
+    <span class="kw">by</span> RemoteIP
+| <span class="kw">where</span> DeviceCount == <span class="nu">1</span>  <span class="cm">// Only one device connected</span>
+| <span class="kw">order by</span> DeviceCount <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="file-hunting">
+        <h2>File Hunting</h2>
+
+        <h3>Suspicious File Locations</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Why Suspicious</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>C:\Users\Public\</td>
+                <td>Writable by all, malware staging</td>
+              </tr>
+              <tr>
+                <td>C:\ProgramData\</td>
+                <td>Hidden folder, persistence</td>
+              </tr>
+              <tr>
+                <td>%TEMP%</td>
+                <td>Execution from temp</td>
+              </tr>
+              <tr>
+                <td>Root of C:\</td>
+                <td>Unusual executable location</td>
+              </tr>
+              <tr>
+                <td>Recycle Bin</td>
+                <td>Hidden execution</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Executables in suspicious locations</span>
+          </div>
+          <div class="query-body">
+<code>DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"FileCreated"</span>
+| <span class="kw">where</span> FileName <span class="kw">endswith</span> <span class="st">".exe"</span> <span class="kw">or</span> FileName <span class="kw">endswith</span> <span class="st">".dll"</span>
+| <span class="kw">where</span> FolderPath <span class="kw">has_any</span> (
+    <span class="st">@"\Users\Public\"</span>, 
+    <span class="st">@"\Temp\"</span>,
+    <span class="st">@"\$Recycle.Bin\"</span>,
+    <span class="st">@"C:\"</span>  <span class="cm">// Root of C: only</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName, 
+    FolderPath, InitiatingProcessFileName, SHA256</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="queries">
+        <h2>Additional Hunting Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Scripts executed from user-writable locations</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (<span class="st">"powershell.exe"</span>, <span class="st">"cmd.exe"</span>, <span class="st">"wscript.exe"</span>, <span class="st">"cscript.exe"</span>)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (
+    <span class="st">@"\Users\"</span>, <span class="st">@"\Temp\"</span>, <span class="st">@"\Downloads\"</span>, <span class="st">@"\AppData\"</span>
+)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (<span class="st">".ps1"</span>, <span class="st">".vbs"</span>, <span class="st">".bat"</span>, <span class="st">".js"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName, 
+    FileName, ProcessCommandLine</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Processes with no parent (potential injection)</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> <span class="fn">isempty</span>(InitiatingProcessFileName)
+| <span class="kw">where</span> FileName !<span class="kw">in~</span> (<span class="st">"System"</span>, <span class="st">"smss.exe"</span>)  <span class="cm">// Expected</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName, 
+    ProcessCommandLine, AccountName</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Hunt for rare processes—what's unique in your environment</li>
+          <li>First-time executions warrant investigation</li>
+          <li>Regular connection intervals suggest C2 beaconing</li>
+          <li>Executables in user-writable folders are suspicious</li>
+          <li>Combine process, network, and file data for context</li>
+          <li>Document findings and create detections for patterns found</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="edr-investigation.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR Investigation</span>
+          </a>
+          <a href="xdr-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">XDR Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Security Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Cloud security fundamentals for SOC analysts: shared responsibility, AWS/Azure/GCP basics, and cloud-specific threats.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link active"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🟠</span> AWS Security</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔵</span> Azure Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔴</span> GCP Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">🔑</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Cloud Overview</span>
+        </nav>
+        <h1>Cloud Security Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 6.1</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#models">Cloud Service Models</a></li>
+          <li><a href="#shared">Shared Responsibility</a></li>
+          <li><a href="#providers">Major Providers</a></li>
+          <li><a href="#threats">Cloud-Specific Threats</a></li>
+          <li><a href="#monitoring">What to Monitor</a></li>
+          <li><a href="#tools">Security Tools</a></li>
+        </ul>
+      </div>
+
+      <section id="models">
+        <h2>Cloud Service Models</h2>
+        <p>Understanding service models helps determine who is responsible for what security controls.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">IaaS</h4>
+            <p><strong>Infrastructure as a Service</strong></p>
+            <p>You manage: OS, apps, data, network config</p>
+            <p>Provider manages: Hardware, virtualization, physical security</p>
+            <p class="text-muted">Examples: EC2, Azure VMs, GCE</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">PaaS</h4>
+            <p><strong>Platform as a Service</strong></p>
+            <p>You manage: Apps, data</p>
+            <p>Provider manages: OS, runtime, middleware, infrastructure</p>
+            <p class="text-muted">Examples: Azure App Service, Elastic Beanstalk</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">SaaS</h4>
+            <p><strong>Software as a Service</strong></p>
+            <p>You manage: User access, data, configuration</p>
+            <p>Provider manages: Everything else</p>
+            <p class="text-muted">Examples: M365, Salesforce, Workday</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">SOC Implication</div>
+          <p style="margin: 0;">
+            The more you move toward SaaS, the less infrastructure you monitor but the more you rely on 
+            identity and application-level security. Always know what model you're dealing with.
+          </p>
+        </div>
+      </section>
+
+      <section id="shared">
+        <h2>Shared Responsibility Model</h2>
+        <p>Security in the cloud is a shared responsibility between you and the cloud provider.</p>
+
+        <div class="card">
+          <h3>Responsibility Matrix</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>IaaS</th>
+                  <th>PaaS</th>
+                  <th>SaaS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Data & Content</strong></td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                </tr>
+                <tr>
+                  <td><strong>Identity & Access</strong></td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                </tr>
+                <tr>
+                  <td><strong>Application</strong></td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                </tr>
+                <tr>
+                  <td><strong>Network Controls</strong></td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-yellow);">Shared</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                </tr>
+                <tr>
+                  <td><strong>Operating System</strong></td>
+                  <td style="color: var(--accent-cyan);">You</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                </tr>
+                <tr>
+                  <td><strong>Virtualization</strong></td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                </tr>
+                <tr>
+                  <td><strong>Physical Infrastructure</strong></td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                  <td style="color: var(--accent-green);">Provider</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-muted" style="margin-top: 1rem;">
+            <span style="color: var(--accent-cyan);">■ You</span> | 
+            <span style="color: var(--accent-yellow);">■ Shared</span> | 
+            <span style="color: var(--accent-green);">■ Provider</span>
+          </p>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">You Always Own</div>
+          <p style="margin: 0;">
+            <strong>Data, identity, and access management are always your responsibility</strong>, regardless of 
+            service model. A misconfigured S3 bucket or overly permissive IAM role is on you, not AWS.
+          </p>
+        </div>
+      </section>
+
+      <section id="providers">
+        <h2>Major Cloud Providers</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Amazon Web Services (AWS)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Largest cloud provider with the most services.</p>
+              <h4>Key Security Services:</h4>
+              <ul>
+                <li><strong>IAM:</strong> Identity and access management</li>
+                <li><strong>CloudTrail:</strong> API activity logging (control plane)</li>
+                <li><strong>GuardDuty:</strong> Threat detection service</li>
+                <li><strong>Security Hub:</strong> Security posture management</li>
+                <li><strong>VPC Flow Logs:</strong> Network traffic logging</li>
+                <li><strong>Config:</strong> Resource configuration tracking</li>
+              </ul>
+              <h4>Key Log Sources:</h4>
+              <p>CloudTrail, VPC Flow Logs, S3 Access Logs, GuardDuty Findings</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Microsoft Azure</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Integrates well with Microsoft ecosystem (M365, AD).</p>
+              <h4>Key Security Services:</h4>
+              <ul>
+                <li><strong>Entra ID (Azure AD):</strong> Identity management</li>
+                <li><strong>Microsoft Defender for Cloud:</strong> CSPM and workload protection</li>
+                <li><strong>Azure Activity Log:</strong> Control plane logging</li>
+                <li><strong>Microsoft Sentinel:</strong> Cloud-native SIEM</li>
+                <li><strong>Network Watcher:</strong> Network monitoring</li>
+                <li><strong>Key Vault:</strong> Secrets management</li>
+              </ul>
+              <h4>Key Log Sources:</h4>
+              <p>Activity Log, Sign-in Logs, Audit Logs, NSG Flow Logs</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Google Cloud Platform (GCP)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Strong in data analytics, ML, and containerization.</p>
+              <h4>Key Security Services:</h4>
+              <ul>
+                <li><strong>Cloud IAM:</strong> Identity and access management</li>
+                <li><strong>Cloud Audit Logs:</strong> Admin and data access logging</li>
+                <li><strong>Security Command Center:</strong> Security posture</li>
+                <li><strong>Chronicle:</strong> Security analytics (SIEM)</li>
+                <li><strong>VPC Flow Logs:</strong> Network traffic logging</li>
+                <li><strong>Cloud Armor:</strong> DDoS and WAF</li>
+              </ul>
+              <h4>Key Log Sources:</h4>
+              <p>Admin Activity, Data Access, System Event, Policy Denied logs</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>Cloud-Specific Threats</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Threat</th>
+                <th>Description</th>
+                <th>Detection</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Misconfiguration</strong></td>
+                <td>Public S3 buckets, open security groups, weak IAM</td>
+                <td>CSPM tools, Config auditing</td>
+              </tr>
+              <tr>
+                <td><strong>Credential Compromise</strong></td>
+                <td>Stolen access keys, leaked secrets in code</td>
+                <td>Unusual API calls, impossible travel</td>
+              </tr>
+              <tr>
+                <td><strong>Privilege Escalation</strong></td>
+                <td>Exploiting IAM misconfig to gain admin</td>
+                <td>Role assumption from unusual sources</td>
+              </tr>
+              <tr>
+                <td><strong>Resource Hijacking</strong></td>
+                <td>Cryptomining using stolen credentials</td>
+                <td>Unusual compute instances, high billing</td>
+              </tr>
+              <tr>
+                <td><strong>Data Exfiltration</strong></td>
+                <td>Stealing data from storage services</td>
+                <td>Unusual download patterns, new principals</td>
+              </tr>
+              <tr>
+                <td><strong>Insecure APIs</strong></td>
+                <td>Exposed or vulnerable API endpoints</td>
+                <td>API gateway logs, anomalous requests</td>
+              </tr>
+              <tr>
+                <td><strong>Shadow IT</strong></td>
+                <td>Unauthorized cloud accounts/services</td>
+                <td>CASB discovery, expense monitoring</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Top Cloud Risks</div>
+          <ol style="margin: 0;">
+            <li><strong>Misconfiguration</strong> - #1 cause of cloud breaches</li>
+            <li><strong>Excessive permissions</strong> - Over-privileged IAM roles</li>
+            <li><strong>Exposed credentials</strong> - Keys in code repos, logs</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>What to Monitor</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">High Priority</h4>
+            <ul>
+              <li>Root/admin account usage</li>
+              <li>IAM policy changes</li>
+              <li>Security group/firewall changes</li>
+              <li>New user/role creation</li>
+              <li>Failed authentication attempts</li>
+              <li>Public resource exposure</li>
+              <li>Encryption key access</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Medium Priority</h4>
+            <ul>
+              <li>Unusual API activity</li>
+              <li>Resource creation in new regions</li>
+              <li>Large data transfers</li>
+              <li>Storage access patterns</li>
+              <li>Network flow anomalies</li>
+              <li>Configuration changes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Audit</h4>
+            <ul>
+              <li>All management plane operations</li>
+              <li>Billing anomalies</li>
+              <li>Resource inventory changes</li>
+              <li>Compliance violations</li>
+              <li>Third-party integrations</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Azure suspicious resource creation</span>
+          </div>
+          <div class="query-body">
+<code>AzureActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> OperationNameValue <span class="kw">has</span> <span class="st">"write"</span>
+| <span class="kw">where</span> ActivityStatusValue == <span class="st">"Success"</span>
+| <span class="kw">summarize</span> Operations = <span class="fn">count</span>() <span class="kw">by</span> Caller, ResourceGroup, 
+    OperationNameValue, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> Operations > <span class="nu">10</span>
+| <span class="kw">order by</span> Operations <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="tools">
+        <h2>Cloud Security Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Purpose</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CSPM</strong></td>
+                <td>Cloud Security Posture Management - find misconfigurations</td>
+                <td>Prisma Cloud, Wiz, Defender for Cloud</td>
+              </tr>
+              <tr>
+                <td><strong>CWPP</strong></td>
+                <td>Cloud Workload Protection - runtime security</td>
+                <td>Aqua, Sysdig, CrowdStrike</td>
+              </tr>
+              <tr>
+                <td><strong>CASB</strong></td>
+                <td>Cloud Access Security Broker - SaaS visibility</td>
+                <td>Netskope, Zscaler, MCAS</td>
+              </tr>
+              <tr>
+                <td><strong>CIEM</strong></td>
+                <td>Cloud Infrastructure Entitlement Management - IAM analysis</td>
+                <td>Ermetic, Sonrai, CrowdStrike</td>
+              </tr>
+              <tr>
+                <td><strong>CNAPP</strong></td>
+                <td>Cloud Native Application Protection Platform - all-in-one</td>
+                <td>Wiz, Orca, Prisma Cloud</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Understand the shared responsibility model—you always own data and identity</li>
+          <li>IaaS = most responsibility, SaaS = least (but never zero)</li>
+          <li>Misconfiguration is the #1 cloud security risk</li>
+          <li>Enable and centralize cloud logging (CloudTrail, Activity Log, Audit Logs)</li>
+          <li>Monitor IAM changes and root/admin account usage closely</li>
+          <li>Use CSPM tools to continuously assess security posture</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#cloud" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Cloud Section</span>
+          </a>
+          <a href="aws-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">AWS Security</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

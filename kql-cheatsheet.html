@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KQL Cheatsheet | SOC Analyst Guide</title>
+  <meta name="description" content="Kusto Query Language quick reference for Microsoft Sentinel with operators, functions, and 30+ ready-to-use security queries.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Event IDs</a>
+          <a href="kql-cheatsheet.html" class="nav-link active"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔍</span> IOC Lookup Tools</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL for Sentinel</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Hunting in Sentinel</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🔍</span> MDE Hunting</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>KQL Cheatsheet</span>
+        </nav>
+        <h1>KQL Quick Reference</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">REF-02</span>
+          <span class="meta-item">Bookmark This Page</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Sections
+        </div>
+        <ul class="toc-list">
+          <li><a href="#basics">Query Structure</a></li>
+          <li><a href="#operators">Essential Operators</a></li>
+          <li><a href="#functions">Common Functions</a></li>
+          <li><a href="#time">Time Operations</a></li>
+          <li><a href="#strings">String Functions</a></li>
+          <li><a href="#aggregation">Aggregation</a></li>
+          <li><a href="#joins">Joins</a></li>
+          <li><a href="#queries">Ready-to-Use Queries</a></li>
+        </ul>
+      </div>
+
+      <section id="basics">
+        <h2>Query Structure</h2>
+        <p>KQL queries follow a pipe-based structure where data flows through operators from left to right (or top to bottom).</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Basic query structure</span>
+          </div>
+          <div class="query-body">
+<code><span class="va">TableName</span>
+| <span class="kw">where</span> <span class="va">TimeGenerated</span> > <span class="fn">ago</span>(<span class="nu">24h</span>)      <span class="cm">// Filter rows</span>
+| <span class="kw">where</span> <span class="va">Column</span> == <span class="st">"value"</span>               <span class="cm">// Additional filter</span>
+| <span class="kw">extend</span> <span class="va">NewColumn</span> = <span class="va">Column1</span> + <span class="va">Column2</span>  <span class="cm">// Add calculated column</span>
+| <span class="kw">project</span> <span class="va">Column1</span>, <span class="va">Column2</span>, <span class="va">NewColumn</span>  <span class="cm">// Select columns</span>
+| <span class="kw">order by</span> <span class="va">TimeGenerated</span> <span class="kw">desc</span>          <span class="cm">// Sort results</span>
+| <span class="kw">take</span> <span class="nu">100</span>                               <span class="cm">// Limit rows</span></code>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Performance Tip</div>
+          <p style="margin: 0;">Always filter by time first (<code>TimeGenerated</code>) and use the most restrictive filters early in the query to improve performance.</p>
+        </div>
+      </section>
+
+      <section id="operators">
+        <h2>Essential Operators</h2>
+        
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Operator</th>
+                <th>Purpose</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>where</code></td>
+                <td>Filter rows</td>
+                <td><code>| where Status == "Failed"</code></td>
+              </tr>
+              <tr>
+                <td><code>project</code></td>
+                <td>Select specific columns</td>
+                <td><code>| project TimeGenerated, UserName, IPAddress</code></td>
+              </tr>
+              <tr>
+                <td><code>project-away</code></td>
+                <td>Remove columns</td>
+                <td><code>| project-away TenantId, Type</code></td>
+              </tr>
+              <tr>
+                <td><code>extend</code></td>
+                <td>Add calculated columns</td>
+                <td><code>| extend Duration = EndTime - StartTime</code></td>
+              </tr>
+              <tr>
+                <td><code>summarize</code></td>
+                <td>Aggregate data</td>
+                <td><code>| summarize count() by UserName</code></td>
+              </tr>
+              <tr>
+                <td><code>order by</code></td>
+                <td>Sort results</td>
+                <td><code>| order by TimeGenerated desc</code></td>
+              </tr>
+              <tr>
+                <td><code>take</code> / <code>limit</code></td>
+                <td>Return N rows</td>
+                <td><code>| take 50</code></td>
+              </tr>
+              <tr>
+                <td><code>top</code></td>
+                <td>Return top N sorted</td>
+                <td><code>| top 10 by Count desc</code></td>
+              </tr>
+              <tr>
+                <td><code>distinct</code></td>
+                <td>Unique values</td>
+                <td><code>| distinct UserName</code></td>
+              </tr>
+              <tr>
+                <td><code>count</code></td>
+                <td>Count all rows</td>
+                <td><code>| count</code></td>
+              </tr>
+              <tr>
+                <td><code>join</code></td>
+                <td>Combine tables</td>
+                <td><code>| join kind=inner (Table2) on Key</code></td>
+              </tr>
+              <tr>
+                <td><code>union</code></td>
+                <td>Combine result sets</td>
+                <td><code>Table1 | union Table2</code></td>
+              </tr>
+              <tr>
+                <td><code>let</code></td>
+                <td>Define variables</td>
+                <td><code>let threshold = 5;</code></td>
+              </tr>
+              <tr>
+                <td><code>render</code></td>
+                <td>Visualize results</td>
+                <td><code>| render timechart</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Comparison Operators</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Operator</th>
+                <th>Description</th>
+                <th>Case Sensitive Version</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>==</code></td>
+                <td>Equals</td>
+                <td><code>==</code> (always case-sensitive for strings use <code>=~</code> for insensitive)</td>
+              </tr>
+              <tr>
+                <td><code>!=</code></td>
+                <td>Not equals</td>
+                <td><code>!~</code> (case-insensitive not equals)</td>
+              </tr>
+              <tr>
+                <td><code>contains</code></td>
+                <td>Substring match (case-insensitive)</td>
+                <td><code>contains_cs</code></td>
+              </tr>
+              <tr>
+                <td><code>!contains</code></td>
+                <td>Substring not match</td>
+                <td><code>!contains_cs</code></td>
+              </tr>
+              <tr>
+                <td><code>startswith</code></td>
+                <td>Starts with</td>
+                <td><code>startswith_cs</code></td>
+              </tr>
+              <tr>
+                <td><code>endswith</code></td>
+                <td>Ends with</td>
+                <td><code>endswith_cs</code></td>
+              </tr>
+              <tr>
+                <td><code>has</code></td>
+                <td>Word/term match (faster)</td>
+                <td><code>has_cs</code></td>
+              </tr>
+              <tr>
+                <td><code>in</code></td>
+                <td>In list of values</td>
+                <td><code>in~</code> (case-insensitive)</td>
+              </tr>
+              <tr>
+                <td><code>matches regex</code></td>
+                <td>Regex match</td>
+                <td>Always case-sensitive by default</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">has vs contains</div>
+          <p style="margin: 0;"><code>has</code> is faster than <code>contains</code> because it looks for whole terms. Use <code>has</code> when searching for complete words, and <code>contains</code> only when you need partial string matching.</p>
+        </div>
+      </section>
+
+      <section id="functions">
+        <h2>Common Functions</h2>
+
+        <div class="tabs">
+          <div class="tab-buttons">
+            <button class="tab-btn active">String</button>
+            <button class="tab-btn">DateTime</button>
+            <button class="tab-btn">Aggregation</button>
+            <button class="tab-btn">Parsing</button>
+          </div>
+
+          <div class="tab-content active">
+            <h4>String Functions</h4>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Function</th><th>Description</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>tolower()</code></td>
+                    <td>Convert to lowercase</td>
+                    <td><code>tolower(UserName)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>toupper()</code></td>
+                    <td>Convert to uppercase</td>
+                    <td><code>toupper(Status)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>strlen()</code></td>
+                    <td>String length</td>
+                    <td><code>strlen(CommandLine)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>substring()</code></td>
+                    <td>Extract substring</td>
+                    <td><code>substring(Path, 0, 10)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>split()</code></td>
+                    <td>Split string to array</td>
+                    <td><code>split(Path, "\\")</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>strcat()</code></td>
+                    <td>Concatenate strings</td>
+                    <td><code>strcat(FirstName, " ", LastName)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>replace_string()</code></td>
+                    <td>Replace text</td>
+                    <td><code>replace_string(Cmd, "  ", " ")</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>trim()</code></td>
+                    <td>Remove whitespace</td>
+                    <td><code>trim(" ", UserName)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>extract()</code></td>
+                    <td>Regex extraction</td>
+                    <td><code>extract(@"User: (\w+)", 1, Message)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>parse_json()</code></td>
+                    <td>Parse JSON string</td>
+                    <td><code>parse_json(Properties)</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-content">
+            <h4>DateTime Functions</h4>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Function</th><th>Description</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>ago()</code></td>
+                    <td>Time in the past</td>
+                    <td><code>ago(24h)</code>, <code>ago(7d)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>now()</code></td>
+                    <td>Current time</td>
+                    <td><code>now()</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>datetime()</code></td>
+                    <td>Create datetime</td>
+                    <td><code>datetime(2024-01-15)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>startofday()</code></td>
+                    <td>Start of day</td>
+                    <td><code>startofday(TimeGenerated)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>endofday()</code></td>
+                    <td>End of day</td>
+                    <td><code>endofday(now())</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>startofweek()</code></td>
+                    <td>Start of week</td>
+                    <td><code>startofweek(TimeGenerated)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>bin()</code></td>
+                    <td>Round to interval</td>
+                    <td><code>bin(TimeGenerated, 1h)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>datetime_diff()</code></td>
+                    <td>Difference between times</td>
+                    <td><code>datetime_diff('hour', End, Start)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>format_datetime()</code></td>
+                    <td>Format datetime</td>
+                    <td><code>format_datetime(TimeGenerated, 'yyyy-MM-dd')</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>dayofweek()</code></td>
+                    <td>Day of week (0=Sun)</td>
+                    <td><code>dayofweek(TimeGenerated)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>hourofday()</code></td>
+                    <td>Hour (0-23)</td>
+                    <td><code>hourofday(TimeGenerated)</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Time Literals</h4>
+            <p><code>1s</code> (second), <code>1m</code> (minute), <code>1h</code> (hour), <code>1d</code> (day), <code>7d</code> (week)</p>
+          </div>
+
+          <div class="tab-content">
+            <h4>Aggregation Functions</h4>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Function</th><th>Description</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>count()</code></td>
+                    <td>Count rows</td>
+                    <td><code>summarize count() by User</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>dcount()</code></td>
+                    <td>Distinct count</td>
+                    <td><code>summarize dcount(IPAddress)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>sum()</code></td>
+                    <td>Sum values</td>
+                    <td><code>summarize sum(BytesSent)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>avg()</code></td>
+                    <td>Average</td>
+                    <td><code>summarize avg(Duration)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>min() / max()</code></td>
+                    <td>Minimum/Maximum</td>
+                    <td><code>summarize min(TimeGenerated)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>make_set()</code></td>
+                    <td>Unique values as array</td>
+                    <td><code>summarize make_set(IPAddress)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>make_list()</code></td>
+                    <td>All values as array</td>
+                    <td><code>summarize make_list(EventID)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>arg_max()</code></td>
+                    <td>Row with max value</td>
+                    <td><code>summarize arg_max(TimeGenerated, *)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>percentile()</code></td>
+                    <td>Percentile value</td>
+                    <td><code>summarize percentile(Duration, 95)</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-content">
+            <h4>Parsing Functions</h4>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Function</th><th>Description</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>parse_json()</code></td>
+                    <td>Parse JSON</td>
+                    <td><code>parse_json(AdditionalInfo).key</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>parse_xml()</code></td>
+                    <td>Parse XML</td>
+                    <td><code>parse_xml(EventData)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>parse_url()</code></td>
+                    <td>Parse URL</td>
+                    <td><code>parse_url(RequestUrl).Host</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>parse_path()</code></td>
+                    <td>Parse file path</td>
+                    <td><code>parse_path(FilePath).Filename</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>parse_user_agent()</code></td>
+                    <td>Parse user agent</td>
+                    <td><code>parse_user_agent(UserAgent).Browser</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>extract()</code></td>
+                    <td>Regex extraction</td>
+                    <td><code>extract(@"IP: ([\d\.]+)", 1, Log)</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>parse</code> operator</td>
+                    <td>Pattern parsing</td>
+                    <td><code>| parse Message with "User " User " logged"</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="time">
+        <h2>Time Operations</h2>
+        
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Common time filters</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Last 24 hours</span>
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+
+<span class="cm">// Last 7 days</span>
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+
+<span class="cm">// Specific date range</span>
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">datetime</span>(<span class="nu">2024-01-01</span>) .. <span class="fn">datetime</span>(<span class="nu">2024-01-31</span>))
+
+<span class="cm">// Today only</span>
+| <span class="kw">where</span> TimeGenerated > <span class="fn">startofday</span>(<span class="fn">now</span>())
+
+<span class="cm">// Business hours (9 AM - 5 PM)</span>
+| <span class="kw">where</span> <span class="fn">hourofday</span>(TimeGenerated) <span class="kw">between</span> (<span class="nu">9</span> .. <span class="nu">17</span>)
+
+<span class="cm">// Weekdays only (Mon-Fri)</span>
+| <span class="kw">where</span> <span class="fn">dayofweek</span>(TimeGenerated) <span class="kw">between</span> (<span class="nu">1d</span> .. <span class="nu">5d</span>)
+
+<span class="cm">// After hours (before 9 AM or after 5 PM)</span>
+| <span class="kw">where</span> <span class="fn">hourofday</span>(TimeGenerated) < <span class="nu">9</span> <span class="kw">or</span> <span class="fn">hourofday</span>(TimeGenerated) > <span class="nu">17</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Time-based aggregation</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Events per hour</span>
+| <span class="kw">summarize</span> <span class="fn">count</span>() <span class="kw">by</span> <span class="fn">bin</span>(TimeGenerated, <span class="nu">1h</span>)
+
+<span class="cm">// Events per day</span>
+| <span class="kw">summarize</span> <span class="fn">count</span>() <span class="kw">by</span> <span class="fn">bin</span>(TimeGenerated, <span class="nu">1d</span>)
+
+<span class="cm">// First and last occurrence</span>
+| <span class="kw">summarize</span> FirstSeen=<span class="fn">min</span>(TimeGenerated), LastSeen=<span class="fn">max</span>(TimeGenerated) <span class="kw">by</span> UserName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="strings">
+        <h2>String Operations</h2>
+        
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Common string operations</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Contains (case-insensitive)</span>
+| <span class="kw">where</span> CommandLine <span class="kw">contains</span> <span class="st">"powershell"</span>
+
+<span class="cm">// Contains (case-sensitive)</span>
+| <span class="kw">where</span> CommandLine <span class="kw">contains_cs</span> <span class="st">"PowerShell"</span>
+
+<span class="cm">// Starts with</span>
+| <span class="kw">where</span> FilePath <span class="kw">startswith</span> <span class="st">"C:\\Windows"</span>
+
+<span class="cm">// Ends with</span>
+| <span class="kw">where</span> FileName <span class="kw">endswith</span> <span class="st">".exe"</span>
+
+<span class="cm">// Has (word boundary, faster)</span>
+| <span class="kw">where</span> CommandLine <span class="kw">has</span> <span class="st">"mimikatz"</span>
+
+<span class="cm">// Multiple values</span>
+| <span class="kw">where</span> Status <span class="kw">in</span> (<span class="st">"Failed"</span>, <span class="st">"Error"</span>, <span class="st">"Denied"</span>)
+
+<span class="cm">// Regex match</span>
+| <span class="kw">where</span> CommandLine <span class="kw">matches regex</span> <span class="st">@"(?i)invoke-.*expression"</span>
+
+<span class="cm">// Extract with regex</span>
+| <span class="kw">extend</span> Domain = <span class="fn">extract</span>(<span class="st">@"@(.+)$"</span>, <span class="nu">1</span>, UserPrincipalName)</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="aggregation">
+        <h2>Aggregation Examples</h2>
+        
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Summarize patterns</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Count by category</span>
+| <span class="kw">summarize</span> Count=<span class="fn">count</span>() <span class="kw">by</span> Category
+| <span class="kw">order by</span> Count <span class="kw">desc</span>
+
+<span class="cm">// Count with multiple groupings</span>
+| <span class="kw">summarize</span> Count=<span class="fn">count</span>() <span class="kw">by</span> UserName, IPAddress, bin(TimeGenerated, <span class="nu">1h</span>)
+
+<span class="cm">// Distinct count</span>
+| <span class="kw">summarize</span> UniqueUsers=<span class="fn">dcount</span>(UserName), UniqueIPs=<span class="fn">dcount</span>(IPAddress)
+
+<span class="cm">// Collect unique values into array</span>
+| <span class="kw">summarize</span> IPAddresses=<span class="fn">make_set</span>(IPAddress) <span class="kw">by</span> UserName
+
+<span class="cm">// Get row with latest timestamp per user</span>
+| <span class="kw">summarize</span> <span class="fn">arg_max</span>(TimeGenerated, *) <span class="kw">by</span> UserName
+
+<span class="cm">// Statistics</span>
+| <span class="kw">summarize</span> 
+    Total=<span class="fn">count</span>(),
+    Average=<span class="fn">avg</span>(Duration),
+    P95=<span class="fn">percentile</span>(Duration, <span class="nu">95</span>),
+    Maximum=<span class="fn">max</span>(Duration)</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="joins">
+        <h2>Joins</h2>
+        
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Join examples</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Inner join - only matching rows</span>
+SigninLogs
+| <span class="kw">join kind</span>=<span class="va">inner</span> (
+    IdentityInfo | <span class="kw">project</span> UserPrincipalName, Department, JobTitle
+) <span class="kw">on</span> UserPrincipalName
+
+<span class="cm">// Left outer join - all from left, matching from right</span>
+SecurityAlert
+| <span class="kw">join kind</span>=<span class="va">leftouter</span> (
+    SecurityIncident | <span class="kw">project</span> IncidentNumber, AlertIds
+) <span class="kw">on</span> $left.SystemAlertId == $right.AlertIds
+
+<span class="cm">// Anti join - rows in left NOT in right</span>
+AllUsers
+| <span class="kw">join kind</span>=<span class="va">leftanti</span> (
+    ActiveUsers
+) <span class="kw">on</span> UserName
+<span class="cm">// Result: Users not in ActiveUsers table</span></code>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Join Kind</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>inner</code></td><td>Only matching rows from both tables</td></tr>
+              <tr><td><code>leftouter</code></td><td>All from left, matching from right (nulls for non-matches)</td></tr>
+              <tr><td><code>rightouter</code></td><td>All from right, matching from left</td></tr>
+              <tr><td><code>fullouter</code></td><td>All rows from both tables</td></tr>
+              <tr><td><code>leftanti</code></td><td>Rows from left NOT matching right</td></tr>
+              <tr><td><code>rightanti</code></td><td>Rows from right NOT matching left</td></tr>
+              <tr><td><code>leftsemi</code></td><td>Rows from left that HAVE matches in right</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="queries">
+        <h2>Ready-to-Use Security Queries</h2>
+        
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Authentication Queries</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Failed logins by user (last 24h)</span>
+                </div>
+                <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>  <span class="cm">// Non-zero = failure</span>
+| <span class="kw">summarize</span> 
+    FailedAttempts = <span class="fn">count</span>(),
+    DistinctIPs = <span class="fn">dcount</span>(IPAddress),
+    IPs = <span class="fn">make_set</span>(IPAddress)
+    <span class="kw">by</span> UserPrincipalName
+| <span class="kw">where</span> FailedAttempts > <span class="nu">10</span>
+| <span class="kw">order by</span> FailedAttempts <span class="kw">desc</span></code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Successful login after multiple failures</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> FailedLogins = SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>
+| <span class="kw">summarize</span> FailCount = <span class="fn">count</span>() <span class="kw">by</span> UserPrincipalName, IPAddress
+| <span class="kw">where</span> FailCount >= <span class="nu">5</span>;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>  <span class="cm">// Success</span>
+| <span class="kw">join kind</span>=<span class="va">inner</span> FailedLogins <span class="kw">on</span> UserPrincipalName, IPAddress
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, IPAddress, FailCount, Location</code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Login from new location</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> KnownLocations = SigninLogs
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">distinct</span> UserPrincipalName, Location;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">join kind</span>=<span class="va">leftanti</span> KnownLocations <span class="kw">on</span> UserPrincipalName, Location
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, Location, IPAddress, AppDisplayName</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Process & Execution Queries</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Encoded PowerShell execution</span>
+                </div>
+                <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> FileName =~ <span class="st">"powershell.exe"</span> <span class="kw">or</span> FileName =~ <span class="st">"pwsh.exe"</span>
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (<span class="st">"-enc"</span>, <span class="st">"-encoded"</span>, <span class="st">"-e "</span>, <span class="st">"FromBase64"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName, ProcessCommandLine, 
+    InitiatingProcessFileName, InitiatingProcessCommandLine</code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Suspicious process parent-child</span>
+                </div>
+                <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> InitiatingProcessFileName <span class="kw">in~</span> (<span class="st">"outlook.exe"</span>, <span class="st">"winword.exe"</span>, <span class="st">"excel.exe"</span>)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (<span class="st">"cmd.exe"</span>, <span class="st">"powershell.exe"</span>, <span class="st">"wscript.exe"</span>, <span class="st">"mshta.exe"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName, 
+    InitiatingProcessFileName, FileName, ProcessCommandLine</code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Rare processes by device</span>
+                </div>
+                <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> ExecutionCount = <span class="fn">count</span>(), DeviceCount = <span class="fn">dcount</span>(DeviceName) <span class="kw">by</span> FileName
+| <span class="kw">where</span> DeviceCount == <span class="nu">1</span> <span class="kw">and</span> ExecutionCount < <span class="nu">5</span>
+| <span class="kw">order by</span> ExecutionCount <span class="kw">asc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network Queries</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Outbound connections to rare destinations</span>
+                </div>
+                <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ConnectionSuccess"</span>
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    Devices = <span class="fn">make_set</span>(DeviceName),
+    DeviceCount = <span class="fn">dcount</span>(DeviceName)
+    <span class="kw">by</span> RemoteIP
+| <span class="kw">where</span> DeviceCount == <span class="nu">1</span>
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Beaconing detection (regular intervals)</span>
+                </div>
+                <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ConnectionSuccess"</span>
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">order by</span> DeviceName, RemoteIP, TimeGenerated <span class="kw">asc</span>
+| <span class="kw">extend</span> PrevTime = <span class="fn">prev</span>(TimeGenerated), PrevIP = <span class="fn">prev</span>(RemoteIP), PrevDevice = <span class="fn">prev</span>(DeviceName)
+| <span class="kw">where</span> DeviceName == PrevDevice <span class="kw">and</span> RemoteIP == PrevIP
+| <span class="kw">extend</span> TimeDelta = <span class="fn">datetime_diff</span>(<span class="st">'second'</span>, TimeGenerated, PrevTime)
+| <span class="kw">summarize</span> AvgInterval = <span class="fn">avg</span>(TimeDelta), StdDev = <span class="fn">stdev</span>(TimeDelta), Count = <span class="fn">count</span>() 
+    <span class="kw">by</span> DeviceName, RemoteIP
+| <span class="kw">where</span> Count > <span class="nu">20</span> <span class="kw">and</span> StdDev < <span class="nu">10</span>  <span class="cm">// Low variance = regular pattern</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Alert & Incident Queries</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">High severity alerts last 24h</span>
+                </div>
+                <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> AlertSeverity == <span class="st">"High"</span>
+| <span class="kw">project</span> TimeGenerated, AlertName, AlertSeverity, 
+    CompromisedEntity, Description, Status
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Alert trends by day</span>
+                </div>
+                <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">summarize</span> AlertCount = <span class="fn">count</span>() <span class="kw">by</span> <span class="fn">bin</span>(TimeGenerated, <span class="nu">1d</span>), AlertSeverity
+| <span class="kw">render</span> <span class="va">timechart</span></code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Related alerts for entity</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> EntityName = <span class="st">"HOSTNAME_OR_USER"</span>;
+SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> CompromisedEntity =~ EntityName 
+    <span class="kw">or</span> Entities <span class="kw">contains</span> EntityName
+| <span class="kw">project</span> TimeGenerated, AlertName, AlertSeverity, 
+    CompromisedEntity, ProviderName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Quick Reference Tips
+        </div>
+        <ul style="margin: 0;">
+          <li>Use <code>has</code> instead of <code>contains</code> for better performance</li>
+          <li>Always filter by <code>TimeGenerated</code> first</li>
+          <li>Use <code>let</code> statements for reusable subqueries</li>
+          <li>Test with <code>take 10</code> before running full queries</li>
+          <li>Use <code>project</code> early to reduce data volume</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="windows-events.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Windows Event IDs</span>
+          </a>
+          <a href="common-ports.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Ports & Protocols</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

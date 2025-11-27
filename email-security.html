@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Security Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Email security fundamentals for SOC analysts: email threats, gateway analysis, authentication protocols, and investigation techniques.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link active"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Header Analysis</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">🔐</span> SPF/DKIM/DMARC</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Playbook</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#email">Email & Phishing</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Email Security</span>
+        </nav>
+        <h1>Email Security Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 7.1</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#threats">Email Threat Landscape</a></li>
+          <li><a href="#flow">Email Security Stack</a></li>
+          <li><a href="#gateway">Email Gateway</a></li>
+          <li><a href="#threats-detail">Threat Types</a></li>
+          <li><a href="#investigation">Investigation Basics</a></li>
+        </ul>
+      </div>
+
+      <section id="threats">
+        <h2>Email Threat Landscape</h2>
+        <p>
+          Email remains the #1 attack vector for initial access. Understanding email security 
+          is essential for every SOC analyst.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">90%+</div>
+            <div class="stat-label">of attacks start with email</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">3.4B</div>
+            <div class="stat-label">phishing emails sent daily</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">$2.4B</div>
+            <div class="stat-label">lost to BEC in 2021</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Why Email?</div>
+          <p style="margin: 0;">
+            Email is ubiquitous, trusted, and reaches users directly. Attackers exploit human 
+            psychology (urgency, authority, curiosity) to bypass technical controls.
+          </p>
+        </div>
+      </section>
+
+      <section id="flow">
+        <h2>Email Security Stack</h2>
+
+        <div class="card">
+          <h3>Inbound Email Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Sender</strong><br>
+                <small>External mail server</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="border-color: var(--accent-cyan);">
+                <strong>Email Gateway</strong><br>
+                <small>Filter, scan, analyze</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Mail Server</strong><br>
+                <small>Exchange/M365</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Inbox</strong><br>
+                <small>User mailbox</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Defense Layers</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Layer</th>
+                <th>Function</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Email Gateway (SEG)</strong></td>
+                <td>Filter spam, malware, phishing before delivery</td>
+                <td>Proofpoint, Mimecast, Microsoft Defender</td>
+              </tr>
+              <tr>
+                <td><strong>Authentication</strong></td>
+                <td>Verify sender legitimacy (SPF/DKIM/DMARC)</td>
+                <td>DNS-based validation</td>
+              </tr>
+              <tr>
+                <td><strong>Sandboxing</strong></td>
+                <td>Detonate attachments in safe environment</td>
+                <td>Safe Attachments, Proofpoint TAP</td>
+              </tr>
+              <tr>
+                <td><strong>URL Rewriting</strong></td>
+                <td>Wrap links for click-time analysis</td>
+                <td>Safe Links, Proofpoint URL Defense</td>
+              </tr>
+              <tr>
+                <td><strong>Post-Delivery Protection</strong></td>
+                <td>Remove threats after delivery</td>
+                <td>ZAP (Zero-hour Auto Purge)</td>
+              </tr>
+              <tr>
+                <td><strong>User Awareness</strong></td>
+                <td>Training, phishing simulations</td>
+                <td>KnowBe4, Proofpoint SAT</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="gateway">
+        <h2>Email Gateway Functions</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Spam Filtering</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Reputation-based (sender IP, domain)</li>
+                <li>Content analysis (keywords, patterns)</li>
+                <li>Machine learning classification</li>
+                <li>Bulk mail detection</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Malware Detection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Signature-based AV scanning</li>
+                <li>Sandboxing/detonation of attachments</li>
+                <li>File type restrictions</li>
+                <li>Macro blocking</li>
+                <li>Archive inspection (ZIP, RAR)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Phishing Detection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>URL reputation checking</li>
+                <li>Brand impersonation detection</li>
+                <li>Lookalike domain detection</li>
+                <li>Login page detection</li>
+                <li>Sender-recipient relationship analysis</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">BEC/Impersonation Detection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Display name spoofing detection</li>
+                <li>Domain lookalike detection</li>
+                <li>VIP/executive impersonation protection</li>
+                <li>Payment/wire transfer language detection</li>
+                <li>First-time sender warnings</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="threats-detail">
+        <h2>Email Threat Types</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Threat</th>
+                <th>Description</th>
+                <th>Key Indicators</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Credential Phishing</strong></td>
+                <td>Fake login pages to steal passwords</td>
+                <td>Urgent language, login links, spoofed brands</td>
+              </tr>
+              <tr>
+                <td><strong>Malware/Ransomware</strong></td>
+                <td>Malicious attachments or links</td>
+                <td>Unexpected attachments, macros, executables</td>
+              </tr>
+              <tr>
+                <td><strong>BEC (Business Email Compromise)</strong></td>
+                <td>Impersonate executive for financial fraud</td>
+                <td>Wire transfer requests, urgency, secrecy</td>
+              </tr>
+              <tr>
+                <td><strong>Spear Phishing</strong></td>
+                <td>Targeted attack using personal info</td>
+                <td>Personalized content, researched details</td>
+              </tr>
+              <tr>
+                <td><strong>Invoice Fraud</strong></td>
+                <td>Fake invoices with changed payment details</td>
+                <td>Changed bank accounts, urgent payment</td>
+              </tr>
+              <tr>
+                <td><strong>Thread Hijacking</strong></td>
+                <td>Reply to stolen email thread with malware</td>
+                <td>RE: subject, legitimate conversation</td>
+              </tr>
+              <tr>
+                <td><strong>QR Code Phishing</strong></td>
+                <td>Malicious QR codes in email</td>
+                <td>QR codes linking to phishing sites</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Thread Hijacking</div>
+          <p style="margin: 0;">
+            Attackers steal email threads (via compromised accounts) and reply with malware. 
+            The email looks legitimate because it's part of a real conversation. Very effective.
+          </p>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Basics</h2>
+
+        <h3>Key Questions to Answer</h3>
+        <ul class="checklist">
+          <li><strong>Who received it?</strong> Single user or widespread campaign?</li>
+          <li><strong>Did anyone click?</strong> Check URL click logs</li>
+          <li><strong>Did anyone submit credentials?</strong> Check for successful logins from suspicious IPs</li>
+          <li><strong>Did anyone open attachments?</strong> Check EDR for execution</li>
+          <li><strong>Is the sender legitimate?</strong> Check authentication (SPF/DKIM/DMARC)</li>
+          <li><strong>Is the domain malicious?</strong> Check reputation, registration date</li>
+        </ul>
+
+        <h3>Investigation Data Sources</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What It Shows</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Email Gateway Logs</strong></td>
+                <td>Delivery status, filtering actions, threat verdicts</td>
+              </tr>
+              <tr>
+                <td><strong>Message Trace</strong></td>
+                <td>Email routing, delivery path, recipients</td>
+              </tr>
+              <tr>
+                <td><strong>Email Headers</strong></td>
+                <td>Full routing, authentication results, origin</td>
+              </tr>
+              <tr>
+                <td><strong>URL Click Logs</strong></td>
+                <td>Who clicked, when, from where</td>
+              </tr>
+              <tr>
+                <td><strong>Sandbox Reports</strong></td>
+                <td>Attachment detonation results</td>
+              </tr>
+              <tr>
+                <td><strong>EDR Telemetry</strong></td>
+                <td>What happened after attachment opened</td>
+              </tr>
+              <tr>
+                <td><strong>Sign-in Logs</strong></td>
+                <td>Post-credential theft access</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find all recipients of suspicious email</span>
+          </div>
+          <div class="query-body">
+<code>EmailEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> SenderFromAddress =~ <span class="st">"suspicious@domain.com"</span>
+    <span class="kw">or</span> Subject <span class="kw">contains</span> <span class="st">"Suspicious Subject"</span>
+| <span class="kw">project</span> TimeGenerated, SenderFromAddress, RecipientEmailAddress,
+    Subject, DeliveryAction, ThreatTypes
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check for URL clicks</span>
+          </div>
+          <div class="query-body">
+<code>UrlClickEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> Url <span class="kw">contains</span> <span class="st">"suspicious-domain.com"</span>
+| <span class="kw">project</span> TimeGenerated, AccountUpn, Url, ActionType,
+    NetworkMessageId, IsClickedThrough</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Email is the #1 initial access vector—understand email security deeply</li>
+          <li>Multiple defense layers: gateway, authentication, sandboxing, URL rewriting</li>
+          <li>Common threats: credential phishing, malware, BEC, thread hijacking</li>
+          <li>Always check: who received, who clicked, who submitted credentials</li>
+          <li>Correlate email logs with EDR and sign-in logs for full picture</li>
+          <li>Check SPF/DKIM/DMARC for sender authentication</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#email" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Email Section</span>
+          </a>
+          <a href="email-headers.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Header Analysis</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

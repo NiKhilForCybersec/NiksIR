@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Compromise Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Step-by-step playbook for responding to compromised user accounts including investigation, containment, and remediation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link active"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔨</span> Brute Force</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Security</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Playbook</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Account Compromise</span>
+        </nav>
+        <h1>🔓 Account Compromise Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">PB-04</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-red);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">Suspicious sign-in, impossible travel, credential theft indicator</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p2">P2 High</span></p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Target SLA</strong>
+            <p style="margin: 0;">Response: 30 min | Resolution: 4 hours</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation</strong>
+            <p style="margin: 0;">L1 → L2 (if privileged account or data access)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#indicators">Compromise Indicators</a></li>
+          <li><a href="#immediate">Immediate Actions</a></li>
+          <li><a href="#investigation">Investigation Steps</a></li>
+          <li><a href="#scope">Scope Assessment</a></li>
+          <li><a href="#remediation">Remediation</a></li>
+          <li><a href="#privileged">Privileged Account Handling</a></li>
+        </ul>
+      </div>
+
+      <section id="indicators">
+        <h2>Account Compromise Indicators</h2>
+        <p>Signs that may indicate an account has been compromised:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">High Confidence</h4>
+            <ul>
+              <li>Login from known malicious IP</li>
+              <li>Credentials found in phishing kit</li>
+              <li>Password in breach database + recent use</li>
+              <li>User reports not making activity</li>
+              <li>MFA bypass detected</li>
+              <li>Session token theft evidence</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Medium Confidence</h4>
+            <ul>
+              <li>Impossible travel alert</li>
+              <li>Login from unusual location</li>
+              <li>After-hours access (unusual for user)</li>
+              <li>Multiple failed then success</li>
+              <li>New device + sensitive access</li>
+              <li>Email forwarding rules added</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Lower Confidence</h4>
+            <ul>
+              <li>VPN/proxy usage</li>
+              <li>New browser or OS</li>
+              <li>Password change</li>
+              <li>Single unusual login</li>
+              <li>Legacy auth usage</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="immediate">
+        <h2>Immediate Actions</h2>
+        
+        <div class="callout callout-danger">
+          <div class="callout-title">If Compromise is Confirmed or Highly Likely</div>
+          <ol style="margin: 0;">
+            <li><strong>Reset password immediately</strong></li>
+            <li><strong>Revoke all active sessions/tokens</strong></li>
+            <li><strong>Verify/re-register MFA</strong></li>
+            <li><strong>Check for persistence mechanisms</strong> (email rules, OAuth apps)</li>
+            <li><strong>Contact user</strong> through alternate channel (not email)</li>
+          </ol>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Revoke Azure AD sessions (Microsoft Graph)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Connect to Microsoft Graph</span>
+Connect-MgGraph -Scopes <span class="st">"User.ReadWrite.All"</span>
+
+<span class="cm"># Revoke all refresh tokens for user</span>
+Revoke-MgUserSignInSession -UserId <span class="st">"user@domain.com"</span>
+
+<span class="cm"># Reset password (generates random password)</span>
+$password = @{
+    Password = <span class="st">"TempP@ss123!"</span>
+    ForceChangePasswordNextSignIn = $true
+}
+Update-MgUser -UserId <span class="st">"user@domain.com"</span> -PasswordProfile $password</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Review Sign-in Activity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Examine all authentication events for the account.</p>
+              
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Azure AD sign-in history</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> UserPrincipalName =~ targetUser
+| <span class="kw">project</span> TimeGenerated, 
+    ResultType,
+    ResultDescription,
+    IPAddress,
+    Location,
+    DeviceDetail,
+    AppDisplayName,
+    ClientAppUsed,
+    ConditionalAccessStatus,
+    RiskState,
+    RiskLevelDuringSignIn
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+                </div>
+              </div>
+
+              <h4>Key Questions:</h4>
+              <ul>
+                <li>Any logins from unusual locations or IPs?</li>
+                <li>Any logins during unusual hours?</li>
+                <li>Any new devices or browsers?</li>
+                <li>Any failed attempts before success?</li>
+                <li>Any legacy authentication (non-MFA)?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Check for Persistence</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Attackers establish persistence to maintain access even after password reset.</p>
+              
+              <h4>Common Persistence Mechanisms:</h4>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mechanism</th>
+                      <th>What to Check</th>
+                      <th>How to Check</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Email Forwarding Rules</strong></td>
+                      <td>Rules forwarding email externally</td>
+                      <td>Exchange admin, Outlook rules</td>
+                    </tr>
+                    <tr>
+                      <td><strong>OAuth App Consents</strong></td>
+                      <td>Malicious apps with mail/file access</td>
+                      <td>Azure AD Enterprise Apps, user consents</td>
+                    </tr>
+                    <tr>
+                      <td><strong>MFA Methods</strong></td>
+                      <td>Attacker-added phone/authenticator</td>
+                      <td>Azure AD user authentication methods</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Mailbox Delegates</strong></td>
+                      <td>Full access granted to other accounts</td>
+                      <td>Exchange mailbox permissions</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Device Registration</strong></td>
+                      <td>Attacker device joined to Azure AD</td>
+                      <td>Azure AD user devices</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Check for mailbox rule changes</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">where</span> Operation <span class="kw">in</span> (
+    <span class="st">"New-InboxRule"</span>, 
+    <span class="st">"Set-InboxRule"</span>, 
+    <span class="st">"Set-Mailbox"</span>,
+    <span class="st">"Add-MailboxPermission"</span>,
+    <span class="st">"Set-MailboxFolderPermission"</span>
+)
+| <span class="kw">project</span> TimeGenerated, Operation, Parameters, ClientIP</code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Check for OAuth app consents</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+AuditLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> OperationName == <span class="st">"Consent to application"</span>
+| <span class="kw">where</span> InitiatedBy.user.userPrincipalName =~ targetUser
+| <span class="kw">extend</span> AppName = TargetResources[0].displayName
+| <span class="kw">project</span> TimeGenerated, AppName, TargetResources</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Review Account Activity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Determine what the attacker did with the compromised account.</p>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Email activity (sent, read, deleted)</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+<span class="kw">let</span> suspiciousTime = <span class="fn">datetime</span>(<span class="nu">2024-01-15T10:00:00Z</span>);
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > suspiciousTime
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">where</span> Operation <span class="kw">in</span> (<span class="st">"Send"</span>, <span class="st">"SendAs"</span>, <span class="st">"SendOnBehalf"</span>, 
+    <span class="st">"MailItemsAccessed"</span>, <span class="st">"MoveToDeletedItems"</span>)
+| <span class="kw">project</span> TimeGenerated, Operation, ClientIP, 
+    MailboxOwnerUPN, DestinationMailboxOwnerUPN
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">File access (SharePoint/OneDrive)</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">where</span> RecordType <span class="kw">in</span> (<span class="st">"SharePointFileOperation"</span>, <span class="st">"OneDrive"</span>)
+| <span class="kw">where</span> Operation <span class="kw">in</span> (<span class="st">"FileDownloaded"</span>, <span class="st">"FileAccessed"</span>, 
+    <span class="st">"FileCopied"</span>, <span class="st">"FileModified"</span>)
+| <span class="kw">summarize</span> FileCount = <span class="fn">count</span>(), 
+    Files = <span class="fn">make_set</span>(SourceFileName) <span class="kw">by</span> Operation, ClientIP
+| <span class="kw">order by</span> FileCount <span class="kw">desc</span></code>
+                </div>
+              </div>
+
+              <h4>Key Activities to Review:</h4>
+              <ul>
+                <li><strong>Email:</strong> Sent phishing internally? Accessed sensitive emails?</li>
+                <li><strong>Files:</strong> Downloaded sensitive documents?</li>
+                <li><strong>Admin Actions:</strong> Any privilege escalation attempts?</li>
+                <li><strong>Applications:</strong> Accessed other connected apps?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Identify Attack Vector</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Determine how the account was compromised to prevent recurrence.</p>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Attack Vector</th>
+                      <th>Indicators</th>
+                      <th>Investigation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Phishing</strong></td>
+                      <td>User clicked link, credentials entered</td>
+                      <td>Check email logs, user interview</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Credential Stuffing</strong></td>
+                      <td>Password in breach database</td>
+                      <td>Check HaveIBeenPwned, password age</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Password Spray</strong></td>
+                      <td>Many users targeted, common password</td>
+                      <td>Check org-wide failed logins</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Token Theft</strong></td>
+                      <td>Session continues after password change</td>
+                      <td>Adversary-in-the-middle, malware</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Malware</strong></td>
+                      <td>Infostealer on user device</td>
+                      <td>EDR investigation on device</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scope">
+        <h2>Scope Assessment</h2>
+        <p>Determine if other accounts were compromised or affected.</p>
+
+        <ul class="checklist">
+          <li>Check if same attacker IP accessed other accounts</li>
+          <li>Check if compromised user sent phishing internally</li>
+          <li>Check if attack is part of larger campaign</li>
+          <li>Review recipients of any emails sent by attacker</li>
+          <li>Check for shared credentials (same password elsewhere)</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find other accounts accessed from attacker IP</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> attackerIP = <span class="st">"203.0.113.50"</span>;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> IPAddress == attackerIP
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>  <span class="cm">// Successful logins</span>
+| <span class="kw">summarize</span> 
+    FirstSeen = <span class="fn">min</span>(TimeGenerated),
+    LastSeen = <span class="fn">max</span>(TimeGenerated),
+    LoginCount = <span class="fn">count</span>(),
+    Apps = <span class="fn">make_set</span>(AppDisplayName)
+    <span class="kw">by</span> UserPrincipalName
+| <span class="kw">order by</span> FirstSeen <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="remediation">
+        <h2>Remediation Checklist</h2>
+
+        <ul class="checklist">
+          <li><strong>Password:</strong> Reset to strong unique password</li>
+          <li><strong>Sessions:</strong> Revoke all active sessions and tokens</li>
+          <li><strong>MFA:</strong> Re-register MFA methods (remove unknown methods)</li>
+          <li><strong>Email Rules:</strong> Remove malicious inbox/forwarding rules</li>
+          <li><strong>OAuth Apps:</strong> Revoke suspicious app consents</li>
+          <li><strong>Devices:</strong> Remove unknown registered devices</li>
+          <li><strong>Delegates:</strong> Remove unauthorized mailbox permissions</li>
+          <li><strong>Block Attacker:</strong> Block attacker IP if possible</li>
+          <li><strong>User Education:</strong> Brief user on what happened and how to avoid</li>
+          <li><strong>Monitor:</strong> Enhanced monitoring for 30 days</li>
+        </ul>
+      </section>
+
+      <section id="privileged">
+        <h2>Privileged Account Handling</h2>
+        
+        <div class="callout callout-danger">
+          <div class="callout-title">Elevated Response for Admin Accounts</div>
+          <p style="margin: 0;">Compromised admin accounts require immediate escalation and expanded investigation.</p>
+        </div>
+
+        <h3>Additional Steps for Admin Accounts:</h3>
+        <ul class="checklist">
+          <li>Immediately escalate to IR team/management</li>
+          <li>Check all admin actions during compromise window</li>
+          <li>Look for new accounts created</li>
+          <li>Check for privilege escalation to other accounts</li>
+          <li>Review Azure AD/AD configuration changes</li>
+          <li>Check for Global Admin or Exchange Admin actions</li>
+          <li>Review Conditional Access policy changes</li>
+          <li>Consider assuming full environment compromise</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Admin actions by compromised account</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"admin@domain.com"</span>;
+<span class="kw">let</span> compromiseStart = <span class="fn">datetime</span>(<span class="nu">2024-01-15T10:00:00Z</span>);
+AuditLogs
+| <span class="kw">where</span> TimeGenerated > compromiseStart
+| <span class="kw">where</span> InitiatedBy.user.userPrincipalName =~ targetUser
+| <span class="kw">project</span> TimeGenerated, OperationName, Result, 
+    TargetResources, AdditionalDetails
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Contain:</strong> Reset password, revoke sessions, verify MFA</li>
+          <li><strong>Investigate:</strong> Review sign-ins, check persistence, review activity</li>
+          <li><strong>Scope:</strong> Check for other compromised accounts</li>
+          <li><strong>Remediate:</strong> Remove all attacker persistence</li>
+          <li><strong>Root Cause:</strong> Identify how credentials were compromised</li>
+          <li><strong>Document:</strong> Record findings and actions taken</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-phishing.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Phishing Playbook</span>
+          </a>
+          <a href="pb-brute-force.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Brute Force Playbook</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

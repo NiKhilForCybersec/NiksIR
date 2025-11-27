@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incident Response Overview | SOC Analyst Guide</title>
+  <meta name="description" content="NIST incident response lifecycle, team roles, incident classification, and when to declare a security incident.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link active"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> Preparation</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">🔍</span> Identification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🛑</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Post-Incident</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">🔐</span> Evidence Handling</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>IR Overview</span>
+        </nav>
+        <h1>Incident Response Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 10.1</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#definitions">Event vs Incident</a></li>
+          <li><a href="#lifecycle">IR Lifecycle (NIST)</a></li>
+          <li><a href="#roles">IR Team Roles</a></li>
+          <li><a href="#classification">Incident Classification</a></li>
+          <li><a href="#declaration">When to Declare</a></li>
+        </ul>
+      </div>
+
+      <section id="definitions">
+        <h2>Event vs Incident</h2>
+        <p>Understanding the distinction between events and incidents is fundamental to IR.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Security Event</h4>
+            <p>Any observable occurrence in a system or network.</p>
+            <ul>
+              <li>User login</li>
+              <li>File access</li>
+              <li>Firewall connection</li>
+              <li>Email received</li>
+            </ul>
+            <p class="text-muted">Most events are normal business activity.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Security Incident</h4>
+            <p>A violation or imminent threat of violation of security policies or practices.</p>
+            <ul>
+              <li>Malware infection</li>
+              <li>Unauthorized access</li>
+              <li>Data breach</li>
+              <li>Denial of service</li>
+            </ul>
+            <p class="text-muted">Incidents require formal response.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">The Progression</div>
+          <p style="margin: 0;">
+            <strong>Events</strong> (millions/day) → <strong>Alerts</strong> (hundreds/day) → 
+            <strong>Investigations</strong> (dozens/day) → <strong>Incidents</strong> (few/week)
+          </p>
+        </div>
+      </section>
+
+      <section id="lifecycle">
+        <h2>Incident Response Lifecycle (NIST)</h2>
+        <p>
+          The NIST Incident Response Lifecycle provides a structured framework for handling security incidents. 
+          This is the industry-standard approach adopted by most organizations.
+        </p>
+
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step" style="flex-wrap: wrap; justify-content: center; gap: 1rem;">
+              <div class="flow-node action" style="min-width: 140px;">
+                <strong>1. Preparation</strong><br>
+                <small>Build capability</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node decision" style="min-width: 140px;">
+                <strong>2. Detection &<br>Analysis</strong><br>
+                <small>Find & investigate</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node action" style="min-width: 140px;">
+                <strong>3. Containment,<br>Eradication,<br>Recovery</strong><br>
+                <small>Stop & fix</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node endpoint" style="min-width: 140px;">
+                <strong>4. Post-Incident<br>Activity</strong><br>
+                <small>Learn & improve</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">1. Preparation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Build the capability to respond effectively before incidents occur.</p>
+              <ul>
+                <li>Develop and maintain IR plan and playbooks</li>
+                <li>Build and train IR team</li>
+                <li>Deploy detection and response tools</li>
+                <li>Establish communication channels and contacts</li>
+                <li>Conduct exercises and tabletops</li>
+                <li>Ensure logging and visibility</li>
+              </ul>
+              <p><em>Preparation is ongoing—not just a one-time effort.</em></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">2. Detection & Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Identify potential incidents and determine their scope and impact.</p>
+              <ul>
+                <li>Monitor alerts from security tools</li>
+                <li>Receive reports from users and external parties</li>
+                <li>Analyze and validate potential incidents</li>
+                <li>Determine scope, impact, and priority</li>
+                <li>Document initial findings</li>
+                <li>Notify appropriate stakeholders</li>
+              </ul>
+              <p><em>This is where SOC analysts spend most of their time.</em></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">3. Containment, Eradication & Recovery</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Stop the incident, remove the threat, and restore operations.</p>
+              <h4>Containment</h4>
+              <ul>
+                <li>Short-term: Immediate actions to stop damage (isolate host, block IP)</li>
+                <li>Long-term: More sustainable controls while preparing remediation</li>
+              </ul>
+              <h4>Eradication</h4>
+              <ul>
+                <li>Remove malware and attacker access</li>
+                <li>Eliminate persistence mechanisms</li>
+                <li>Patch exploited vulnerabilities</li>
+              </ul>
+              <h4>Recovery</h4>
+              <ul>
+                <li>Restore systems to normal operation</li>
+                <li>Validate systems are clean</li>
+                <li>Monitor for recurrence</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">4. Post-Incident Activity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Learn from the incident to improve future response.</p>
+              <ul>
+                <li>Conduct lessons learned meeting</li>
+                <li>Create post-incident report</li>
+                <li>Identify improvement opportunities</li>
+                <li>Update playbooks and procedures</li>
+                <li>Implement preventive measures</li>
+                <li>Share relevant intelligence</li>
+              </ul>
+              <p><em>Often skipped due to time pressure—don't skip it!</em></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="roles">
+        <h2>IR Team Roles</h2>
+        <p>Effective incident response requires clear roles and responsibilities.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Responsibilities</th>
+                <th>Typical Title</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Incident Commander</strong></td>
+                <td>Overall coordination, decision authority, stakeholder communication</td>
+                <td>IR Manager, SOC Manager, CISO</td>
+              </tr>
+              <tr>
+                <td><strong>Lead Analyst</strong></td>
+                <td>Technical investigation lead, coordinate analysis tasks</td>
+                <td>Senior Analyst, IR Lead</td>
+              </tr>
+              <tr>
+                <td><strong>Analysts</strong></td>
+                <td>Investigation, log analysis, evidence collection</td>
+                <td>SOC Analyst, IR Analyst</td>
+              </tr>
+              <tr>
+                <td><strong>Forensics</strong></td>
+                <td>Deep forensic analysis, malware analysis, evidence preservation</td>
+                <td>Forensic Analyst, Malware Analyst</td>
+              </tr>
+              <tr>
+                <td><strong>IT Support</strong></td>
+                <td>System access, containment actions, restoration</td>
+                <td>System Admin, Network Admin</td>
+              </tr>
+              <tr>
+                <td><strong>Communications</strong></td>
+                <td>Internal/external communications, documentation</td>
+                <td>Comms Lead, Scribe</td>
+              </tr>
+              <tr>
+                <td><strong>Legal/Compliance</strong></td>
+                <td>Regulatory guidance, notification requirements, law enforcement</td>
+                <td>General Counsel, Privacy Officer</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">For Smaller Teams</div>
+          <p style="margin: 0;">
+            Not every organization has dedicated IR staff. SOC analysts often fill multiple roles. 
+            The key is having clear ownership—someone must be in charge of each function, even if 
+            one person wears multiple hats.
+          </p>
+        </div>
+      </section>
+
+      <section id="classification">
+        <h2>Incident Classification</h2>
+        <p>Classifying incidents by type and severity ensures appropriate response.</p>
+
+        <h3>By Incident Type</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Examples</th>
+                <th>Primary Playbook</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Malware</strong></td>
+                <td>Virus, Trojan, ransomware, worm, PUA</td>
+                <td><a href="pb-malware.html">Malware Playbook</a></td>
+              </tr>
+              <tr>
+                <td><strong>Unauthorized Access</strong></td>
+                <td>Account compromise, privilege escalation</td>
+                <td><a href="pb-account-compromise.html">Account Compromise</a></td>
+              </tr>
+              <tr>
+                <td><strong>Phishing/Social Engineering</strong></td>
+                <td>Credential phishing, BEC, pretexting</td>
+                <td><a href="pb-phishing.html">Phishing Playbook</a></td>
+              </tr>
+              <tr>
+                <td><strong>Data Breach</strong></td>
+                <td>Data theft, accidental exposure, insider threat</td>
+                <td><a href="pb-data-exfiltration.html">Data Exfiltration</a></td>
+              </tr>
+              <tr>
+                <td><strong>Denial of Service</strong></td>
+                <td>DDoS, application DoS, resource exhaustion</td>
+                <td>DoS Playbook</td>
+              </tr>
+              <tr>
+                <td><strong>Web Attack</strong></td>
+                <td>SQL injection, XSS, web shell</td>
+                <td><a href="pb-malware.html">Web Attack Playbook</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>By Severity</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Impact</th>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">Critical (SEV-1)</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Critical systems unavailable</li>
+                    <li>Active data exfiltration</li>
+                    <li>Ransomware spreading</li>
+                    <li>Significant financial/reputational impact</li>
+                  </ul>
+                </td>
+                <td>All hands, executive notification, potential crisis management</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">High (SEV-2)</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Confirmed compromise</li>
+                    <li>Sensitive data at risk</li>
+                    <li>Production system affected</li>
+                  </ul>
+                </td>
+                <td>IR team engaged, management notification</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">Medium (SEV-3)</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Potential compromise</li>
+                    <li>Non-critical system affected</li>
+                    <li>Limited impact</li>
+                  </ul>
+                </td>
+                <td>SOC handles with escalation path</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">Low (SEV-4)</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Minor policy violation</li>
+                    <li>Blocked threat</li>
+                    <li>No significant impact</li>
+                  </ul>
+                </td>
+                <td>SOC handles during normal operations</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="declaration">
+        <h2>When to Declare an Incident</h2>
+        <p>Not every alert becomes an incident. Use these criteria to determine when formal incident declaration is warranted.</p>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Declare an Incident When:</div>
+          <ul style="margin: 0;">
+            <li>Confirmed malware execution on systems</li>
+            <li>Confirmed unauthorized access to systems or data</li>
+            <li>Evidence of data exfiltration or theft</li>
+            <li>Active attack in progress</li>
+            <li>Compromise of privileged accounts</li>
+            <li>Multiple systems or users affected</li>
+            <li>Regulatory notification may be required</li>
+            <li>Potential business impact exceeds threshold</li>
+          </ul>
+        </div>
+
+        <div class="callout callout-success">
+          <div class="callout-title">Likely NOT an Incident:</div>
+          <ul style="margin: 0;">
+            <li>Single blocked malware (no execution)</li>
+            <li>Phishing email reported but no user interaction</li>
+            <li>Failed attack attempts (blocked by controls)</li>
+            <li>Minor policy violations with no security impact</li>
+            <li>False positives after investigation</li>
+          </ul>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">When in Doubt</div>
+          <p style="margin: 0;">
+            If you're unsure whether to declare an incident, escalate to your lead or manager. 
+            It's better to declare and downgrade than to miss a real incident. You can always 
+            close an incident as "no impact" after investigation confirms it's benign.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Events are observable occurrences; incidents are security violations requiring response</li>
+          <li>Follow the NIST lifecycle: Prepare → Detect/Analyze → Contain/Eradicate/Recover → Learn</li>
+          <li>Clear roles and responsibilities are essential for effective response</li>
+          <li>Classify incidents by type and severity to ensure appropriate response</li>
+          <li>When in doubt about declaring an incident, escalate</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#ir" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">IR Section</span>
+          </a>
+          <a href="ir-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">IR Preparation</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

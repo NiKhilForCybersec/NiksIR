@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Sources Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Essential log sources for SOC analysts: what logs to collect, what they contain, and how to use them for investigations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Sentinel Overview</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> Incidents & Alerts</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Hunting</a>
+          <a href="log-sources.html" class="nav-link active"><span class="nav-link-icon">📋</span> Log Sources</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Events</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Log Sources</span>
+        </nav>
+        <h1>Log Sources Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 3.5</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#priority">Log Priority Matrix</a></li>
+          <li><a href="#endpoint">Endpoint Logs</a></li>
+          <li><a href="#network">Network Logs</a></li>
+          <li><a href="#identity">Identity Logs</a></li>
+          <li><a href="#application">Application Logs</a></li>
+          <li><a href="#cloud">Cloud Logs</a></li>
+          <li><a href="#gaps">Identifying Log Gaps</a></li>
+        </ul>
+      </div>
+
+      <section id="priority">
+        <h2>Log Priority Matrix</h2>
+        <p>Not all logs are equally valuable. Focus collection efforts on high-value sources first.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Log Sources</th>
+                <th>Why Essential</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">Critical</span></td>
+                <td>EDR telemetry, Authentication logs, Firewall deny logs</td>
+                <td>Core visibility for threat detection</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">High</span></td>
+                <td>DNS logs, Proxy/web logs, Email gateway, VPN logs</td>
+                <td>Network visibility and lateral movement</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">Medium</span></td>
+                <td>Windows Security events, Cloud audit logs, DHCP</td>
+                <td>Context and attribution</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">Lower</span></td>
+                <td>Application logs, Database logs, Printer logs</td>
+                <td>Specific use cases, compliance</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Coverage vs. Cost</div>
+          <p style="margin: 0;">
+            SIEM licensing is often based on data volume. Prioritize high-value logs and consider 
+            filtering or sampling verbose logs. More data isn't always better if it's noise.
+          </p>
+        </div>
+      </section>
+
+      <section id="endpoint">
+        <h2>Endpoint Logs</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">EDR Telemetry</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>The richest source of endpoint visibility. Captures process, file, network, and registry activity.</p>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Data Type</th><th>Use Case</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Process creation</td><td>Execution analysis, parent-child chains</td></tr>
+                    <tr><td>Network connections</td><td>C2 detection, lateral movement</td></tr>
+                    <tr><td>File events</td><td>Malware drops, data staging</td></tr>
+                    <tr><td>Registry changes</td><td>Persistence detection</td></tr>
+                    <tr><td>DLL loads</td><td>Injection, hijacking</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-muted">Examples: Microsoft Defender for Endpoint, CrowdStrike, SentinelOne, Carbon Black</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Windows Security Events</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Native Windows logging. Essential if no EDR or for additional context.</p>
+              <h4>Key Event IDs:</h4>
+              <ul>
+                <li><strong>4624/4625:</strong> Logon success/failure</li>
+                <li><strong>4688:</strong> Process creation (with command line if enabled)</li>
+                <li><strong>4672:</strong> Special privileges assigned</li>
+                <li><strong>4720/4726:</strong> User account created/deleted</li>
+                <li><strong>7045:</strong> Service installed</li>
+              </ul>
+              <p><a href="windows-events.html">See full Windows Event ID reference →</a></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Sysmon</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Free Microsoft tool that enhances Windows logging significantly.</p>
+              <h4>Key Sysmon Events:</h4>
+              <ul>
+                <li><strong>Event 1:</strong> Process creation (with hashes, parent info)</li>
+                <li><strong>Event 3:</strong> Network connection</li>
+                <li><strong>Event 8:</strong> CreateRemoteThread (injection)</li>
+                <li><strong>Event 10:</strong> Process access (credential theft)</li>
+                <li><strong>Event 11:</strong> File creation</li>
+                <li><strong>Event 22:</strong> DNS query</li>
+              </ul>
+              <p class="text-muted">Highly recommended for environments without EDR</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">PowerShell Logging</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Critical for detecting PowerShell-based attacks (very common).</p>
+              <h4>Enable These:</h4>
+              <ul>
+                <li><strong>Module Logging (4103):</strong> Detailed command logging</li>
+                <li><strong>Script Block Logging (4104):</strong> Full script content</li>
+                <li><strong>Transcription:</strong> Full session recording to file</li>
+              </ul>
+              <p class="text-muted">Logs obfuscated scripts in deobfuscated form!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="network">
+        <h2>Network Logs</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What It Contains</th>
+                <th>Key Use Cases</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Firewall</strong></td>
+                <td>Allow/deny decisions, source/dest IP, ports</td>
+                <td>Perimeter visibility, blocked attacks, C2 detection</td>
+              </tr>
+              <tr>
+                <td><strong>DNS</strong></td>
+                <td>Query/response, domain names, client IPs</td>
+                <td>C2 detection, DNS tunneling, malware domains</td>
+              </tr>
+              <tr>
+                <td><strong>Web Proxy</strong></td>
+                <td>URLs, user agent, response codes, bytes</td>
+                <td>Web-based attacks, C2, data exfiltration</td>
+              </tr>
+              <tr>
+                <td><strong>VPN</strong></td>
+                <td>User authentication, source IPs, session duration</td>
+                <td>Unauthorized access, impossible travel</td>
+              </tr>
+              <tr>
+                <td><strong>NetFlow/IPFIX</strong></td>
+                <td>Traffic metadata (src/dst, bytes, packets)</td>
+                <td>Baseline deviations, lateral movement, exfil</td>
+              </tr>
+              <tr>
+                <td><strong>IDS/IPS</strong></td>
+                <td>Signature matches, anomalies</td>
+                <td>Known attack patterns, exploitation attempts</td>
+              </tr>
+              <tr>
+                <td><strong>DHCP</strong></td>
+                <td>IP-to-MAC mappings, lease times</td>
+                <td>Asset identification, attribution</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">DNS is Gold</div>
+          <p style="margin: 0;">
+            DNS logs are one of the highest-value log sources. Nearly all network activity involves DNS, 
+            malware must resolve C2 domains, and DNS tunneling is a common exfiltration method.
+          </p>
+        </div>
+      </section>
+
+      <section id="identity">
+        <h2>Identity & Authentication Logs</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What It Contains</th>
+                <th>Key Use Cases</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Azure AD / Entra ID</strong></td>
+                <td>Sign-ins, audit logs, risky users/sign-ins</td>
+                <td>Cloud auth attacks, impossible travel, brute force</td>
+              </tr>
+              <tr>
+                <td><strong>Active Directory (DC)</strong></td>
+                <td>Kerberos, NTLM, account changes</td>
+                <td>On-prem auth, Kerberoasting, Golden Ticket</td>
+              </tr>
+              <tr>
+                <td><strong>RADIUS/NPS</strong></td>
+                <td>Network authentication (VPN, WiFi, NAC)</td>
+                <td>Network access control monitoring</td>
+              </tr>
+              <tr>
+                <td><strong>MFA Provider</strong></td>
+                <td>MFA prompts, approvals, denials</td>
+                <td>MFA fatigue attacks, bypass attempts</td>
+              </tr>
+              <tr>
+                <td><strong>PAM (Privileged Access)</strong></td>
+                <td>Privileged session recordings, checkouts</td>
+                <td>Privileged access monitoring</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="application">
+        <h2>Application & Security Tool Logs</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Email Security</h4>
+            <ul>
+              <li>Inbound/outbound email flow</li>
+              <li>Spam/phishing detections</li>
+              <li>Attachment analysis results</li>
+              <li>URL clicks and rewrites</li>
+            </ul>
+            <p class="text-muted">O365/Exchange, Proofpoint, Mimecast</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Web Applications</h4>
+            <ul>
+              <li>Access logs (who accessed what)</li>
+              <li>Error logs</li>
+              <li>WAF blocks</li>
+              <li>API access patterns</li>
+            </ul>
+            <p class="text-muted">IIS, Apache, Nginx, AWS ALB</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Database</h4>
+            <ul>
+              <li>Query logs (especially privileged)</li>
+              <li>Authentication events</li>
+              <li>Schema changes</li>
+              <li>Data access patterns</li>
+            </ul>
+            <p class="text-muted">SQL Server, Oracle, MySQL, PostgreSQL</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">DLP</h4>
+            <ul>
+              <li>Policy matches</li>
+              <li>Sensitive data movement</li>
+              <li>Block/alert actions</li>
+              <li>User violations</li>
+            </ul>
+            <p class="text-muted">Microsoft Purview, Symantec, Digital Guardian</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cloud">
+        <h2>Cloud Logs</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">AWS</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Log</th><th>Purpose</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>CloudTrail</strong></td><td>API activity (control plane) - essential</td></tr>
+                    <tr><td><strong>VPC Flow Logs</strong></td><td>Network traffic metadata</td></tr>
+                    <tr><td><strong>GuardDuty</strong></td><td>Threat detection findings</td></tr>
+                    <tr><td><strong>S3 Access Logs</strong></td><td>Object-level access</td></tr>
+                    <tr><td><strong>CloudWatch Logs</strong></td><td>Application/system logs</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Azure</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Log</th><th>Purpose</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>Activity Log</strong></td><td>Subscription-level operations</td></tr>
+                    <tr><td><strong>Sign-in Logs</strong></td><td>Azure AD authentication</td></tr>
+                    <tr><td><strong>Audit Logs</strong></td><td>Azure AD changes</td></tr>
+                    <tr><td><strong>NSG Flow Logs</strong></td><td>Network traffic</td></tr>
+                    <tr><td><strong>Diagnostic Logs</strong></td><td>Resource-specific logs</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Microsoft 365</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Log</th><th>Purpose</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>Unified Audit Log</strong></td><td>All M365 activity</td></tr>
+                    <tr><td><strong>Exchange Message Trace</strong></td><td>Email flow</td></tr>
+                    <tr><td><strong>SharePoint/OneDrive</strong></td><td>File access and sharing</td></tr>
+                    <tr><td><strong>Teams</strong></td><td>Collaboration activity</td></tr>
+                    <tr><td><strong>Defender Alerts</strong></td><td>Security detections</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="gaps">
+        <h2>Identifying Log Gaps</h2>
+        <p>Ask these questions to find visibility gaps:</p>
+
+        <ul class="checklist">
+          <li>Can I see who logged into any system? (Authentication)</li>
+          <li>Can I see what processes ran on endpoints? (Execution)</li>
+          <li>Can I see what network connections were made? (Network)</li>
+          <li>Can I see what files were accessed or transferred? (Data)</li>
+          <li>Can I correlate activity to a specific user? (Attribution)</li>
+          <li>Can I see activity on all critical assets? (Coverage)</li>
+          <li>Can I detect known attack patterns? (Detection)</li>
+          <li>Do I have logs going back far enough? (Retention)</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Common Gaps</div>
+          <ul style="margin: 0;">
+            <li><strong>East-West traffic:</strong> Internal network flows often unmonitored</li>
+            <li><strong>Linux systems:</strong> Often less logging than Windows</li>
+            <li><strong>Cloud infrastructure:</strong> New cloud services may lack logging</li>
+            <li><strong>OT/IoT devices:</strong> Limited or no logging capability</li>
+            <li><strong>Encrypted traffic:</strong> TLS inspection gaps</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Prioritize high-value logs: EDR, auth, firewall, DNS</li>
+          <li>EDR telemetry provides the richest endpoint visibility</li>
+          <li>DNS logs are underrated—collect them</li>
+          <li>Cloud logs require explicit enablement—verify they're on</li>
+          <li>Regularly assess log gaps against your threat model</li>
+          <li>Balance coverage with cost—filter verbose, low-value logs</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="threat-hunting.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Hunting</span>
+          </a>
+          <a href="windows-events.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Windows Events</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

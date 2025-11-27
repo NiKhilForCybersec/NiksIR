@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Forensics | SOC Analyst Guide</title>
+  <meta name="description" content="Network forensics techniques: packet capture analysis, protocol investigation, and extracting evidence from network traffic.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Fundamentals</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="network-forensics.html" class="nav-link active"><span class="nav-link-icon">🔬</span> Network Forensics</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Network Forensics</span>
+        </nav>
+        <h1>Network Forensics</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 5.8</span>
+          <span class="meta-item">~25 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#fundamentals">Forensics Fundamentals</a></li>
+          <li><a href="#capture">Packet Capture</a></li>
+          <li><a href="#wireshark">Wireshark Analysis</a></li>
+          <li><a href="#protocols">Protocol Analysis</a></li>
+          <li><a href="#extraction">Evidence Extraction</a></li>
+          <li><a href="#malware">Malware Traffic Analysis</a></li>
+        </ul>
+      </div>
+
+      <section id="fundamentals">
+        <h2>Forensics Fundamentals</h2>
+        <p>
+          Network forensics captures and analyzes network traffic to investigate 
+          security incidents, reconstruct attack timelines, and extract evidence.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>When to Use Network Forensics</h4>
+            <ul>
+              <li>Investigating C2 communications</li>
+              <li>Analyzing data exfiltration</li>
+              <li>Reconstructing attack timeline</li>
+              <li>Identifying malware behavior</li>
+              <li>Legal evidence collection</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Data Sources</h4>
+            <ul>
+              <li>Full packet capture (PCAP)</li>
+              <li>NetFlow/IPFIX metadata</li>
+              <li>Zeek/Bro connection logs</li>
+              <li>Firewall/proxy logs</li>
+              <li>DNS query logs</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>PCAP vs Flow Data</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Aspect</th>
+                <th>Full Packet Capture</th>
+                <th>Flow Data (NetFlow)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Content</strong></td>
+                <td>Complete packet including payload</td>
+                <td>Metadata only (IPs, ports, bytes)</td>
+              </tr>
+              <tr>
+                <td><strong>Storage</strong></td>
+                <td>Very large (~1GB per minute at 1Gbps)</td>
+                <td>Small (minutes per GB)</td>
+              </tr>
+              <tr>
+                <td><strong>Retention</strong></td>
+                <td>Hours to days typically</td>
+                <td>Months to years</td>
+              </tr>
+              <tr>
+                <td><strong>Analysis</strong></td>
+                <td>Deep inspection, file extraction</td>
+                <td>Traffic patterns, volume analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Use Case</strong></td>
+                <td>Incident investigation, malware analysis</td>
+                <td>Baseline, anomaly detection, trending</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="capture">
+        <h2>Packet Capture</h2>
+
+        <h3>Capture Methods</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Description</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>SPAN/Mirror Port</strong></td>
+                <td>Switch copies traffic to monitoring port</td>
+                <td>Passive capture at network core</td>
+              </tr>
+              <tr>
+                <td><strong>Network TAP</strong></td>
+                <td>Hardware device inline with traffic</td>
+                <td>Full-duplex, no packet loss</td>
+              </tr>
+              <tr>
+                <td><strong>Host-based</strong></td>
+                <td>Capture on endpoint (tcpdump, Wireshark)</td>
+                <td>Specific host investigation</td>
+              </tr>
+              <tr>
+                <td><strong>Firewall/Proxy</strong></td>
+                <td>Capture at security device</td>
+                <td>Perimeter traffic</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>tcpdump Commands</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">tcpdump</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);"># Capture to file</span>
+tcpdump -i eth0 -w capture.pcap
+
+<span style="color: var(--accent-cyan);"># Capture specific host</span>
+tcpdump -i eth0 host 192.168.1.100 -w host.pcap
+
+<span style="color: var(--accent-cyan);"># Capture specific port</span>
+tcpdump -i eth0 port 443 -w https.pcap
+
+<span style="color: var(--accent-cyan);"># Capture with filter and limit</span>
+tcpdump -i eth0 'tcp port 80' -c 1000 -w web.pcap
+
+<span style="color: var(--accent-cyan);"># Capture between two hosts</span>
+tcpdump -i eth0 host 10.0.0.1 and host 10.0.0.2 -w conversation.pcap
+
+<span style="color: var(--accent-cyan);"># Read and display PCAP</span>
+tcpdump -r capture.pcap -nn
+
+<span style="color: var(--accent-cyan);"># Show packet contents (ASCII)</span>
+tcpdump -r capture.pcap -A
+
+<span style="color: var(--accent-cyan);"># Show packet contents (hex)</span>
+tcpdump -r capture.pcap -X</pre>
+          </div>
+        </div>
+
+        <h3>BPF Filter Syntax</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Filter</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>host 192.168.1.1</code></td>
+                <td>Traffic to/from IP</td>
+              </tr>
+              <tr>
+                <td><code>src host 10.0.0.1</code></td>
+                <td>Traffic from IP</td>
+              </tr>
+              <tr>
+                <td><code>dst host 10.0.0.1</code></td>
+                <td>Traffic to IP</td>
+              </tr>
+              <tr>
+                <td><code>port 80</code></td>
+                <td>Traffic on port (either direction)</td>
+              </tr>
+              <tr>
+                <td><code>tcp</code></td>
+                <td>TCP traffic only</td>
+              </tr>
+              <tr>
+                <td><code>udp port 53</code></td>
+                <td>DNS traffic</td>
+              </tr>
+              <tr>
+                <td><code>net 192.168.0.0/16</code></td>
+                <td>Traffic to/from subnet</td>
+              </tr>
+              <tr>
+                <td><code>not port 22</code></td>
+                <td>Exclude SSH</td>
+              </tr>
+              <tr>
+                <td><code>host A and host B</code></td>
+                <td>Conversation between A and B</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="wireshark">
+        <h2>Wireshark Analysis</h2>
+
+        <h3>Essential Display Filters</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Basic Filters</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <tr>
+                    <td><code>ip.addr == 192.168.1.1</code></td>
+                    <td>Traffic to/from IP</td>
+                  </tr>
+                  <tr>
+                    <td><code>ip.src == 10.0.0.1</code></td>
+                    <td>Traffic from IP</td>
+                  </tr>
+                  <tr>
+                    <td><code>tcp.port == 443</code></td>
+                    <td>HTTPS traffic</td>
+                  </tr>
+                  <tr>
+                    <td><code>tcp.flags.syn == 1</code></td>
+                    <td>SYN packets (connection starts)</td>
+                  </tr>
+                  <tr>
+                    <td><code>tcp.flags.reset == 1</code></td>
+                    <td>RST packets (connection resets)</td>
+                  </tr>
+                  <tr>
+                    <td><code>frame.time >= "2024-01-15 10:00:00"</code></td>
+                    <td>Time-based filter</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">HTTP Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <tr>
+                    <td><code>http</code></td>
+                    <td>All HTTP traffic</td>
+                  </tr>
+                  <tr>
+                    <td><code>http.request</code></td>
+                    <td>HTTP requests only</td>
+                  </tr>
+                  <tr>
+                    <td><code>http.response</code></td>
+                    <td>HTTP responses only</td>
+                  </tr>
+                  <tr>
+                    <td><code>http.request.method == "POST"</code></td>
+                    <td>POST requests (data uploads)</td>
+                  </tr>
+                  <tr>
+                    <td><code>http.host contains "evil"</code></td>
+                    <td>Requests to domains with "evil"</td>
+                  </tr>
+                  <tr>
+                    <td><code>http.request.uri contains ".exe"</code></td>
+                    <td>Executable downloads</td>
+                  </tr>
+                  <tr>
+                    <td><code>http.response.code == 200</code></td>
+                    <td>Successful responses</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">DNS Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <tr>
+                    <td><code>dns</code></td>
+                    <td>All DNS traffic</td>
+                  </tr>
+                  <tr>
+                    <td><code>dns.qry.name contains "evil"</code></td>
+                    <td>Queries for suspicious domains</td>
+                  </tr>
+                  <tr>
+                    <td><code>dns.qry.type == 1</code></td>
+                    <td>A record queries</td>
+                  </tr>
+                  <tr>
+                    <td><code>dns.qry.type == 16</code></td>
+                    <td>TXT record queries (may be tunneling)</td>
+                  </tr>
+                  <tr>
+                    <td><code>dns.flags.response == 1</code></td>
+                    <td>DNS responses</td>
+                  </tr>
+                  <tr>
+                    <td><code>dns.count.answers > 10</code></td>
+                    <td>Large DNS responses</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">TLS/SSL Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <tr>
+                    <td><code>tls</code></td>
+                    <td>All TLS traffic</td>
+                  </tr>
+                  <tr>
+                    <td><code>tls.handshake</code></td>
+                    <td>TLS handshakes</td>
+                  </tr>
+                  <tr>
+                    <td><code>tls.handshake.type == 1</code></td>
+                    <td>Client Hello</td>
+                  </tr>
+                  <tr>
+                    <td><code>tls.handshake.extensions_server_name contains "evil"</code></td>
+                    <td>SNI containing string</td>
+                  </tr>
+                  <tr>
+                    <td><code>x509af.serialNumber</code></td>
+                    <td>Certificate serial numbers</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Suspicious Traffic</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <tr>
+                    <td><code>tcp.analysis.retransmission</code></td>
+                    <td>Retransmissions (network issues)</td>
+                  </tr>
+                  <tr>
+                    <td><code>tcp.analysis.zero_window</code></td>
+                    <td>Zero window (receiver overwhelmed)</td>
+                  </tr>
+                  <tr>
+                    <td><code>icmp.type == 8</code></td>
+                    <td>ICMP echo requests (ping)</td>
+                  </tr>
+                  <tr>
+                    <td><code>tcp.port == 4444</code></td>
+                    <td>Common Metasploit port</td>
+                  </tr>
+                  <tr>
+                    <td><code>data.len > 1000</code></td>
+                    <td>Large data payloads</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Wireshark Features for Forensics</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Menu Location</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Follow Stream</strong></td>
+                <td>Right-click → Follow → TCP/HTTP Stream</td>
+                <td>Reconstruct full conversation</td>
+              </tr>
+              <tr>
+                <td><strong>Export Objects</strong></td>
+                <td>File → Export Objects → HTTP/SMB/etc.</td>
+                <td>Extract transferred files</td>
+              </tr>
+              <tr>
+                <td><strong>Statistics → Conversations</strong></td>
+                <td>Statistics → Conversations</td>
+                <td>See all communication pairs</td>
+              </tr>
+              <tr>
+                <td><strong>Statistics → Endpoints</strong></td>
+                <td>Statistics → Endpoints</td>
+                <td>List all IPs/MACs in capture</td>
+              </tr>
+              <tr>
+                <td><strong>Protocol Hierarchy</strong></td>
+                <td>Statistics → Protocol Hierarchy</td>
+                <td>Overview of protocols in capture</td>
+              </tr>
+              <tr>
+                <td><strong>IO Graph</strong></td>
+                <td>Statistics → I/O Graph</td>
+                <td>Visualize traffic over time</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="protocols">
+        <h2>Protocol Analysis</h2>
+
+        <h3>HTTP Investigation</h3>
+        <div class="callout callout-info">
+          <div class="callout-title">What to Look For in HTTP</div>
+          <ul style="margin: 0;">
+            <li><strong>User-Agent:</strong> Unusual or known-malicious user agents</li>
+            <li><strong>POST data:</strong> Encoded/encrypted payloads, credential theft</li>
+            <li><strong>URLs:</strong> Downloads of executables, scripts, encoded paths</li>
+            <li><strong>Response codes:</strong> 200s to suspicious domains, 404 beaconing</li>
+            <li><strong>Headers:</strong> Custom headers used for C2 communication</li>
+          </ul>
+        </div>
+
+        <h3>DNS Investigation</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th>Possible Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Very long subdomain names</td>
+                <td>DNS tunneling (data in DNS)</td>
+              </tr>
+              <tr>
+                <td>High volume TXT queries</td>
+                <td>DNS tunneling or C2</td>
+              </tr>
+              <tr>
+                <td>Queries to non-standard TLDs</td>
+                <td>Malicious infrastructure</td>
+              </tr>
+              <tr>
+                <td>Queries to IPs instead of domains</td>
+                <td>Bypassing DNS logging</td>
+              </tr>
+              <tr>
+                <td>High entropy in subdomains</td>
+                <td>DGA (Domain Generation Algorithm)</td>
+              </tr>
+              <tr>
+                <td>NXDOMAIN floods</td>
+                <td>DGA beaconing attempts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>SMB Investigation</h3>
+        <div class="callout callout-warning">
+          <div class="callout-title">SMB Red Flags</div>
+          <ul style="margin: 0;">
+            <li>SMB connections between workstations (lateral movement)</li>
+            <li>Access to ADMIN$ or C$ shares</li>
+            <li>PsExec-style named pipe creation</li>
+            <li>Large file transfers via SMB</li>
+            <li>SMBv1 usage (vulnerable, should be disabled)</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="extraction">
+        <h2>Evidence Extraction</h2>
+
+        <h3>File Extraction with Wireshark</h3>
+        <ol>
+          <li>Open PCAP in Wireshark</li>
+          <li>Go to <strong>File → Export Objects</strong></li>
+          <li>Select protocol (HTTP, SMB, IMF, TFTP)</li>
+          <li>Browse extracted files</li>
+          <li>Save suspicious files for analysis</li>
+        </ol>
+
+        <h3>Manual Stream Extraction</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">tshark extraction</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);"># Extract HTTP objects</span>
+tshark -r capture.pcap --export-objects http,./extracted/
+
+<span style="color: var(--accent-cyan);"># Extract SMB objects</span>
+tshark -r capture.pcap --export-objects smb,./extracted/
+
+<span style="color: var(--accent-cyan);"># Get all HTTP requests</span>
+tshark -r capture.pcap -Y "http.request" -T fields \
+  -e frame.time -e ip.src -e http.host -e http.request.uri
+
+<span style="color: var(--accent-cyan);"># Get all DNS queries</span>
+tshark -r capture.pcap -Y "dns.flags.response == 0" -T fields \
+  -e frame.time -e ip.src -e dns.qry.name</pre>
+          </div>
+        </div>
+
+        <h3>Zeek for Automated Analysis</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Zeek analysis</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);"># Process PCAP with Zeek</span>
+zeek -r capture.pcap
+
+<span style="color: var(--accent-cyan);"># Output files created:</span>
+conn.log      # All connections
+http.log      # HTTP requests/responses
+dns.log       # DNS queries
+files.log     # File transfers detected
+ssl.log       # TLS/SSL connections
+weird.log     # Anomalies detected
+
+<span style="color: var(--accent-cyan);"># Query Zeek logs</span>
+cat conn.log | zeek-cut ts id.orig_h id.resp_h id.resp_p proto service
+cat http.log | zeek-cut ts host uri user_agent
+cat dns.log | zeek-cut ts query answers</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="malware">
+        <h2>Malware Traffic Analysis</h2>
+
+        <h3>Common Malware Traffic Patterns</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">C2 Beaconing</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Characteristics:</h4>
+              <ul>
+                <li>Regular interval connections (jitter may be added)</li>
+                <li>Consistent destination (IP or domain)</li>
+                <li>Similar request sizes</li>
+                <li>Often uses HTTP/HTTPS to blend in</li>
+              </ul>
+              <h4>Wireshark Filter:</h4>
+              <code>http.request && ip.dst == [suspicious_ip]</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Data Exfiltration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Characteristics:</h4>
+              <ul>
+                <li>Large outbound transfers</li>
+                <li>POST requests with large bodies</li>
+                <li>DNS tunneling (encoded data in queries)</li>
+                <li>Uploads to cloud storage</li>
+              </ul>
+              <h4>Wireshark Filter:</h4>
+              <code>http.request.method == "POST" && tcp.len > 1000</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Lateral Movement</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Characteristics:</h4>
+              <ul>
+                <li>SMB traffic between workstations</li>
+                <li>WinRM/PSRemoting connections</li>
+                <li>RDP to unusual systems</li>
+                <li>Pass-the-hash authentication patterns</li>
+              </ul>
+              <h4>Wireshark Filter:</h4>
+              <code>smb || tcp.port == 5985 || tcp.port == 3389</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Payload Download</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Characteristics:</h4>
+              <ul>
+                <li>Executable downloads (.exe, .dll, .ps1)</li>
+                <li>Encoded/obfuscated payloads</li>
+                <li>Downloads from unusual domains</li>
+                <li>certutil, PowerShell, bitsadmin user-agents</li>
+              </ul>
+              <h4>Wireshark Filter:</h4>
+              <code>http.request.uri contains ".exe" || http.request.uri contains ".dll"</code>
+            </div>
+          </div>
+        </div>
+
+        <h3>Investigation Checklist</h3>
+        <ul class="checklist">
+          <li>Identify source and destination of suspicious traffic</li>
+          <li>Determine timeline of communications</li>
+          <li>Extract any transferred files</li>
+          <li>Analyze protocols and ports used</li>
+          <li>Look for patterns (beaconing intervals, data volumes)</li>
+          <li>Check TLS certificates for anomalies</li>
+          <li>Correlate with endpoint logs</li>
+          <li>Document all findings with timestamps</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>PCAP provides full content; flow data provides long-term metadata</li>
+          <li>tcpdump captures; Wireshark analyzes; Zeek automates parsing</li>
+          <li>Follow TCP Stream to see complete conversations</li>
+          <li>Export Objects to extract transferred files</li>
+          <li>Look for beaconing patterns: regular intervals, consistent destinations</li>
+          <li>DNS tunneling: long subdomains, high TXT queries, high entropy</li>
+          <li>SMB between workstations often indicates lateral movement</li>
+          <li>Always correlate network findings with endpoint telemetry</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="traffic-analysis.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Traffic Analysis</span>
+          </a>
+          <a href="ids-ips.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">IDS/IPS</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eradication | SOC Analyst Guide</title>
+  <meta name="description" content="Incident response eradication phase: removing threats, cleaning systems, and eliminating persistence mechanisms.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link active"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Eradication</span>
+        </nav>
+        <h1>Eradication</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 10.4</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#approach">Clean vs Rebuild</a></li>
+          <li><a href="#persistence">Persistence Removal</a></li>
+          <li><a href="#credentials">Credential Reset</a></li>
+          <li><a href="#verification">Verification</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Eradication Overview</h2>
+        <p>
+          Eradication is the process of removing the threat from the environment. This includes 
+          eliminating malware, removing persistence mechanisms, and ensuring the attacker can't 
+          regain access.
+        </p>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Complete Containment First</div>
+          <p style="margin: 0;">
+            Before eradication, ensure the threat is fully contained. Eradicating from one system 
+            while the attacker still has access to others may alert them and cause escalation.
+          </p>
+        </div>
+
+        <h3>Eradication Goals</h3>
+        <ul class="checklist">
+          <li>Remove all malware and tools</li>
+          <li>Eliminate all persistence mechanisms</li>
+          <li>Reset compromised credentials</li>
+          <li>Close the initial access vector</li>
+          <li>Verify threat is eliminated</li>
+        </ul>
+      </section>
+
+      <section id="approach">
+        <h2>Clean vs Rebuild</h2>
+        <p>
+          The fundamental decision: attempt to clean the system or rebuild from scratch?
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Clean in Place</h4>
+            <p><strong>When to use:</strong></p>
+            <ul>
+              <li>Commodity malware (known, well-documented)</li>
+              <li>Single persistence mechanism identified</li>
+              <li>Confident in complete understanding</li>
+              <li>System is critical and hard to rebuild</li>
+            </ul>
+            <p><strong>Risks:</strong> May miss hidden persistence</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Rebuild/Reimage</h4>
+            <p><strong>When to use:</strong></p>
+            <ul>
+              <li>APT or sophisticated attacker</li>
+              <li>Rootkit suspected</li>
+              <li>Unclear scope of compromise</li>
+              <li>Domain controller or critical server</li>
+              <li>Ransomware</li>
+            </ul>
+            <p><strong>Benefit:</strong> Guaranteed clean start</p>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">When in Doubt, Rebuild</div>
+          <p style="margin: 0;">
+            If there's any uncertainty about the extent of compromise, rebuilding is safer. 
+            Advanced attackers use multiple persistence mechanisms and may have hidden backdoors.
+          </p>
+        </div>
+      </section>
+
+      <section id="persistence">
+        <h2>Persistence Removal</h2>
+
+        <h3>Common Persistence Mechanisms</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Registry Run Keys</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Locations:</strong></p>
+              <ul>
+                <li>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</li>
+                <li>HKLM\Software\Microsoft\Windows\CurrentVersion\Run</li>
+                <li>*\RunOnce, *\RunServices, *\RunServicesOnce</li>
+              </ul>
+              <p><strong>Removal:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+# Check Run keys
+reg query "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+
+# Delete specific value
+reg delete "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "MaliciousEntry" /f</pre>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Scheduled Tasks</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Check:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+# List all scheduled tasks
+schtasks /query /fo LIST /v
+
+# Check specific task
+schtasks /query /tn "MaliciousTask" /fo LIST /v</pre>
+              <p><strong>Remove:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+schtasks /delete /tn "MaliciousTask" /f</pre>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Services</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Check:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+# List services
+sc query type= service state= all
+
+# Check specific service
+sc qc "MaliciousService"</pre>
+              <p><strong>Remove:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+# Stop service
+sc stop "MaliciousService"
+
+# Delete service
+sc delete "MaliciousService"</pre>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Startup Folder</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Locations:</strong></p>
+              <ul>
+                <li>%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup (User)</li>
+                <li>%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp (All users)</li>
+              </ul>
+              <p><strong>Check and remove malicious files from these directories.</strong></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">WMI Event Subscriptions</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Check:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+# List WMI subscriptions (PowerShell)
+Get-WMIObject -Namespace root\subscription -Class __EventFilter
+Get-WMIObject -Namespace root\subscription -Class __EventConsumer
+Get-WMIObject -Namespace root\subscription -Class __FilterToConsumerBinding</pre>
+              <p><strong>Remove:</strong></p>
+              <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; overflow-x: auto;">
+# Remove specific subscription
+Get-WMIObject -Namespace root\subscription -Class __EventFilter | 
+    Where-Object { $_.Name -eq "MaliciousFilter" } | Remove-WMIObject</pre>
+            </div>
+          </div>
+        </div>
+
+        <h3>Persistence Checklist</h3>
+        <ul class="checklist">
+          <li>Registry Run/RunOnce keys</li>
+          <li>Scheduled tasks</li>
+          <li>Services</li>
+          <li>Startup folder items</li>
+          <li>WMI event subscriptions</li>
+          <li>Browser extensions</li>
+          <li>Office add-ins</li>
+          <li>DLL hijacking paths</li>
+          <li>COM object hijacking</li>
+          <li>AppInit_DLLs</li>
+        </ul>
+      </section>
+
+      <section id="credentials">
+        <h2>Credential Reset</h2>
+        <p>
+          Any credentials that may have been exposed must be reset. The scope depends on what 
+          the attacker had access to.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Credentials to Reset</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Single user workstation compromised</td>
+                <td>That user's password, any saved passwords</td>
+              </tr>
+              <tr>
+                <td>Admin workstation compromised</td>
+                <td>All admin accounts used from that machine</td>
+              </tr>
+              <tr>
+                <td>Lateral movement detected</td>
+                <td>All accounts used on compromised systems</td>
+              </tr>
+              <tr>
+                <td>Domain controller compromised</td>
+                <td>KRBTGT (twice), all privileged accounts, potentially all accounts</td>
+              </tr>
+              <tr>
+                <td>Credential dumping confirmed</td>
+                <td>All accounts that logged into compromised systems</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">KRBTGT Reset Procedure</div>
+          <p>
+            If domain controllers were compromised, reset KRBTGT password <strong>twice</strong>, 
+            with at least 10 hours between resets. This invalidates all Kerberos tickets.
+          </p>
+          <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 4px; margin-top: 1rem; overflow-x: auto;">
+# Check current KRBTGT password last set
+Get-ADUser krbtgt -Properties PasswordLastSet
+
+# Reset (run twice, 10+ hours apart)
+# Use Microsoft's KRBTGT reset script from Microsoft Security resources</pre>
+        </div>
+      </section>
+
+      <section id="verification">
+        <h2>Eradication Verification</h2>
+        <p>Before moving to recovery, verify the threat is truly eliminated.</p>
+
+        <h3>Verification Steps</h3>
+        <ul class="checklist">
+          <li><strong>Re-scan cleaned systems</strong> - Run full AV/EDR scans</li>
+          <li><strong>Verify persistence removed</strong> - Check all known persistence locations</li>
+          <li><strong>Monitor for re-infection</strong> - Watch cleaned systems closely</li>
+          <li><strong>Check for C2 callbacks</strong> - Monitor network for beaconing</li>
+          <li><strong>Review authentication logs</strong> - Watch for compromised credential use</li>
+          <li><strong>Validate IOC blocks</strong> - Confirm all IOCs blocked at perimeter</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Monitor for reinfection indicators</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> CleanedDevices = <span class="kw">dynamic</span>([<span class="st">"WORKSTATION-01"</span>, <span class="st">"WORKSTATION-02"</span>]);
+<span class="kw">let</span> KnownBadHashes = <span class="kw">dynamic</span>([<span class="st">"abc123..."</span>, <span class="st">"def456..."</span>]);
+DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> DeviceName <span class="kw">in~</span> (CleanedDevices)
+| <span class="kw">where</span> SHA256 <span class="kw">in</span> (KnownBadHashes)
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName, FolderPath, SHA256</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Complete containment before eradication</li>
+          <li>When in doubt, rebuild rather than clean</li>
+          <li>Check all persistence mechanisms—attackers use multiple</li>
+          <li>Reset all potentially exposed credentials</li>
+          <li>DC compromise requires KRBTGT reset (twice, 10+ hours apart)</li>
+          <li>Verify eradication before moving to recovery</li>
+          <li>Document all actions taken</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ir-containment.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Containment</span>
+          </a>
+          <a href="ir-recovery.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Recovery</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

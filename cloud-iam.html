@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud IAM Security | SOC Analyst Guide</title>
+  <meta name="description" content="Cloud IAM security: AWS IAM, Azure RBAC, GCP IAM monitoring, privilege escalation detection, and policy analysis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="cloud-iam.html" class="nav-link active"><span class="nav-link-icon">🔑</span> Cloud IAM</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Cloud IAM Security</span>
+        </nav>
+        <h1>Cloud IAM Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 6.6</span>
+          <span class="meta-item">~16 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">IAM Overview</a></li>
+          <li><a href="#risks">IAM Risks</a></li>
+          <li><a href="#aws">AWS IAM</a></li>
+          <li><a href="#azure">Azure RBAC</a></li>
+          <li><a href="#monitoring">Monitoring</a></li>
+          <li><a href="#escalation">Privilege Escalation</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>IAM Overview</h2>
+        <p>
+          Cloud Identity and Access Management (IAM) controls who can do what in 
+          cloud environments. Misconfigured IAM is the #1 cause of cloud breaches.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>IAM Components</h4>
+            <ul>
+              <li><strong>Identities:</strong> Users, groups, roles, service accounts</li>
+              <li><strong>Policies:</strong> Permissions and access rules</li>
+              <li><strong>Resources:</strong> What can be accessed</li>
+              <li><strong>Actions:</strong> What can be done</li>
+              <li><strong>Conditions:</strong> When/how access applies</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Why IAM Matters</h4>
+            <ul>
+              <li>Controls all cloud access</li>
+              <li>Misconfiguration = breach</li>
+              <li>Complex and easy to get wrong</li>
+              <li>Privilege escalation paths</li>
+              <li>Shared responsibility model</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="risks">
+        <h2>Common IAM Risks</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Risk</th>
+                <th>Description</th>
+                <th>Impact</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Overprivileged Users</strong></td>
+                <td>Users with more permissions than needed</td>
+                <td>Larger blast radius if compromised</td>
+              </tr>
+              <tr>
+                <td><strong>Long-lived Access Keys</strong></td>
+                <td>Static credentials that never rotate</td>
+                <td>Persistent access if leaked</td>
+              </tr>
+              <tr>
+                <td><strong>Public Resources</strong></td>
+                <td>S3 buckets, storage accounts open to internet</td>
+                <td>Data exposure</td>
+              </tr>
+              <tr>
+                <td><strong>Cross-Account Trust</strong></td>
+                <td>Overly permissive role trust policies</td>
+                <td>Unauthorized account access</td>
+              </tr>
+              <tr>
+                <td><strong>Wildcard Permissions</strong></td>
+                <td>Policies with * actions or resources</td>
+                <td>Unintended access</td>
+              </tr>
+              <tr>
+                <td><strong>No MFA</strong></td>
+                <td>Root/admin accounts without MFA</td>
+                <td>Easy account takeover</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="aws">
+        <h2>AWS IAM Monitoring</h2>
+
+        <h3>High-Risk AWS IAM Events</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Risk</th>
+                <th>Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CreateUser</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>New identity created</td>
+              </tr>
+              <tr>
+                <td>CreateAccessKey</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Persistent credential created</td>
+              </tr>
+              <tr>
+                <td>AttachUserPolicy</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Privilege escalation</td>
+              </tr>
+              <tr>
+                <td>CreateRole</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>New assumable role</td>
+              </tr>
+              <tr>
+                <td>UpdateAssumeRolePolicy</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Trust policy changed</td>
+              </tr>
+              <tr>
+                <td>PutBucketPolicy</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>S3 permissions changed</td>
+              </tr>
+              <tr>
+                <td>ConsoleLogin (root)</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+                <td>Root account usage</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">AWS IAM privilege escalation events</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventName <span class="kw">in</span> (
+    <span class="st">"CreateUser"</span>, <span class="st">"CreateAccessKey"</span>, <span class="st">"CreateLoginProfile"</span>,
+    <span class="st">"AttachUserPolicy"</span>, <span class="st">"AttachRolePolicy"</span>, <span class="st">"PutUserPolicy"</span>,
+    <span class="st">"AddUserToGroup"</span>, <span class="st">"UpdateAssumeRolePolicy"</span>
+)
+| <span class="kw">project</span> TimeGenerated, EventName, UserIdentityArn,
+    SourceIpAddress, RequestParameters
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="azure">
+        <h2>Azure RBAC Monitoring</h2>
+
+        <h3>High-Risk Azure RBAC Events</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Operation</th>
+                <th>Risk</th>
+                <th>Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Create role assignment</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Permissions granted</td>
+              </tr>
+              <tr>
+                <td>Add member to role</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Privilege escalation</td>
+              </tr>
+              <tr>
+                <td>Create service principal</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>New app identity</td>
+              </tr>
+              <tr>
+                <td>Add app role assignment</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>App permissions changed</td>
+              </tr>
+              <tr>
+                <td>Add owner to application</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Can modify app and secrets</td>
+              </tr>
+              <tr>
+                <td>Consent to application</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>OAuth consent grant</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Privileged Azure AD Roles</h3>
+        <ul>
+          <li><strong>Global Administrator:</strong> Full control of Azure AD</li>
+          <li><strong>Privileged Role Administrator:</strong> Can assign any role</li>
+          <li><strong>Application Administrator:</strong> Manage all apps</li>
+          <li><strong>Cloud Application Administrator:</strong> Manage apps except App Proxy</li>
+          <li><strong>Exchange Administrator:</strong> Full Exchange Online access</li>
+        </ul>
+      </section>
+
+      <section id="monitoring">
+        <h2>IAM Monitoring Best Practices</h2>
+
+        <h3>Key Detections</h3>
+        <ul class="checklist">
+          <li>New admin/privileged role assignments</li>
+          <li>Access key creation for IAM users</li>
+          <li>Policy changes granting broad permissions</li>
+          <li>Root/Global Admin account usage</li>
+          <li>Cross-account role assumptions</li>
+          <li>Service principal credential additions</li>
+          <li>Unusual AssumeRole patterns</li>
+        </ul>
+
+        <h3>Baseline and Alert</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>What to Baseline</th>
+                <th>Alert When</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Who typically makes IAM changes</td>
+                <td>Unusual user makes IAM change</td>
+              </tr>
+              <tr>
+                <td>Normal role assumption patterns</td>
+                <td>Role assumed from new IP/region</td>
+              </tr>
+              <tr>
+                <td>Typical access key usage</td>
+                <td>Key used from unusual location</td>
+              </tr>
+              <tr>
+                <td>Expected service principals</td>
+                <td>New service principal created</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="escalation">
+        <h2>Privilege Escalation Paths</h2>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Common Cloud Priv Esc Techniques</div>
+          <p style="margin: 0;">
+            Attackers with limited cloud access often escalate privileges through 
+            IAM misconfigurations. Know these patterns to detect them.
+          </p>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">AWS: iam:PassRole + Service Abuse</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>User can pass a privileged role to a service they control.</p>
+              <h4>Example:</h4>
+              <p>User with iam:PassRole and lambda:CreateFunction can create a 
+              Lambda that runs with admin role.</p>
+              <h4>Detection:</h4>
+              <p>Monitor PassRole events, especially passing admin roles.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">AWS: CreateAccessKey for Others</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>User creates access keys for more privileged user.</p>
+              <h4>Detection:</h4>
+              <p>Alert when CreateAccessKey target differs from caller.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Azure: Application Owner Abuse</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>App owner can add credentials and use app's permissions.</p>
+              <h4>Detection:</h4>
+              <p>Monitor for new credentials added to high-privilege apps.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Cross-Account Role Assumption</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Weak trust policy allows unauthorized role assumption.</p>
+              <h4>Detection:</h4>
+              <p>Monitor AssumeRole from unexpected accounts/principals.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>IAM misconfiguration is #1 cloud breach cause</li>
+          <li>Monitor all privilege escalation events (policy attachments, role changes)</li>
+          <li>Access key creation is high-risk—persistent credential</li>
+          <li>Root/Global Admin usage should be rare and alerted</li>
+          <li>Know privilege escalation paths (PassRole, app owner abuse)</li>
+          <li>Baseline IAM activity and alert on anomalies</li>
+          <li>Wildcard (*) permissions are dangerous—audit regularly</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="azure-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Azure Security</span>
+          </a>
+          <a href="container-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Container Security</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

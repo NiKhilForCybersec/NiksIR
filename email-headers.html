@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Header Analysis | SOC Analyst Guide</title>
+  <meta name="description" content="How to analyze email headers: key fields, routing analysis, and identifying suspicious emails.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="email-headers.html" class="nav-link active"><span class="nav-link-icon">📋</span> Header Analysis</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">🔐</span> SPF/DKIM/DMARC</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Playbook</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#email">Email & Phishing</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Header Analysis</span>
+        </nav>
+        <h1>Email Header Analysis</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 7.2</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#basics">Header Basics</a></li>
+          <li><a href="#key-fields">Key Fields</a></li>
+          <li><a href="#routing">Routing Analysis</a></li>
+          <li><a href="#authentication">Authentication Headers</a></li>
+          <li><a href="#red-flags">Red Flags</a></li>
+          <li><a href="#tools">Analysis Tools</a></li>
+        </ul>
+      </div>
+
+      <section id="basics">
+        <h2>Header Basics</h2>
+        <p>
+          Email headers contain metadata about the message: who sent it, where it came from, 
+          and how it was routed. Headers are essential for investigating phishing and spam.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">How to View Headers</div>
+          <ul style="margin: 0;">
+            <li><strong>Outlook:</strong> Open message → File → Properties → Internet Headers</li>
+            <li><strong>Outlook Web:</strong> Open message → ⋯ → View message details</li>
+            <li><strong>Gmail:</strong> Open message → ⋮ → Show original</li>
+          </ul>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Headers Can Be Spoofed</div>
+          <p style="margin: 0;">
+            Many header fields (From, Reply-To, Subject) can be easily forged by attackers. 
+            Focus on fields that are harder to fake: Received headers, authentication results.
+          </p>
+        </div>
+      </section>
+
+      <section id="key-fields">
+        <h2>Key Header Fields</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Header</th>
+                <th>Description</th>
+                <th>Can Be Spoofed?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>From</strong></td>
+                <td>Display sender address</td>
+                <td>🔴 Yes - easily forged</td>
+              </tr>
+              <tr>
+                <td><strong>Return-Path</strong></td>
+                <td>Where bounces go (envelope sender)</td>
+                <td>🟡 Partially - checked by SPF</td>
+              </tr>
+              <tr>
+                <td><strong>Reply-To</strong></td>
+                <td>Where replies go</td>
+                <td>🔴 Yes - commonly abused</td>
+              </tr>
+              <tr>
+                <td><strong>To</strong></td>
+                <td>Recipient address</td>
+                <td>🟡 Can differ from envelope</td>
+              </tr>
+              <tr>
+                <td><strong>Subject</strong></td>
+                <td>Email subject line</td>
+                <td>🔴 Yes</td>
+              </tr>
+              <tr>
+                <td><strong>Date</strong></td>
+                <td>When message was sent</td>
+                <td>🔴 Yes</td>
+              </tr>
+              <tr>
+                <td><strong>Message-ID</strong></td>
+                <td>Unique message identifier</td>
+                <td>🟡 Can be forged but checked</td>
+              </tr>
+              <tr>
+                <td><strong>Received</strong></td>
+                <td>Mail server routing chain</td>
+                <td>🟢 Hard to fake (bottom ones reliable)</td>
+              </tr>
+              <tr>
+                <td><strong>X-Originating-IP</strong></td>
+                <td>Original sender IP</td>
+                <td>🟢 Added by receiving server</td>
+              </tr>
+              <tr>
+                <td><strong>Authentication-Results</strong></td>
+                <td>SPF/DKIM/DMARC results</td>
+                <td>🟢 Added by your mail server</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="routing">
+        <h2>Routing Analysis (Received Headers)</h2>
+        <p>
+          Received headers show the path an email took from sender to recipient. 
+          Read them <strong>bottom to top</strong>—the oldest (first hop) is at the bottom.
+        </p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Email Headers (Read bottom → top)</span>
+          </div>
+          <div class="terminal-body">
+<pre>Received: from mail.company.com (10.0.0.5) by 
+    edge.company.com with SMTP; 15 Jan 2024 09:30:15 +0000
+    <span style="color: var(--accent-cyan);">↑ 3. Final delivery to your mail server</span>
+
+Received: from sender-mta.example.com (203.0.113.50) by
+    mail.company.com with ESMTPS; 15 Jan 2024 09:30:10 +0000
+    <span style="color: var(--accent-cyan);">↑ 2. Your gateway received from sender</span>
+
+Received: from localhost (unknown [192.168.1.100]) by
+    sender-mta.example.com with ESMTP; 15 Jan 2024 09:30:05 +0000
+    <span style="color: var(--accent-cyan);">↑ 1. Original submission (bottom = first hop)</span></pre>
+          </div>
+        </div>
+
+        <h3>What to Look For</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Check</th>
+                <th>Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>First Received header</strong></td>
+                <td>Shows true origin—hardest to fake</td>
+              </tr>
+              <tr>
+                <td><strong>IP addresses</strong></td>
+                <td>Check reputation, geolocation</td>
+              </tr>
+              <tr>
+                <td><strong>Server names</strong></td>
+                <td>Do they match the claimed sender domain?</td>
+              </tr>
+              <tr>
+                <td><strong>Time gaps</strong></td>
+                <td>Large delays may indicate queuing or manipulation</td>
+              </tr>
+              <tr>
+                <td><strong>Unusual routing</strong></td>
+                <td>Email from "bank.com" via servers in unexpected countries</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="authentication">
+        <h2>Authentication Headers</h2>
+        <p>Your mail server adds authentication results after checking SPF, DKIM, and DMARC:</p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Authentication-Results header</span>
+          </div>
+          <div class="terminal-body">
+<pre>Authentication-Results: mx.company.com;
+    spf=pass (sender IP is 203.0.113.50) smtp.mailfrom=example.com;
+    dkim=pass header.d=example.com header.s=selector1;
+    dmarc=pass action=none header.from=example.com;</pre>
+          </div>
+        </div>
+
+        <h3>Result Meanings</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Result</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-green);">pass</span></td>
+                <td>Authentication succeeded</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-red);">fail</span></td>
+                <td>Authentication failed—likely spoofed</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);">softfail</span></td>
+                <td>SPF: IP not authorized but not explicitly denied</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);">neutral</span></td>
+                <td>No policy assertion</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--text-muted);">none</span></td>
+                <td>No record published</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);">temperror</span></td>
+                <td>Temporary error during check</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);">permerror</span></td>
+                <td>Permanent error (malformed record)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Quick Authentication Check</div>
+          <p style="margin: 0;">
+            Look for <code>Authentication-Results</code> header first. If SPF, DKIM, and DMARC 
+            all pass, the email is likely legitimate. If any fail, investigate further.
+          </p>
+        </div>
+      </section>
+
+      <section id="red-flags">
+        <h2>Red Flags in Headers</h2>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>🚩 Spoofing Indicators</h4>
+            <ul>
+              <li>From domain ≠ Return-Path domain</li>
+              <li>SPF/DKIM/DMARC failures</li>
+              <li>Reply-To different from From</li>
+              <li>Received from unexpected country</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-orange);">
+            <h4>🚩 Suspicious Origin</h4>
+            <ul>
+              <li>First Received from residential IP</li>
+              <li>Origin IP has bad reputation</li>
+              <li>Server names don't match domain</li>
+              <li>Use of free email services for "corporate" mail</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-yellow);">
+            <h4>🚩 Manipulation Signs</h4>
+            <ul>
+              <li>Missing or incomplete headers</li>
+              <li>Unusual time gaps in routing</li>
+              <li>Inconsistent timestamps</li>
+              <li>Headers that don't make logical sense</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Common Spoofing Patterns</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>What You See</th>
+                <th>Indicates</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Display Name Spoof</strong></td>
+                <td>From: "CEO Name" &lt;attacker@gmail.com&gt;</td>
+                <td>BEC attempt using trusted name</td>
+              </tr>
+              <tr>
+                <td><strong>Domain Spoof</strong></td>
+                <td>From: ceo@company.com (SPF fail)</td>
+                <td>Direct domain impersonation</td>
+              </tr>
+              <tr>
+                <td><strong>Lookalike Domain</strong></td>
+                <td>From: ceo@c0mpany.com (0 instead of o)</td>
+                <td>Typosquatting attack</td>
+              </tr>
+              <tr>
+                <td><strong>Reply-To Hijack</strong></td>
+                <td>From: legit@company.com, Reply-To: attacker@evil.com</td>
+                <td>Redirect replies to attacker</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tools">
+        <h2>Analysis Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Use</th>
+                <th>URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MXToolbox Header Analyzer</strong></td>
+                <td>Parse and visualize headers</td>
+                <td>mxtoolbox.com/EmailHeaders.aspx</td>
+              </tr>
+              <tr>
+                <td><strong>Google Admin Toolbox</strong></td>
+                <td>Header analysis with timeline</td>
+                <td>toolbox.googleapps.com/apps/messageheader</td>
+              </tr>
+              <tr>
+                <td><strong>Mail Header Analyzer</strong></td>
+                <td>Open source header parser</td>
+                <td>mailheader.org</td>
+              </tr>
+              <tr>
+                <td><strong>VirusTotal</strong></td>
+                <td>Check sender IP reputation</td>
+                <td>virustotal.com</td>
+              </tr>
+              <tr>
+                <td><strong>AbuseIPDB</strong></td>
+                <td>IP reputation lookup</td>
+                <td>abuseipdb.com</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Sensitive Data Warning</div>
+          <p style="margin: 0;">
+            Be careful pasting full headers into public tools—they may contain internal 
+            IP addresses, server names, or other sensitive information.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Read Received headers bottom to top (oldest first)</li>
+          <li>First Received header shows true origin—hardest to fake</li>
+          <li>Check Authentication-Results for SPF/DKIM/DMARC status</li>
+          <li>From, Reply-To, and Subject are easily spoofed</li>
+          <li>Compare From domain with Return-Path and authentication results</li>
+          <li>Use tools to parse complex headers, but protect sensitive data</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="email-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Email Security</span>
+          </a>
+          <a href="email-auth.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SPF/DKIM/DMARC</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impossible Travel Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Response playbook for impossible travel alerts: investigation steps, common false positives, and response procedures.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔨</span> Brute Force</a>
+          <a href="pb-impossible-travel.html" class="nav-link active"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Security</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Impossible Travel</span>
+        </nav>
+        <h1>✈️ Impossible Travel Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">PB-07</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">Login from geographically impossible locations</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p3">P3 Medium</span></p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Response SLA</strong>
+            <p style="margin: 0;">Response: 2 hours | Resolution: 8 hours</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">False Positive Rate</strong>
+            <p style="margin: 0;">High - VPNs, proxies, mobile networks</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#concept">What is Impossible Travel?</a></li>
+          <li><a href="#false-positives">Common False Positives</a></li>
+          <li><a href="#investigation">Investigation Steps</a></li>
+          <li><a href="#decision">Decision Matrix</a></li>
+          <li><a href="#response">Response Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="concept">
+        <h2>What is Impossible Travel?</h2>
+        <p>
+          Impossible travel detects when a user authenticates from two geographic locations 
+          that are too far apart to have traveled between in the given time window.
+        </p>
+
+        <div class="card" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1));">
+          <h3>Example Scenario</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">09:00 UTC</div>
+              <div class="timeline-title">Login from New York, USA</div>
+              <div class="timeline-desc">User authenticates to M365 from corporate office</div>
+            </div>
+            <div class="timeline-item" style="--timeline-color: var(--accent-red);">
+              <div class="timeline-time">09:30 UTC</div>
+              <div class="timeline-title">Login from Moscow, Russia</div>
+              <div class="timeline-desc">Same user authenticates from 7,500 km away</div>
+            </div>
+          </div>
+          <p style="margin-top: 1rem;">
+            <strong>Distance:</strong> ~7,500 km | <strong>Time:</strong> 30 minutes<br>
+            <strong>Required speed:</strong> 15,000 km/h (impossible without spacecraft)
+          </p>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Detection Logic</div>
+          <p style="margin: 0;">
+            Azure AD Identity Protection uses machine learning to detect impossible travel, accounting 
+            for VPNs, known travel patterns, and shared IPs. It generates "atypical travel" alerts 
+            with risk levels based on confidence.
+          </p>
+        </div>
+      </section>
+
+      <section id="false-positives">
+        <h2>Common False Positives</h2>
+        <p>Impossible travel has a high false positive rate. Understand these legitimate causes:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Cause</th>
+                <th>Why It Happens</th>
+                <th>How to Identify</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Corporate VPN</strong></td>
+                <td>User connects to VPN in different country</td>
+                <td>Check if IP belongs to known corporate VPN ranges</td>
+              </tr>
+              <tr>
+                <td><strong>Personal VPN</strong></td>
+                <td>Privacy VPNs, streaming services access</td>
+                <td>IP belongs to NordVPN, ExpressVPN, etc.</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud Proxy</strong></td>
+                <td>Zscaler, Netskope route traffic through global nodes</td>
+                <td>IP belongs to known SASE/proxy provider</td>
+              </tr>
+              <tr>
+                <td><strong>Mobile Network</strong></td>
+                <td>Carrier NAT, mobile roaming, IP geolocation errors</td>
+                <td>Mobile device, carrier IP range</td>
+              </tr>
+              <tr>
+                <td><strong>Actual Travel</strong></td>
+                <td>User flew between locations (with enough time)</td>
+                <td>Known traveler, reasonable flight time</td>
+              </tr>
+              <tr>
+                <td><strong>Shared IP / NAT</strong></td>
+                <td>Multiple users behind same public IP</td>
+                <td>Large organization, university, ISP NAT</td>
+              </tr>
+              <tr>
+                <td><strong>Geolocation Error</strong></td>
+                <td>IP-to-location databases aren't perfect</td>
+                <td>Same ISP, IP recently reassigned</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Pro Tip</div>
+          <p style="margin: 0;">
+            Maintain a list of known VPN/proxy IP ranges used by your organization. Many false 
+            positives come from legitimate corporate infrastructure.
+          </p>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Examine Both Locations</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What are the two locations involved?</li>
+                <li>What is the time difference between logins?</li>
+                <li>Is travel between them physically possible?</li>
+                <li>Calculate: Distance ÷ Time = Required speed</li>
+              </ul>
+              <p class="text-muted">Commercial flights average ~900 km/h. Add airport time (2-3 hours each end).</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Check IP Addresses</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Are either IPs from known VPN/proxy providers?</li>
+                <li>Check IP reputation (VirusTotal, AbuseIPDB)</li>
+                <li>Is the IP in your corporate IP range list?</li>
+                <li>Is it a mobile carrier IP? Cloud provider?</li>
+              </ul>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Get sign-in details for user</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">48h</span>)
+| <span class="kw">where</span> UserPrincipalName =~ targetUser
+| <span class="kw">project</span> TimeGenerated, IPAddress, Location, 
+    AppDisplayName, DeviceDetail, UserAgent,
+    ResultType, RiskLevelDuringSignIn
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Review Device & App Context</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Same device ID for both logins?</li>
+                <li>What applications were accessed?</li>
+                <li>Browser/OS consistent with user's known devices?</li>
+                <li>Was MFA completed successfully?</li>
+              </ul>
+              
+              <div class="callout callout-warning" style="margin-top: 1rem;">
+                <div class="callout-title">Red Flag</div>
+                <p style="margin: 0;">Different devices from different locations is more suspicious than same device with IP change (which suggests VPN).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Check User's Travel Status</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Is this user known to travel frequently?</li>
+                <li>Check if HR/manager confirms travel</li>
+                <li>Look at historical sign-in patterns</li>
+                <li>Does user use VPN regularly?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 5: Look for Suspicious Activity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>After the suspicious login, check for:</p>
+              <ul>
+                <li>Inbox rule creation</li>
+                <li>Email forwarding setup</li>
+                <li>File access/download spikes</li>
+                <li>Password or MFA changes</li>
+                <li>New app consents</li>
+                <li>Admin actions</li>
+              </ul>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Check post-login activity</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+<span class="kw">let</span> suspiciousTime = <span class="fn">datetime</span>(<span class="nu">2024-01-15T09:30:00Z</span>);
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (suspiciousTime .. (suspiciousTime + <span class="nu">4h</span>))
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">project</span> TimeGenerated, Operation, ClientIP, 
+    OfficeWorkload, ResultStatus
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="decision">
+        <h2>Decision Matrix</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Likely Verdict</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>One IP is corporate VPN</td>
+                <td><span style="color: var(--accent-green);">Benign True Positive</span></td>
+                <td>Close as BTP, document VPN usage</td>
+              </tr>
+              <tr>
+                <td>IP is known proxy service (Zscaler, etc.)</td>
+                <td><span style="color: var(--accent-green);">Benign True Positive</span></td>
+                <td>Close as BTP, consider tuning</td>
+              </tr>
+              <tr>
+                <td>Same device, IP change only</td>
+                <td><span style="color: var(--accent-green);">Likely BTP</span></td>
+                <td>Likely VPN switch, verify</td>
+              </tr>
+              <tr>
+                <td>Mobile device, carrier IP</td>
+                <td><span style="color: var(--accent-yellow);">Investigate</span></td>
+                <td>Mobile geolocation unreliable</td>
+              </tr>
+              <tr>
+                <td>Known traveler, time allows flight</td>
+                <td><span style="color: var(--accent-green);">Benign</span></td>
+                <td>Verify travel, close</td>
+              </tr>
+              <tr>
+                <td>Different devices, suspicious activity after</td>
+                <td><span style="color: var(--accent-red);">True Positive</span></td>
+                <td>Escalate - account compromise</td>
+              </tr>
+              <tr>
+                <td>Foreign IP, no VPN explanation, unusual app</td>
+                <td><span style="color: var(--accent-red);">Likely TP</span></td>
+                <td>Contact user, consider reset</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <h3>If Benign (VPN/Proxy/Legitimate)</h3>
+        <ul class="checklist">
+          <li>Document the cause (VPN, travel, etc.)</li>
+          <li>Close as Benign True Positive</li>
+          <li>Consider tuning rule if frequent FP from same source</li>
+          <li>Update known IP lists if applicable</li>
+        </ul>
+
+        <h3>If Suspicious (Needs Verification)</h3>
+        <ul class="checklist">
+          <li>Contact user via trusted channel (phone, not email)</li>
+          <li>Ask: "Did you log in from [location] at [time]?"</li>
+          <li>Verify if they're traveling or using VPN</li>
+          <li>If user confirms, document and close</li>
+          <li>If user denies, escalate immediately</li>
+        </ul>
+
+        <h3>If Confirmed Compromise</h3>
+        <div class="callout callout-danger">
+          <div class="callout-title">Immediate Actions</div>
+          <ol style="margin: 0;">
+            <li>Reset user password</li>
+            <li>Revoke all refresh tokens</li>
+            <li>Re-register MFA methods</li>
+            <li>Block suspicious IP</li>
+            <li>Follow <a href="pb-account-compromise.html">Account Compromise Playbook</a></li>
+          </ol>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Revoke user sessions (Azure AD)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Revoke all refresh tokens for user</span>
+Revoke-MgUserSignInSession -UserId <span class="st">"user@domain.com"</span>
+
+<span class="cm"># Reset password (forces re-auth)</span>
+Update-MgUser -UserId <span class="st">"user@domain.com"</span> -PasswordProfile @{
+    ForceChangePasswordNextSignIn = <span class="nu">$true</span>
+}</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Assess:</strong> Is the travel actually impossible? Check distance/time</li>
+          <li><strong>Check IPs:</strong> VPN, proxy, corporate infrastructure?</li>
+          <li><strong>Device context:</strong> Same device or different?</li>
+          <li><strong>Post-login activity:</strong> Any suspicious actions?</li>
+          <li><strong>Verify:</strong> Contact user if needed</li>
+          <li><strong>Decide:</strong> BTP (VPN) vs TP (compromise)</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-brute-force.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Brute Force</span>
+          </a>
+          <a href="pb-data-exfiltration.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Data Exfiltration</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

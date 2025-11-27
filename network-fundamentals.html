@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Security Fundamentals | SOC Analyst Guide</title>
+  <meta name="description" content="Network security concepts for SOC analysts: firewalls, IDS/IPS, proxies, network zones, and traffic analysis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link active"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewalls</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🛡️</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy & Web Filtering</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Network Fundamentals</span>
+        </nav>
+        <h1>Network Security Fundamentals</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 5.1</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#osi">OSI Model Quick Reference</a></li>
+          <li><a href="#zones">Network Zones</a></li>
+          <li><a href="#devices">Security Devices</a></li>
+          <li><a href="#traffic">Traffic Types</a></li>
+          <li><a href="#analysis">What to Look For</a></li>
+        </ul>
+      </div>
+
+      <section id="osi">
+        <h2>OSI Model Quick Reference</h2>
+        <p>Understanding the OSI model helps identify where attacks occur and what logs to examine.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Layer</th>
+                <th>Name</th>
+                <th>Function</th>
+                <th>Security Relevance</th>
+                <th>Example Attacks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>7</strong></td>
+                <td>Application</td>
+                <td>HTTP, DNS, SMTP, FTP</td>
+                <td>WAF, Proxy, Email Gateway</td>
+                <td>SQLi, XSS, Phishing</td>
+              </tr>
+              <tr>
+                <td><strong>6</strong></td>
+                <td>Presentation</td>
+                <td>Encryption, compression</td>
+                <td>TLS inspection</td>
+                <td>SSL stripping</td>
+              </tr>
+              <tr>
+                <td><strong>5</strong></td>
+                <td>Session</td>
+                <td>Session management</td>
+                <td>Session hijacking detection</td>
+                <td>Session hijacking</td>
+              </tr>
+              <tr>
+                <td><strong>4</strong></td>
+                <td>Transport</td>
+                <td>TCP, UDP</td>
+                <td>Firewall (stateful)</td>
+                <td>Port scanning, SYN flood</td>
+              </tr>
+              <tr>
+                <td><strong>3</strong></td>
+                <td>Network</td>
+                <td>IP, ICMP, routing</td>
+                <td>Firewall, Router ACLs</td>
+                <td>IP spoofing, ICMP attacks</td>
+              </tr>
+              <tr>
+                <td><strong>2</strong></td>
+                <td>Data Link</td>
+                <td>MAC addresses, switches</td>
+                <td>NAC, 802.1X</td>
+                <td>ARP spoofing, MAC flooding</td>
+              </tr>
+              <tr>
+                <td><strong>1</strong></td>
+                <td>Physical</td>
+                <td>Cables, signals</td>
+                <td>Physical security</td>
+                <td>Wiretapping</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">SOC Focus</div>
+          <p style="margin: 0;">
+            Most SOC work happens at Layers 3-7. Layer 3-4 (Network/Transport) for firewall logs, 
+            Layer 7 (Application) for proxy, email, and web application logs.
+          </p>
+        </div>
+      </section>
+
+      <section id="zones">
+        <h2>Network Zones</h2>
+        <p>Network segmentation creates security boundaries. Understanding zones helps assess alert severity.</p>
+
+        <div class="card">
+          <h3>Typical Enterprise Network Zones</h3>
+          <div class="flowchart">
+            <div class="flow-step" style="flex-wrap: wrap; justify-content: center; gap: 1rem;">
+              <div class="flow-node" style="background: linear-gradient(135deg, rgba(255,51,102,0.2), rgba(255,107,53,0.2)); border-color: var(--accent-red); min-width: 100px;">
+                <strong>Internet</strong><br>
+                <small>Untrusted</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="background: linear-gradient(135deg, rgba(255,187,36,0.2), rgba(255,107,53,0.2)); border-color: var(--accent-orange); min-width: 100px;">
+                <strong>DMZ</strong><br>
+                <small>Semi-trusted</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2)); border-color: var(--accent-cyan); min-width: 100px;">
+                <strong>Internal</strong><br>
+                <small>Trusted</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,212,255,0.2)); border-color: var(--accent-green); min-width: 100px;">
+                <strong>Secure</strong><br>
+                <small>Restricted</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Purpose</th>
+                <th>Examples</th>
+                <th>Security Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Internet</strong></td>
+                <td>External untrusted network</td>
+                <td>Public internet</td>
+                <td>🔴 Untrusted</td>
+              </tr>
+              <tr>
+                <td><strong>DMZ</strong></td>
+                <td>Public-facing services</td>
+                <td>Web servers, email gateways, VPN</td>
+                <td>🟠 Semi-trusted</td>
+              </tr>
+              <tr>
+                <td><strong>Internal/Corporate</strong></td>
+                <td>General business network</td>
+                <td>Workstations, printers, file shares</td>
+                <td>🟡 Trusted</td>
+              </tr>
+              <tr>
+                <td><strong>Server/Datacenter</strong></td>
+                <td>Internal servers</td>
+                <td>App servers, databases, AD</td>
+                <td>🔵 Restricted</td>
+              </tr>
+              <tr>
+                <td><strong>Management</strong></td>
+                <td>Admin access only</td>
+                <td>Network management, security tools</td>
+                <td>🟢 Highly Restricted</td>
+              </tr>
+              <tr>
+                <td><strong>Guest</strong></td>
+                <td>Visitor network</td>
+                <td>Guest WiFi, contractors</td>
+                <td>🔴 Untrusted</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Zone Violation Alerts</div>
+          <p style="margin: 0;">
+            Traffic that crosses zone boundaries unexpectedly is suspicious. Examples: DMZ server connecting to 
+            internal database directly, workstation accessing management network, guest network reaching internal servers.
+          </p>
+        </div>
+      </section>
+
+      <section id="devices">
+        <h2>Network Security Devices</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Firewall</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Controls traffic flow between networks based on rules.</p>
+              <h4>Types:</h4>
+              <ul>
+                <li><strong>Packet Filter:</strong> Basic L3/L4 filtering (src/dst IP, port)</li>
+                <li><strong>Stateful:</strong> Tracks connection state</li>
+                <li><strong>Next-Gen (NGFW):</strong> Application awareness, IPS, TLS inspection</li>
+              </ul>
+              <h4>SOC Use:</h4>
+              <ul>
+                <li>Review blocked/allowed connections</li>
+                <li>Identify suspicious outbound traffic</li>
+                <li>Request blocks for IOCs</li>
+              </ul>
+              <p><strong>Vendors:</strong> Palo Alto, Fortinet, Cisco, Check Point, Azure Firewall</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">IDS/IPS</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Intrusion Detection/Prevention System - monitors traffic for threats.</p>
+              <h4>Difference:</h4>
+              <ul>
+                <li><strong>IDS:</strong> Detect and alert only (passive)</li>
+                <li><strong>IPS:</strong> Detect and block (inline)</li>
+              </ul>
+              <h4>Detection Methods:</h4>
+              <ul>
+                <li><strong>Signature-based:</strong> Known attack patterns</li>
+                <li><strong>Anomaly-based:</strong> Deviation from baseline</li>
+              </ul>
+              <p><strong>Vendors:</strong> Snort, Suricata, Cisco, Palo Alto (built into NGFW)</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Web Proxy</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Intermediary for web traffic - filtering, logging, caching.</p>
+              <h4>Functions:</h4>
+              <ul>
+                <li>URL filtering and categorization</li>
+                <li>Malware scanning</li>
+                <li>TLS/SSL inspection</li>
+                <li>Data loss prevention</li>
+              </ul>
+              <h4>SOC Use:</h4>
+              <ul>
+                <li>Investigate web activity for users</li>
+                <li>Identify C2 communication</li>
+                <li>Block malicious URLs</li>
+              </ul>
+              <p><strong>Vendors:</strong> Zscaler, Netskope, Broadcom (Symantec), McAfee</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Email Gateway</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Filters inbound/outbound email for threats and policy.</p>
+              <h4>Functions:</h4>
+              <ul>
+                <li>Spam filtering</li>
+                <li>Malware/attachment scanning</li>
+                <li>Phishing detection</li>
+                <li>URL rewriting/sandboxing</li>
+                <li>DLP for outbound email</li>
+              </ul>
+              <p><strong>Vendors:</strong> Microsoft Defender for O365, Proofpoint, Mimecast, Cisco</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">NAC (Network Access Control)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Controls which devices can connect to the network.</p>
+              <h4>Functions:</h4>
+              <ul>
+                <li>Device authentication (802.1X)</li>
+                <li>Posture assessment (is device compliant?)</li>
+                <li>Guest network management</li>
+                <li>VLAN assignment based on policy</li>
+              </ul>
+              <p><strong>Vendors:</strong> Cisco ISE, Aruba ClearPass, Forescout</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="traffic">
+        <h2>Traffic Types & Direction</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Ingress (Inbound)</h4>
+            <p>Traffic entering your network from external sources.</p>
+            <ul>
+              <li>Legitimate: Users accessing public services</li>
+              <li>Suspicious: Scanning, exploitation attempts</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Egress (Outbound)</h4>
+            <p>Traffic leaving your network to external destinations.</p>
+            <ul>
+              <li>Legitimate: Web browsing, email</li>
+              <li>Suspicious: C2, data exfiltration</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">East-West (Lateral)</h4>
+            <p>Traffic between internal systems.</p>
+            <ul>
+              <li>Legitimate: Server-to-server, file shares</li>
+              <li>Suspicious: Lateral movement, scanning</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">SOC Priority</div>
+          <p style="margin: 0;">
+            <strong>Egress traffic</strong> often reveals compromise. Attackers must communicate out for C2 or 
+            exfiltration. <strong>East-West traffic</strong> shows post-compromise activity and lateral movement.
+          </p>
+        </div>
+      </section>
+
+      <section id="analysis">
+        <h2>What to Look For</h2>
+        <p>Key indicators in network traffic that warrant investigation:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th>Why It Matters</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Unusual ports</strong></td>
+                <td>May indicate tunneling or backdoors</td>
+                <td>HTTP on port 8443, SSH on port 2222</td>
+              </tr>
+              <tr>
+                <td><strong>High-volume transfers</strong></td>
+                <td>Potential data exfiltration</td>
+                <td>10GB upload from workstation</td>
+              </tr>
+              <tr>
+                <td><strong>Beaconing patterns</strong></td>
+                <td>C2 communication</td>
+                <td>Connection every 60 seconds to same IP</td>
+              </tr>
+              <tr>
+                <td><strong>DNS anomalies</strong></td>
+                <td>DNS tunneling, DGA domains</td>
+                <td>Long subdomain queries, high query volume</td>
+              </tr>
+              <tr>
+                <td><strong>Rare destinations</strong></td>
+                <td>Potential C2 infrastructure</td>
+                <td>Connections to IPs no one else visits</td>
+              </tr>
+              <tr>
+                <td><strong>Protocol mismatches</strong></td>
+                <td>Tunneling, evasion</td>
+                <td>Non-HTTP traffic on port 80/443</td>
+              </tr>
+              <tr>
+                <td><strong>Internal scanning</strong></td>
+                <td>Reconnaissance, lateral movement</td>
+                <td>Workstation hitting many internal IPs</td>
+              </tr>
+              <tr>
+                <td><strong>After-hours activity</strong></td>
+                <td>Suspicious timing</td>
+                <td>Large transfers at 3 AM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Understand the OSI model to identify attack layers</li>
+          <li>Know your network zones and expected traffic patterns</li>
+          <li>Firewall = traffic control, IDS/IPS = threat detection</li>
+          <li>Egress and east-west traffic often reveal compromise</li>
+          <li>Look for anomalies: unusual ports, volumes, timing, destinations</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#network" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Network Section</span>
+          </a>
+          <a href="firewall-basics.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Firewalls</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

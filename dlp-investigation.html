@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DLP Investigation | SOC Analyst Guide</title>
+  <meta name="description" content="Investigating DLP alerts: analyzing policy violations, determining intent, and response procedures.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link active"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#dlp">Data Protection</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>DLP Investigation</span>
+        </nav>
+        <h1>DLP Investigation</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 9.2</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#workflow">Investigation Workflow</a></li>
+          <li><a href="#analysis">Alert Analysis</a></li>
+          <li><a href="#intent">Determining Intent</a></li>
+          <li><a href="#response">Response Actions</a></li>
+          <li><a href="#queries">Investigation Queries</a></li>
+        </ul>
+      </div>
+
+      <section id="workflow">
+        <h2>Investigation Workflow</h2>
+
+        <div class="card">
+          <h3>DLP Alert Investigation Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Alert Triage</strong><br>
+                <small>Severity, data type, user</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Context Gathering</strong><br>
+                <small>User role, business justification</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Intent Assessment</strong><br>
+                <small>Malicious vs negligent</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Response</strong><br>
+                <small>Action based on finding</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Initial Questions</h3>
+        <ul class="checklist">
+          <li><strong>What data was involved?</strong> Sensitivity level, data type</li>
+          <li><strong>Who triggered the alert?</strong> Role, department, history</li>
+          <li><strong>What action was attempted?</strong> Email, upload, copy, print</li>
+          <li><strong>Was it blocked or just logged?</strong> Did data actually leave?</li>
+          <li><strong>Where was data going?</strong> Internal, external, personal email</li>
+        </ul>
+      </section>
+
+      <section id="analysis">
+        <h2>Alert Analysis</h2>
+
+        <h3>Key Alert Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>What to Check</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>User</strong></td>
+                <td>Role, department, access level, prior alerts</td>
+              </tr>
+              <tr>
+                <td><strong>Sensitive Info Type</strong></td>
+                <td>What data triggered: SSN, credit card, PII, etc.</td>
+              </tr>
+              <tr>
+                <td><strong>Match Count</strong></td>
+                <td>Volume of sensitive data (1 vs 1000 records)</td>
+              </tr>
+              <tr>
+                <td><strong>Location</strong></td>
+                <td>Endpoint, email, SharePoint, cloud app</td>
+              </tr>
+              <tr>
+                <td><strong>Destination</strong></td>
+                <td>Where data was going (email recipient, website, USB)</td>
+              </tr>
+              <tr>
+                <td><strong>Action Taken</strong></td>
+                <td>Blocked, warned and allowed, audit only</td>
+              </tr>
+              <tr>
+                <td><strong>Override</strong></td>
+                <td>Did user provide justification to override?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Severity Assessment</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Factor</th>
+                <th>Lower Risk</th>
+                <th>Higher Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Data Volume</strong></td>
+                <td>1-10 records</td>
+                <td>100+ records</td>
+              </tr>
+              <tr>
+                <td><strong>Data Sensitivity</strong></td>
+                <td>Internal business data</td>
+                <td>PII, PHI, financial, credentials</td>
+              </tr>
+              <tr>
+                <td><strong>Destination</strong></td>
+                <td>Internal recipient</td>
+                <td>Personal email, competitor, cloud storage</td>
+              </tr>
+              <tr>
+                <td><strong>Action Outcome</strong></td>
+                <td>Blocked, user warned</td>
+                <td>Data actually sent/copied</td>
+              </tr>
+              <tr>
+                <td><strong>User History</strong></td>
+                <td>First-time, good standing</td>
+                <td>Repeat violations, on notice</td>
+              </tr>
+              <tr>
+                <td><strong>User Status</strong></td>
+                <td>Normal employee</td>
+                <td>Resigned, PIP, contractor ending</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="intent">
+        <h2>Determining Intent</h2>
+        <p>
+          Most DLP alerts are accidental. Distinguishing between negligent and malicious 
+          behavior is critical for appropriate response.
+        </p>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-green);">
+            <h4>Likely Accidental</h4>
+            <ul>
+              <li>First-time violation</li>
+              <li>User reported it themselves</li>
+              <li>Business justification provided</li>
+              <li>Recipient is legitimate partner</li>
+              <li>Small data volume</li>
+              <li>User in role where this makes sense</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>Potentially Malicious</h4>
+            <ul>
+              <li>Large volume of data</li>
+              <li>Personal email/cloud destination</li>
+              <li>Repeated attempts after block</li>
+              <li>User recently gave notice</li>
+              <li>Data outside user's job scope</li>
+              <li>Attempts to bypass/obfuscate</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Red Flags for Insider Threat</h3>
+        <div class="callout callout-danger">
+          <div class="callout-title">Escalate if You See:</div>
+          <ul style="margin: 0;">
+            <li>Multiple DLP alerts in short period</li>
+            <li>Attempts to rename files or change extensions</li>
+            <li>Splitting data across multiple emails</li>
+            <li>Using personal devices or cloud accounts</li>
+            <li>Activity outside normal working hours</li>
+            <li>User on performance plan or gave notice</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">False Positive / Legitimate Business Use</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Actions:</h4>
+              <ul>
+                <li>Document finding and close</li>
+                <li>Consider policy tuning if common FP</li>
+                <li>Add exception if business process requires</li>
+              </ul>
+              <h4>Handoff:</h4> DLP/Compliance team for tuning
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Accidental Violation - Low Risk</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Actions:</h4>
+              <ul>
+                <li>Document the incident</li>
+                <li>Confirm data was blocked or recall if possible</li>
+                <li>User education/awareness</li>
+                <li>No escalation needed</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Policy Violation - Medium Risk</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Actions:</h4>
+              <ul>
+                <li>Document thoroughly</li>
+                <li>Attempt data recall if sent externally</li>
+                <li>Notify user's manager</li>
+                <li>Escalate to Compliance/HR if repeat</li>
+              </ul>
+              <h4>Handoff:</h4> Compliance for tracking
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Suspected Malicious - High Risk</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Actions:</h4>
+              <ul>
+                <li>Do NOT alert the user</li>
+                <li>Escalate immediately to Security Lead</li>
+                <li>Involve HR and Legal before investigation</li>
+                <li>Preserve evidence</li>
+                <li>Consider containment (restrict access)</li>
+              </ul>
+              <h4>Handoff:</h4> HR, Legal, Security Management
+            </div>
+          </div>
+        </div>
+
+        <h3>Escalation Path</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Escalate To</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Repeat violations by same user</td>
+                <td>Compliance + User's Manager</td>
+              </tr>
+              <tr>
+                <td>Large data volume exfiltrated</td>
+                <td>Security Lead + Legal</td>
+              </tr>
+              <tr>
+                <td>Suspected malicious intent</td>
+                <td>HR + Legal + Security Lead</td>
+              </tr>
+              <tr>
+                <td>Regulated data (PCI, HIPAA)</td>
+                <td>Compliance + Privacy Officer</td>
+              </tr>
+              <tr>
+                <td>Executive involved</td>
+                <td>CISO + HR + Legal</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="queries">
+        <h2>Investigation Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">DLP alerts by user (Microsoft Purview)</span>
+          </div>
+          <div class="query-body">
+<code>InformationProtectionLogs_CL
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> User_s == <span class="st">"user@company.com"</span>
+| <span class="kw">summarize</span> AlertCount = <span class="fn">count</span>() <span class="kw">by</span> 
+    PolicyName_s, SensitiveInfoType_s, ActionTaken_s
+| <span class="kw">order by</span> AlertCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">High-volume DLP alerts</span>
+          </div>
+          <div class="query-body">
+<code>InformationProtectionLogs_CL
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> MatchCount_d > <span class="nu">10</span>  <span class="cm">// More than 10 matches</span>
+| <span class="kw">project</span> TimeGenerated, User_s, PolicyName_s,
+    SensitiveInfoType_s, MatchCount_d, 
+    ActionTaken_s, FileName_s
+| <span class="kw">order by</span> MatchCount_d <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">DLP alerts to personal email domains</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> PersonalDomains = <span class="kw">dynamic</span>([<span class="st">"gmail.com"</span>, <span class="st">"yahoo.com"</span>, 
+    <span class="st">"hotmail.com"</span>, <span class="st">"outlook.com"</span>, <span class="st">"protonmail.com"</span>]);
+InformationProtectionLogs_CL
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> Destination_s <span class="kw">has_any</span> (PersonalDomains)
+| <span class="kw">project</span> TimeGenerated, User_s, SensitiveInfoType_s,
+    Destination_s, ActionTaken_s, MatchCount_d</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Correlate DLP with user sign-in activity</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> DLPUser = <span class="st">"user@company.com"</span>;
+<span class="kw">let</span> DLPTime = <span class="fn">datetime</span>(<span class="st">"2024-01-15T10:00:00Z"</span>);
+SigninLogs
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> ((DLPTime - <span class="nu">1h</span>) .. (DLPTime + <span class="nu">1h</span>))
+| <span class="kw">where</span> UserPrincipalName == DLPUser
+| <span class="kw">project</span> TimeGenerated, IPAddress, Location, 
+    DeviceDetail, AppDisplayName, ResultType</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Most DLP alerts are accidental—determine intent first</li>
+          <li>Check if data was blocked vs actually sent</li>
+          <li>High volume + personal destination = escalate</li>
+          <li>Multiple attempts after block = red flag</li>
+          <li>Always check user status (resigned, PIP, contractor)</li>
+          <li>Coordinate with HR/Legal before confronting suspected insider</li>
+          <li>Document everything regardless of outcome</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="dlp-overview.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">DLP Overview</span>
+          </a>
+          <a href="data-classification.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Data Classification</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

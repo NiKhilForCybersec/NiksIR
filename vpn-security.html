@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPN Security | SOC Analyst Guide</title>
+  <meta name="description" content="VPN security monitoring: authentication events, anomaly detection, and VPN-related attack patterns.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewalls</a>
+          <a href="vpn-security.html" class="nav-link active"><span class="nav-link-icon">🔒</span> VPN Security</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🔐</span> Zero Trust</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>VPN Security</span>
+        </nav>
+        <h1>VPN Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 5.7</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">VPN Overview</a></li>
+          <li><a href="#threats">VPN Threats</a></li>
+          <li><a href="#monitoring">Monitoring</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+          <li><a href="#response">Response Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>VPN Overview</h2>
+        <p>
+          VPNs provide encrypted remote access to corporate networks. As a primary 
+          entry point, VPNs are high-value targets for attackers.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Why VPNs Are Targets</h4>
+            <ul>
+              <li>Direct path into corporate network</li>
+              <li>Often grants broad network access</li>
+              <li>Credentials are valuable</li>
+              <li>May bypass other security controls</li>
+              <li>24/7 availability required</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Common VPN Platforms</h4>
+            <ul>
+              <li>Cisco AnyConnect</li>
+              <li>Palo Alto GlobalProtect</li>
+              <li>Fortinet FortiClient</li>
+              <li>Pulse Secure (Ivanti)</li>
+              <li>Microsoft Always On VPN</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>VPN Threats</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Credential Attacks</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Attack Types:</h4>
+              <ul>
+                <li><strong>Password spraying:</strong> Common passwords across many accounts</li>
+                <li><strong>Credential stuffing:</strong> Leaked credentials from breaches</li>
+                <li><strong>Brute force:</strong> Systematic password guessing</li>
+                <li><strong>Phishing:</strong> Steal VPN credentials via fake login</li>
+              </ul>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Many failed authentications from single IP</li>
+                <li>Failed auths to many accounts from single IP</li>
+                <li>Unusual source countries</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">VPN Appliance Vulnerabilities</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Recent High-Profile Vulns:</h4>
+              <ul>
+                <li>Pulse Secure CVE-2021-22893 (auth bypass)</li>
+                <li>Fortinet CVE-2018-13379 (credential theft)</li>
+                <li>Citrix CVE-2019-19781 (RCE)</li>
+                <li>Palo Alto CVE-2020-2021 (auth bypass)</li>
+              </ul>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Exploitation attempts in web logs</li>
+                <li>Unusual admin access</li>
+                <li>Configuration changes</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Compromised VPN Sessions</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Attack Types:</h4>
+              <ul>
+                <li><strong>Session hijacking:</strong> Steal active VPN session</li>
+                <li><strong>MFA bypass:</strong> Phished credentials + MFA fatigue</li>
+                <li><strong>Token theft:</strong> Steal authentication tokens</li>
+              </ul>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Session from unexpected location</li>
+                <li>Multiple concurrent sessions</li>
+                <li>Session activity after MFA fatigue attack</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>VPN Monitoring</h2>
+
+        <h3>Key VPN Log Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>What to Monitor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Username</strong></td>
+                <td>Which account is connecting</td>
+              </tr>
+              <tr>
+                <td><strong>Source IP</strong></td>
+                <td>Where connection originates</td>
+              </tr>
+              <tr>
+                <td><strong>Auth Result</strong></td>
+                <td>Success/failure, failure reason</td>
+              </tr>
+              <tr>
+                <td><strong>Timestamp</strong></td>
+                <td>When connection occurred</td>
+              </tr>
+              <tr>
+                <td><strong>Duration</strong></td>
+                <td>How long session lasted</td>
+              </tr>
+              <tr>
+                <td><strong>Assigned IP</strong></td>
+                <td>Internal IP assigned to session</td>
+              </tr>
+              <tr>
+                <td><strong>Bytes transferred</strong></td>
+                <td>Data volume (exfiltration indicator)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Detection Rules</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Detection</th>
+                <th>Logic</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Password spraying</td>
+                <td>Many accounts, same IP, failed auth</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+              </tr>
+              <tr>
+                <td>Impossible travel</td>
+                <td>Connections from distant locations in short time</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+              </tr>
+              <tr>
+                <td>Unusual hours</td>
+                <td>Connection outside user's normal pattern</td>
+                <td><span style="color: var(--accent-yellow);">Medium</span></td>
+              </tr>
+              <tr>
+                <td>Concurrent sessions</td>
+                <td>Same user from multiple locations</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+              </tr>
+              <tr>
+                <td>Unusual country</td>
+                <td>Connection from unexpected geolocation</td>
+                <td><span style="color: var(--accent-orange);">Medium-High</span></td>
+              </tr>
+              <tr>
+                <td>High data transfer</td>
+                <td>Unusual volume of data downloaded</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation</h2>
+
+        <h3>VPN Alert Investigation Steps</h3>
+        <ol>
+          <li><strong>Verify the user:</strong> Is this a valid employee? Active account?</li>
+          <li><strong>Check source IP:</strong> Geolocation, reputation, proxy/VPN/Tor?</li>
+          <li><strong>Review timing:</strong> Normal working hours for user?</li>
+          <li><strong>Check for patterns:</strong> Has this IP/location been used before?</li>
+          <li><strong>Correlate with other logs:</strong> What did user do after connecting?</li>
+          <li><strong>Contact user if needed:</strong> Verify legitimate access</li>
+        </ol>
+
+        <h3>Investigation Questions</h3>
+        <ul class="checklist">
+          <li>Is the user traveling? (explains unusual location)</li>
+          <li>Is the source IP a known VPN/proxy service?</li>
+          <li>What resources did the user access after VPN?</li>
+          <li>Were there failed attempts before success?</li>
+          <li>Is there concurrent access from different locations?</li>
+          <li>Does the activity match user's normal behavior?</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">VPN connections by user with geolocation</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Adjust table name for your VPN logs</span>
+VPNLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> User =~ <span class="st">"suspect.user@company.com"</span>
+| <span class="kw">project</span> TimeGenerated, User, SourceIP, 
+    Country, City, AuthResult, SessionDuration
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect impossible travel</span>
+          </div>
+          <div class="query-body">
+<code>VPNLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> AuthResult == <span class="st">"Success"</span>
+| <span class="kw">sort by</span> User, TimeGenerated <span class="kw">asc</span>
+| <span class="kw">extend</span> PrevTime = <span class="fn">prev</span>(TimeGenerated), PrevCountry = <span class="fn">prev</span>(Country)
+| <span class="kw">where</span> User == <span class="fn">prev</span>(User)
+| <span class="kw">extend</span> TimeDiffHours = <span class="fn">datetime_diff</span>(<span class="st">'hour'</span>, TimeGenerated, PrevTime)
+| <span class="kw">where</span> Country != PrevCountry <span class="kw">and</span> TimeDiffHours < <span class="nu">4</span>
+| <span class="kw">project</span> TimeGenerated, User, Country, PrevCountry, TimeDiffHours</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <h3>Suspected Compromised VPN Access</h3>
+        <ol>
+          <li><strong>Terminate session:</strong> Disconnect active VPN session</li>
+          <li><strong>Disable account:</strong> Temporarily disable VPN access</li>
+          <li><strong>Reset credentials:</strong> Force password change</li>
+          <li><strong>Re-enroll MFA:</strong> If MFA may be compromised</li>
+          <li><strong>Review activity:</strong> What did attacker access?</li>
+          <li><strong>Check for persistence:</strong> Did they establish other access?</li>
+        </ol>
+
+        <h3>Block Malicious Sources</h3>
+        <ul>
+          <li>Block source IP at VPN appliance or firewall</li>
+          <li>Block known malicious IP ranges</li>
+          <li>Consider geo-blocking if appropriate</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Geo-Blocking Considerations</div>
+          <p style="margin: 0;">
+            Geo-blocking can prevent attacks from unexpected countries but may impact 
+            legitimate travelers. Consider implementing alerts instead of blocks for 
+            unusual locations, or require additional verification.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>VPNs are high-value targets—direct network access</li>
+          <li>Monitor for password spraying (many accounts, one IP)</li>
+          <li>Impossible travel is high-fidelity detection</li>
+          <li>Concurrent sessions from different locations = compromise indicator</li>
+          <li>Keep VPN appliances patched—critical vulnerabilities are common</li>
+          <li>Correlate VPN access with subsequent network activity</li>
+          <li>Consider Zero Trust/ZTNA as VPN replacement</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="firewall-basics.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Firewall Basics</span>
+          </a>
+          <a href="zero-trust.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Zero Trust</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

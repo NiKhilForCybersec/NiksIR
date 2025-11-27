@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCP Security | SOC Analyst Guide</title>
+  <meta name="description" content="Google Cloud Platform security: Cloud Audit Logs, Security Command Center, common threats, and investigation queries.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="gcp-security.html" class="nav-link active"><span class="nav-link-icon">🔴</span> GCP Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>GCP Security</span>
+        </nav>
+        <h1>GCP Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 6.5</span>
+          <span class="meta-item">~16 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#logging">GCP Logging</a></li>
+          <li><a href="#scc">Security Command Center</a></li>
+          <li><a href="#threats">Common Threats</a></li>
+          <li><a href="#events">Key Events</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+        </ul>
+      </div>
+
+      <section id="logging">
+        <h2>GCP Logging</h2>
+        <p>
+          Google Cloud provides comprehensive logging through Cloud Audit Logs 
+          and Cloud Logging. Understanding these is essential for security monitoring.
+        </p>
+
+        <h3>Log Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Log Type</th>
+                <th>What It Captures</th>
+                <th>Default Enabled</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Admin Activity</strong></td>
+                <td>Config changes, resource modifications</td>
+                <td><span style="color: var(--accent-green);">Yes</span></td>
+              </tr>
+              <tr>
+                <td><strong>Data Access</strong></td>
+                <td>Resource reads, data access</td>
+                <td><span style="color: var(--accent-red);">No (enable)</span></td>
+              </tr>
+              <tr>
+                <td><strong>System Event</strong></td>
+                <td>Google-initiated actions</td>
+                <td><span style="color: var(--accent-green);">Yes</span></td>
+              </tr>
+              <tr>
+                <td><strong>Policy Denied</strong></td>
+                <td>Access denied by policy</td>
+                <td><span style="color: var(--accent-green);">Yes</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Enable Data Access Logs</div>
+          <p style="margin: 0;">
+            Data Access logs are critical for security but disabled by default. 
+            Enable them for sensitive resources (BigQuery, Cloud Storage, etc.) 
+            to detect data exfiltration.
+          </p>
+        </div>
+
+        <h3>Key Log Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>protoPayload.methodName</code></td>
+                <td>API method called (action taken)</td>
+              </tr>
+              <tr>
+                <td><code>protoPayload.authenticationInfo.principalEmail</code></td>
+                <td>Who performed the action</td>
+              </tr>
+              <tr>
+                <td><code>protoPayload.requestMetadata.callerIp</code></td>
+                <td>Source IP address</td>
+              </tr>
+              <tr>
+                <td><code>resource.type</code></td>
+                <td>Type of resource affected</td>
+              </tr>
+              <tr>
+                <td><code>protoPayload.serviceName</code></td>
+                <td>GCP service (compute, storage, etc.)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="scc">
+        <h2>Security Command Center</h2>
+        <p>
+          Security Command Center (SCC) is GCP's native security management platform.
+        </p>
+
+        <h3>SCC Components</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Function</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Security Health Analytics</strong></td>
+                <td>Misconfigurations, vulnerabilities</td>
+              </tr>
+              <tr>
+                <td><strong>Event Threat Detection</strong></td>
+                <td>Threat detection from logs</td>
+              </tr>
+              <tr>
+                <td><strong>Container Threat Detection</strong></td>
+                <td>GKE runtime threats</td>
+              </tr>
+              <tr>
+                <td><strong>Web Security Scanner</strong></td>
+                <td>App vulnerability scanning</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Event Threat Detection Findings</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Finding Type</th>
+                <th>What It Detects</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Malware</strong></td>
+                <td>Cryptomining, malicious binaries</td>
+              </tr>
+              <tr>
+                <td><strong>Persistence</strong></td>
+                <td>SSH key additions, IAM grants</td>
+              </tr>
+              <tr>
+                <td><strong>Credential Access</strong></td>
+                <td>Service account key creation</td>
+              </tr>
+              <tr>
+                <td><strong>Evasion</strong></td>
+                <td>Audit logging disabled</td>
+              </tr>
+              <tr>
+                <td><strong>Exfiltration</strong></td>
+                <td>Data copied to external location</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>Common GCP Threats</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Service Account Key Theft</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Service account keys leaked in code, logs, or stolen from metadata.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>New service account key created</li>
+                <li>Service account used from unusual IP</li>
+                <li>Key downloaded</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Monitor CreateServiceAccountKey, unusual authentication patterns.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Public Cloud Storage</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Cloud Storage buckets made publicly accessible.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>SetIamPolicy with allUsers or allAuthenticatedUsers</li>
+                <li>Public access grants</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Alert on IAM policy changes granting public access.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Compute Instance Compromise</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>VMs compromised for cryptomining or other abuse.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>High CPU GPU-intensive instances</li>
+                <li>Connections to mining pools</li>
+                <li>Unusual instance creation</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>SCC cryptomining findings, billing alerts, VPC flow logs.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">IAM Privilege Escalation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Attacker escalates from limited to admin permissions.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>SetIamPolicy granting owner/editor roles</li>
+                <li>Service account impersonation</li>
+                <li>New project-level bindings</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Monitor IAM policy changes, especially to privileged roles.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="events">
+        <h2>Key Events to Monitor</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Risk</th>
+                <th>Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CreateServiceAccountKey</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Persistent credential created</td>
+              </tr>
+              <tr>
+                <td>SetIamPolicy</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Permission changes</td>
+              </tr>
+              <tr>
+                <td>compute.instances.insert</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>New VM created (cryptomining)</td>
+              </tr>
+              <tr>
+                <td>compute.firewalls.insert</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Firewall rule added</td>
+              </tr>
+              <tr>
+                <td>storage.setIamPermissions</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Bucket permissions changed</td>
+              </tr>
+              <tr>
+                <td>DeleteSink (logging)</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+                <td>Audit logging disrupted</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Queries</h2>
+
+        <h3>Cloud Logging Query Syntax</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Cloud Logging Queries</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);"># Service account key creation</span>
+protoPayload.methodName="google.iam.admin.v1.CreateServiceAccountKey"
+
+<span style="color: var(--accent-cyan);"># IAM policy changes</span>
+protoPayload.methodName="SetIamPolicy"
+
+<span style="color: var(--accent-cyan);"># Failed authentication attempts</span>
+protoPayload.status.code="7"  -- PERMISSION_DENIED
+
+<span style="color: var(--accent-cyan);"># Activity by specific user</span>
+protoPayload.authenticationInfo.principalEmail="user@domain.com"
+
+<span style="color: var(--accent-cyan);"># Compute instance creation</span>
+protoPayload.methodName="v1.compute.instances.insert"
+
+<span style="color: var(--accent-cyan);"># Public bucket access</span>
+protoPayload.methodName="storage.setIamPermissions"
+protoPayload.serviceData.policyDelta.bindingDeltas.member="allUsers"</pre>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">GCP high-risk events (if logs in Sentinel)</span>
+          </div>
+          <div class="query-body">
+<code>GCPAuditLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> MethodName <span class="kw">in</span> (
+    <span class="st">"google.iam.admin.v1.CreateServiceAccountKey"</span>,
+    <span class="st">"SetIamPolicy"</span>,
+    <span class="st">"v1.compute.instances.insert"</span>
+)
+| <span class="kw">project</span> TimeGenerated, MethodName, PrincipalEmail,
+    CallerIp, ResourceName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Enable Data Access logs for sensitive resources</li>
+          <li>Service account key creation is high-risk—monitor closely</li>
+          <li>SetIamPolicy changes can lead to privilege escalation</li>
+          <li>Use Security Command Center for threat detection</li>
+          <li>Watch for compute instance creation (cryptomining)</li>
+          <li>Alert on public access grants to Cloud Storage</li>
+          <li>Monitor for logging sink deletion (covering tracks)</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="azure-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Azure Security</span>
+          </a>
+          <a href="cloud-iam.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Cloud IAM</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

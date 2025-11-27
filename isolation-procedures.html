@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Isolation Procedures | SOC Analyst Guide</title>
+  <meta name="description" content="Device isolation procedures: when to isolate, isolation methods, communication, and post-isolation steps.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔍</span> EDR Fundamentals</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="isolation-procedures.html" class="nav-link active"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Isolation Procedures</span>
+        </nav>
+        <h1>Device Isolation Procedures</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 4.7</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#when">When to Isolate</a></li>
+          <li><a href="#methods">Isolation Methods</a></li>
+          <li><a href="#procedure">Isolation Procedure</a></li>
+          <li><a href="#communication">User Communication</a></li>
+          <li><a href="#post">Post-Isolation Steps</a></li>
+          <li><a href="#release">Releasing Isolation</a></li>
+        </ul>
+      </div>
+
+      <section id="when">
+        <h2>When to Isolate</h2>
+        <p>
+          Device isolation is a critical containment action that cuts off a 
+          compromised system from the network while maintaining EDR visibility.
+        </p>
+
+        <h3>Isolation Decision Matrix</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Isolate?</th>
+                <th>Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Active ransomware execution</td>
+                <td><span style="color: var(--accent-green);">✓ Yes - Immediately</span></td>
+                <td>Prevent spread to network shares</td>
+              </tr>
+              <tr>
+                <td>Confirmed C2 communication</td>
+                <td><span style="color: var(--accent-green);">✓ Yes - Immediately</span></td>
+                <td>Cut attacker access</td>
+              </tr>
+              <tr>
+                <td>Active lateral movement</td>
+                <td><span style="color: var(--accent-green);">✓ Yes - Immediately</span></td>
+                <td>Contain spread</td>
+              </tr>
+              <tr>
+                <td>Credential theft detected</td>
+                <td><span style="color: var(--accent-green);">✓ Yes</span></td>
+                <td>Prevent credential use</td>
+              </tr>
+              <tr>
+                <td>Malware execution (contained)</td>
+                <td><span style="color: var(--accent-yellow);">Consider</span></td>
+                <td>If EDR blocked, may not need</td>
+              </tr>
+              <tr>
+                <td>Suspicious but unconfirmed</td>
+                <td><span style="color: var(--accent-yellow);">Investigate first</span></td>
+                <td>Avoid unnecessary business impact</td>
+              </tr>
+              <tr>
+                <td>PUP/adware detected</td>
+                <td><span style="color: var(--accent-red);">✗ No</span></td>
+                <td>Low risk, handle without isolation</td>
+              </tr>
+              <tr>
+                <td>Critical server (production)</td>
+                <td><span style="color: var(--accent-orange);">Escalate first</span></td>
+                <td>Business impact assessment needed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">When in Doubt</div>
+          <p style="margin: 0;">
+            If you're uncertain whether to isolate, escalate to a senior analyst or 
+            manager. For confirmed active threats (ransomware, C2), err on the side 
+            of isolation—it's easier to release than to recover from spread.
+          </p>
+        </div>
+      </section>
+
+      <section id="methods">
+        <h2>Isolation Methods</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>How It Works</th>
+                <th>Pros</th>
+                <th>Cons</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>EDR Isolation</strong></td>
+                <td>Blocks network except EDR communication</td>
+                <td>Quick, maintains visibility, reversible</td>
+                <td>Requires EDR agent online</td>
+              </tr>
+              <tr>
+                <td><strong>Network ACL/Firewall</strong></td>
+                <td>Block at network level by IP/MAC</td>
+                <td>Works even if EDR compromised</td>
+                <td>Loses all visibility</td>
+              </tr>
+              <tr>
+                <td><strong>VLAN Quarantine</strong></td>
+                <td>Move to isolated network segment</td>
+                <td>Controlled access for investigation</td>
+                <td>Requires network team</td>
+              </tr>
+              <tr>
+                <td><strong>Physical Disconnect</strong></td>
+                <td>Unplug network cable</td>
+                <td>Guaranteed isolation</td>
+                <td>Loses all remote access, last resort</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>EDR Isolation (Preferred)</h3>
+        <div class="card">
+          <h4>What EDR Isolation Does:</h4>
+          <ul>
+            <li>Blocks all inbound and outbound network traffic</li>
+            <li>Allows communication only with EDR cloud backend</li>
+            <li>Maintains ability to query device and collect data</li>
+            <li>Allows remote response actions (live response)</li>
+          </ul>
+          <h4>What Still Works:</h4>
+          <ul>
+            <li>EDR telemetry collection</li>
+            <li>Remote investigation commands</li>
+            <li>File collection and analysis</li>
+            <li>Process termination</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="procedure">
+        <h2>Isolation Procedure</h2>
+
+        <h3>Pre-Isolation Checklist</h3>
+        <ul class="checklist">
+          <li>Confirm threat is real (not false positive)</li>
+          <li>Identify device owner and business impact</li>
+          <li>Document current device state (processes, connections)</li>
+          <li>Notify shift lead/manager if high-impact system</li>
+          <li>Prepare user communication</li>
+        </ul>
+
+        <h3>Isolation Steps</h3>
+        <ol>
+          <li><strong>Document the decision</strong>
+            <ul>
+              <li>Record why isolation is needed in ticket</li>
+              <li>Note time, analyst name, threat details</li>
+            </ul>
+          </li>
+          <li><strong>Capture volatile data (if time permits)</strong>
+            <ul>
+              <li>Network connections (netstat)</li>
+              <li>Running processes</li>
+              <li>Current users</li>
+            </ul>
+          </li>
+          <li><strong>Execute isolation in EDR console</strong>
+            <ul>
+              <li>Locate device</li>
+              <li>Select isolation action</li>
+              <li>Confirm action</li>
+            </ul>
+          </li>
+          <li><strong>Verify isolation is active</strong>
+            <ul>
+              <li>Check device status shows isolated</li>
+              <li>Confirm EDR connectivity maintained</li>
+            </ul>
+          </li>
+          <li><strong>Notify stakeholders</strong>
+            <ul>
+              <li>User (if reachable)</li>
+              <li>User's manager</li>
+              <li>Service desk</li>
+            </ul>
+          </li>
+        </ol>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Speed vs Thoroughness</div>
+          <p style="margin: 0;">
+            For active threats like ransomware: isolate first, document after. 
+            Every second of delay risks more damage. For less urgent situations, 
+            follow the full checklist.
+          </p>
+        </div>
+      </section>
+
+      <section id="communication">
+        <h2>User Communication</h2>
+
+        <h3>Notification Template</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">User Notification</span>
+          </div>
+          <div class="terminal-body">
+<pre><strong>Subject:</strong> Security Alert - Your Computer Has Been Isolated
+
+Hi [User Name],
+
+Our security team detected potentially malicious activity on 
+your computer ([Device Name]). As a precaution, we have 
+temporarily isolated your device from the network.
+
+<strong>What this means:</strong>
+- Your computer cannot access network resources or the internet
+- This is a protective measure, not an indication of wrongdoing
+- Your files on the device are safe
+
+<strong>What you should do:</strong>
+- Do NOT shut down or restart your computer
+- Do NOT attempt to reconnect to the network
+- Contact the Security team at [phone/email] if you have questions
+
+<strong>Next steps:</strong>
+A security analyst will contact you shortly to discuss the 
+situation and coordinate remediation.
+
+Thank you for your patience.
+Security Operations Team</pre>
+          </div>
+        </div>
+
+        <h3>Communication Tips</h3>
+        <ul>
+          <li>Be calm and reassuring—users may panic</li>
+          <li>Avoid blame or accusatory language</li>
+          <li>Explain it's a protective measure</li>
+          <li>Give clear instructions (don't restart)</li>
+          <li>Provide contact information for questions</li>
+        </ul>
+      </section>
+
+      <section id="post">
+        <h2>Post-Isolation Steps</h2>
+
+        <h3>Immediate Actions</h3>
+        <ul class="checklist">
+          <li>Collect investigation package from EDR</li>
+          <li>Review process tree and timeline</li>
+          <li>Check for credential theft indicators</li>
+          <li>Hunt for same IOCs on other systems</li>
+          <li>Assess scope—are other systems affected?</li>
+        </ul>
+
+        <h3>Investigation Actions</h3>
+        <ul class="checklist">
+          <li>Analyze malware sample if available</li>
+          <li>Identify initial access vector</li>
+          <li>Determine attacker actions on system</li>
+          <li>Check for persistence mechanisms</li>
+          <li>Assess data access/exfiltration</li>
+        </ul>
+
+        <h3>Password/Account Actions</h3>
+        <p>If credentials may be compromised:</p>
+        <ul class="checklist">
+          <li>Reset user's password</li>
+          <li>Revoke active sessions</li>
+          <li>Re-register MFA if warranted</li>
+          <li>Check for unauthorized changes to account</li>
+        </ul>
+      </section>
+
+      <section id="release">
+        <h2>Releasing Isolation</h2>
+
+        <h3>Release Criteria</h3>
+        <ul class="checklist">
+          <li>Threat has been identified and eradicated</li>
+          <li>Malware removed/quarantined</li>
+          <li>Persistence mechanisms removed</li>
+          <li>No ongoing C2 communication</li>
+          <li>User credentials reset if compromised</li>
+          <li>Device passes security scan</li>
+        </ul>
+
+        <h3>Release Decision Authority</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Who Can Release</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>False positive confirmed</td>
+                <td>L1/L2 Analyst</td>
+              </tr>
+              <tr>
+                <td>Low-severity threat remediated</td>
+                <td>L2 Analyst</td>
+              </tr>
+              <tr>
+                <td>High-severity incident</td>
+                <td>L3/Manager approval</td>
+              </tr>
+              <tr>
+                <td>Critical system</td>
+                <td>Manager + Business approval</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Release Process</h3>
+        <ol>
+          <li>Verify all remediation complete</li>
+          <li>Document remediation actions taken</li>
+          <li>Get approval if required</li>
+          <li>Release isolation in EDR console</li>
+          <li>Verify connectivity restored</li>
+          <li>Notify user device is back online</li>
+          <li>Monitor for recurrence (24-48 hours)</li>
+        </ol>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Isolate immediately for active threats (ransomware, C2, lateral movement)</li>
+          <li>EDR isolation is preferred—maintains visibility and remote access</li>
+          <li>Document the decision and notify stakeholders</li>
+          <li>Communicate clearly with affected users—avoid blame</li>
+          <li>Don't release until threat is fully eradicated</li>
+          <li>Get appropriate approval before releasing high-severity isolations</li>
+          <li>Monitor for recurrence after release</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="edr-investigation.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR Investigation</span>
+          </a>
+          <a href="xdr-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">XDR Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

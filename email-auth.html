@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPF/DKIM/DMARC | SOC Analyst Guide</title>
+  <meta name="description" content="Email authentication protocols explained: SPF, DKIM, DMARC - how they work and how to interpret results.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Header Analysis</a>
+          <a href="email-auth.html" class="nav-link active"><span class="nav-link-icon">🔐</span> SPF/DKIM/DMARC</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#email">Email & Phishing</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>SPF/DKIM/DMARC</span>
+        </nav>
+        <h1>SPF/DKIM/DMARC</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 7.3</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#spf">SPF</a></li>
+          <li><a href="#dkim">DKIM</a></li>
+          <li><a href="#dmarc">DMARC</a></li>
+          <li><a href="#together">How They Work Together</a></li>
+          <li><a href="#investigation">Investigation Guide</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Email Authentication Overview</h2>
+        <p>
+          SPF, DKIM, and DMARC work together to verify that emails actually come from who they 
+          claim to be from. Understanding these is crucial for investigating phishing.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">SPF</h4>
+            <p><strong>Sender Policy Framework</strong></p>
+            <p>Verifies the sending server is authorized to send for the domain.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">DKIM</h4>
+            <p><strong>DomainKeys Identified Mail</strong></p>
+            <p>Cryptographically signs emails to prove authenticity.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">DMARC</h4>
+            <p><strong>Domain-based Message Authentication</strong></p>
+            <p>Tells receivers what to do when SPF/DKIM fail.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="spf">
+        <h2>SPF - Sender Policy Framework</h2>
+
+        <h3>What SPF Does</h3>
+        <p>
+          SPF allows domain owners to specify which mail servers are authorized to send email 
+          on behalf of their domain. It's a DNS TXT record that lists approved senders.
+        </p>
+
+        <div class="card">
+          <h3>How SPF Works</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Email Received</strong><br>
+                <small>From: user@example.com</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Check DNS</strong><br>
+                <small>Query example.com SPF</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Compare IP</strong><br>
+                <small>Is sender IP in list?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Result</strong><br>
+                <small>Pass/Fail/SoftFail</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Example SPF Record</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">DNS TXT Record</span>
+          </div>
+          <div class="terminal-body">
+<pre>v=spf1 include:_spf.google.com include:spf.protection.outlook.com ip4:203.0.113.0/24 -all
+
+<span style="color: var(--text-muted);">v=spf1         = SPF version 1
+include:...    = Include another domain's SPF
+ip4:...        = Authorize this IP range
+-all           = Reject all others (hard fail)</span></pre>
+          </div>
+        </div>
+
+        <h3>SPF Results</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Result</th>
+                <th>Meaning</th>
+                <th>Typical Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-green);">Pass</span></td>
+                <td>IP is authorized to send</td>
+                <td>Accept normally</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-red);">Fail (-all)</span></td>
+                <td>IP is NOT authorized</td>
+                <td>Reject or quarantine</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);">SoftFail (~all)</span></td>
+                <td>IP is probably not authorized</td>
+                <td>Accept but mark suspicious</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--text-muted);">Neutral (?all)</span></td>
+                <td>No assertion made</td>
+                <td>Accept normally</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--text-muted);">None</span></td>
+                <td>No SPF record published</td>
+                <td>No SPF protection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="dkim">
+        <h2>DKIM - DomainKeys Identified Mail</h2>
+
+        <h3>What DKIM Does</h3>
+        <p>
+          DKIM adds a digital signature to emails that proves the message hasn't been modified 
+          and actually originated from the claimed domain.
+        </p>
+
+        <div class="card">
+          <h3>How DKIM Works</h3>
+          <ol>
+            <li>Sending server creates hash of message headers/body</li>
+            <li>Hash is encrypted with private key → signature</li>
+            <li>Signature added to email header (DKIM-Signature)</li>
+            <li>Receiving server fetches public key from DNS</li>
+            <li>Decrypts signature, compares with calculated hash</li>
+            <li>Match = Pass; Mismatch = Fail</li>
+          </ol>
+        </div>
+
+        <h3>DKIM-Signature Header</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">DKIM Header</span>
+          </div>
+          <div class="terminal-body">
+<pre>DKIM-Signature: v=1; a=rsa-sha256; d=example.com; s=selector1;
+    h=from:to:subject:date; bh=abc123...; b=xyz789...
+
+<span style="color: var(--text-muted);">d=example.com  = Signing domain
+s=selector1    = Selector (finds public key)
+h=from:to:...  = Headers that were signed
+bh=...         = Body hash
+b=...          = Signature</span></pre>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">DKIM Protects Against</div>
+          <ul style="margin: 0;">
+            <li>Message modification in transit</li>
+            <li>Some forms of domain spoofing</li>
+            <li>Forged headers (if signed)</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="dmarc">
+        <h2>DMARC - Domain-based Message Authentication</h2>
+
+        <h3>What DMARC Does</h3>
+        <p>
+          DMARC builds on SPF and DKIM by telling receiving servers what to do when 
+          authentication fails, and provides reporting back to domain owners.
+        </p>
+
+        <h3>DMARC Policy Options</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Policy (p=)</th>
+                <th>Action</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>none</strong></td>
+                <td>Monitor only, take no action</td>
+                <td>Initial deployment, testing</td>
+              </tr>
+              <tr>
+                <td><strong>quarantine</strong></td>
+                <td>Send to spam/junk folder</td>
+                <td>Intermediate enforcement</td>
+              </tr>
+              <tr>
+                <td><strong>reject</strong></td>
+                <td>Block the email entirely</td>
+                <td>Full protection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Example DMARC Record</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">_dmarc.example.com TXT</span>
+          </div>
+          <div class="terminal-body">
+<pre>v=DMARC1; p=reject; rua=mailto:dmarc@example.com; pct=100
+
+<span style="color: var(--text-muted);">v=DMARC1    = DMARC version
+p=reject    = Policy: reject failed emails
+rua=...     = Send aggregate reports here
+pct=100     = Apply to 100% of emails</span></pre>
+          </div>
+        </div>
+
+        <h3>DMARC Alignment</h3>
+        <p>
+          For DMARC to pass, either SPF or DKIM must pass <strong>and</strong> be aligned 
+          (domain matches the "From" header).
+        </p>
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h4>DMARC Pass Requirements</h4>
+          <p><strong>Option 1:</strong> SPF passes AND SPF domain aligns with From domain</p>
+          <p><strong>Option 2:</strong> DKIM passes AND DKIM domain aligns with From domain</p>
+          <p><em>Only ONE of these needs to be true for DMARC to pass.</em></p>
+        </div>
+      </section>
+
+      <section id="together">
+        <h2>How They Work Together</h2>
+
+        <div class="card">
+          <h3>Authentication Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. SPF Check</strong><br>
+                <small>Is sender IP authorized?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. DKIM Check</strong><br>
+                <small>Is signature valid?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. DMARC Check</strong><br>
+                <small>Alignment + Policy</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Action</strong><br>
+                <small>Accept/Quarantine/Reject</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Result Combinations</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>SPF</th>
+                <th>DKIM</th>
+                <th>DMARC</th>
+                <th>Interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>✅ Pass</td>
+                <td>✅ Pass</td>
+                <td>✅ Pass</td>
+                <td>Legitimate email, fully authenticated</td>
+              </tr>
+              <tr>
+                <td>✅ Pass</td>
+                <td>❌ Fail</td>
+                <td>✅ Pass</td>
+                <td>Legitimate (DKIM may fail in forwarding)</td>
+              </tr>
+              <tr>
+                <td>❌ Fail</td>
+                <td>✅ Pass</td>
+                <td>✅ Pass</td>
+                <td>Legitimate (common with email services)</td>
+              </tr>
+              <tr>
+                <td>❌ Fail</td>
+                <td>❌ Fail</td>
+                <td>❌ Fail</td>
+                <td>Likely spoofed - investigate</td>
+              </tr>
+              <tr>
+                <td>✅ Pass</td>
+                <td>✅ Pass</td>
+                <td>❌ Fail</td>
+                <td>Alignment issue - check From domain</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Guide</h2>
+
+        <h3>Quick Check Process</h3>
+        <ul class="checklist">
+          <li>Look for Authentication-Results header</li>
+          <li>Check SPF result - pass/fail?</li>
+          <li>Check DKIM result - pass/fail?</li>
+          <li>Check DMARC result - pass/fail?</li>
+          <li>If any fail, compare From domain with Return-Path/DKIM domain</li>
+          <li>Check domain reputation and registration date</li>
+        </ul>
+
+        <h3>Lookup Commands</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">Bash</span>
+            <span class="query-title">Check SPF record</span>
+          </div>
+          <div class="query-body">
+<code>nslookup -type=txt example.com
+<span class="cm"># or</span>
+dig txt example.com</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">Bash</span>
+            <span class="query-title">Check DMARC record</span>
+          </div>
+          <div class="query-body">
+<code>nslookup -type=txt _dmarc.example.com
+<span class="cm"># or</span>
+dig txt _dmarc.example.com</code>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Common False Positive: Email Forwarding</div>
+          <p style="margin: 0;">
+            Forwarded emails often fail SPF because the forwarding server's IP isn't in the 
+            original sender's SPF record. DKIM usually survives forwarding if the message isn't 
+            modified. Check if the email was forwarded before concluding it's spoofed.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li><strong>SPF:</strong> Verifies sending server is authorized (IP-based)</li>
+          <li><strong>DKIM:</strong> Cryptographic signature proves authenticity</li>
+          <li><strong>DMARC:</strong> Policy enforcement + alignment requirement</li>
+          <li>All three should pass for fully authenticated email</li>
+          <li>SPF/DKIM can fail legitimately (forwarding, mailing lists)</li>
+          <li>DMARC fail with p=reject is strong spoofing indicator</li>
+          <li>Always check the actual domains, not just pass/fail</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="email-headers.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Header Analysis</span>
+          </a>
+          <a href="bec-attacks.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">BEC Attacks</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

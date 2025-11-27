@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insider Threat Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Response playbook for insider threat incidents: indicators, investigation approaches, and coordination with HR/Legal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-insider-threat.html" class="nav-link active"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🔒</span> DLP Overview</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Insider Threat</span>
+        </nav>
+        <h1>🕵️ Insider Threat Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">PB-08</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Critical Banner -->
+      <div class="callout callout-danger">
+        <div class="callout-title">⚠️ Sensitive Investigation</div>
+        <p style="margin: 0;">
+          Insider threat investigations are highly sensitive. <strong>Always coordinate with HR and Legal 
+          before taking action.</strong> Maintain strict confidentiality—do not discuss with colleagues 
+          outside the investigation team.
+        </p>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-purple);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">DLP alerts, behavioral anomalies, HR referral</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p2">P2 High</span></p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Required Coordination</strong>
+            <p style="margin: 0;">HR, Legal, Management</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Confidentiality</strong>
+            <p style="margin: 0;">Need-to-know only</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#types">Insider Threat Types</a></li>
+          <li><a href="#indicators">Risk Indicators</a></li>
+          <li><a href="#triggers">Common Triggers</a></li>
+          <li><a href="#investigation">Investigation Approach</a></li>
+          <li><a href="#coordination">Stakeholder Coordination</a></li>
+          <li><a href="#response">Response Options</a></li>
+        </ul>
+      </div>
+
+      <section id="types">
+        <h2>Insider Threat Types</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Malicious Insider</h4>
+            <p><strong>Intentional harm</strong></p>
+            <ul>
+              <li>Data theft for personal gain</li>
+              <li>Selling information to competitors</li>
+              <li>Sabotage out of revenge</li>
+              <li>Espionage for foreign actors</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Negligent Insider</h4>
+            <p><strong>Unintentional harm</strong></p>
+            <ul>
+              <li>Accidental data exposure</li>
+              <li>Ignoring security policies</li>
+              <li>Falling for phishing</li>
+              <li>Poor data handling practices</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Compromised Insider</h4>
+            <p><strong>Account hijacked</strong></p>
+            <ul>
+              <li>Credentials stolen by attacker</li>
+              <li>Malware on endpoint</li>
+              <li>Social engineering victim</li>
+              <li>Acting under coercion</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Investigation Approach</div>
+          <p style="margin: 0;">
+            Initially, assume the insider may be compromised (not malicious). Investigate to determine 
+            intent before escalating as malicious insider. Many apparent insider threats are actually 
+            account compromises.
+          </p>
+        </div>
+      </section>
+
+      <section id="indicators">
+        <h2>Risk Indicators</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Technical Indicators</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Indicator</th><th>Description</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>Unusual data access</strong></td><td>Accessing files outside normal job scope</td></tr>
+                    <tr><td><strong>Large downloads/transfers</strong></td><td>Bulk file downloads, large email attachments</td></tr>
+                    <tr><td><strong>USB device usage</strong></td><td>Copying data to removable media</td></tr>
+                    <tr><td><strong>Cloud storage uploads</strong></td><td>Personal Dropbox, Google Drive usage</td></tr>
+                    <tr><td><strong>After-hours activity</strong></td><td>Unusual login times</td></tr>
+                    <tr><td><strong>Email to personal accounts</strong></td><td>Forwarding work data to personal email</td></tr>
+                    <tr><td><strong>Printer activity</strong></td><td>Unusual print volume</td></tr>
+                    <tr><td><strong>Privilege escalation attempts</strong></td><td>Trying to access unauthorized systems</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Behavioral/HR Indicators</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><em>These come from HR/management, not SOC monitoring:</em></p>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Indicator</th><th>Risk</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><strong>Notice of resignation</strong></td><td>High flight risk for data theft</td></tr>
+                    <tr><td><strong>Passed over for promotion</strong></td><td>Disgruntlement</td></tr>
+                    <tr><td><strong>Performance issues/PIP</strong></td><td>Anticipating termination</td></tr>
+                    <tr><td><strong>Financial difficulties</strong></td><td>Motivation for theft</td></tr>
+                    <tr><td><strong>Conflicts with management</strong></td><td>Revenge motivation</td></tr>
+                    <tr><td><strong>Working for competitor</strong></td><td>Dual employment discovered</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">High-Risk Combinations</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Multiple indicators together increase risk significantly:</p>
+              <ul>
+                <li><strong>Resigned + Large downloads:</strong> Stealing data before departure</li>
+                <li><strong>PIP + After-hours access:</strong> Preparing for termination</li>
+                <li><strong>Conflict + USB usage:</strong> Potential sabotage/theft</li>
+                <li><strong>Financial issues + Accessing customer data:</strong> Selling information</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="triggers">
+        <h2>Common Investigation Triggers</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Trigger Source</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>DLP Alert</strong></td>
+                <td>Sensitive data to personal email, cloud upload blocked</td>
+              </tr>
+              <tr>
+                <td><strong>HR Referral</strong></td>
+                <td>Employee resignation, termination pending, investigation request</td>
+              </tr>
+              <tr>
+                <td><strong>Manager Report</strong></td>
+                <td>Suspicious behavior observed, policy violations</td>
+              </tr>
+              <tr>
+                <td><strong>UEBA Alert</strong></td>
+                <td>Anomalous behavior score, deviation from baseline</td>
+              </tr>
+              <tr>
+                <td><strong>Anonymous Tip</strong></td>
+                <td>Ethics hotline, whistleblower report</td>
+              </tr>
+              <tr>
+                <td><strong>External Report</strong></td>
+                <td>Competitor has your data, law enforcement contact</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Approach</h2>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Before You Begin</div>
+          <ul style="margin: 0;">
+            <li>Get HR/Legal authorization for investigation scope</li>
+            <li>Confirm what data you're authorized to access</li>
+            <li>Document authorization and investigation boundaries</li>
+            <li>Do NOT alert the subject of investigation</li>
+          </ul>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Baseline User Activity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Understand what's normal for this user:</p>
+              <ul>
+                <li>What systems do they normally access?</li>
+                <li>What are their typical working hours?</li>
+                <li>What data do they legitimately need?</li>
+                <li>What devices do they use?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Review Recent Activity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Look for deviations from baseline:</p>
+              <ul>
+                <li>File access patterns (SharePoint, file shares)</li>
+                <li>Email activity (volume, external recipients)</li>
+                <li>Cloud application usage</li>
+                <li>Endpoint activity (USB, downloads)</li>
+                <li>Authentication patterns (times, locations)</li>
+              </ul>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">User activity summary</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+<span class="kw">let</span> lookback = <span class="nu">30d</span>;
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(lookback)
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">summarize</span> EventCount = <span class="fn">count</span>() <span class="kw">by</span> Operation, OfficeWorkload, 
+    bin(TimeGenerated, <span class="nu">1d</span>)
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Focus on Sensitive Data</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What sensitive files were accessed?</li>
+                <li>Any DLP policy violations?</li>
+                <li>Data classification of accessed content?</li>
+                <li>Was data downloaded, copied, or shared?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Build Timeline</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Construct chronological sequence of events:</p>
+              <ul>
+                <li>When did suspicious activity begin?</li>
+                <li>Does it correlate with any life/work events?</li>
+                <li>Is there a pattern (daily, weekends)?</li>
+                <li>What was the progression?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 5: Assess Intent</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Determine if activity appears malicious or accidental:</p>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Suggests Malicious</th><th>Suggests Accidental/Negligent</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Deliberate obfuscation (encryption, renaming)</td><td>Single incident</td></tr>
+                    <tr><td>Covering tracks (deleting logs)</td><td>Immediately reported</td></tr>
+                    <tr><td>Use of personal accounts/devices</td><td>Followed by correction</td></tr>
+                    <tr><td>Pattern of activity over time</td><td>Within normal job scope</td></tr>
+                    <tr><td>Accessing data outside job need</td><td>Reasonable explanation exists</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="coordination">
+        <h2>Stakeholder Coordination</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Stakeholder</th>
+                <th>Role in Investigation</th>
+                <th>When to Involve</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HR</strong></td>
+                <td>Employment context, interview coordination, disciplinary action</td>
+                <td>Before any investigation begins</td>
+              </tr>
+              <tr>
+                <td><strong>Legal</strong></td>
+                <td>Legal risk assessment, evidence handling, litigation hold</td>
+                <td>Before any investigation begins</td>
+              </tr>
+              <tr>
+                <td><strong>Management</strong></td>
+                <td>Business context, user's manager for background</td>
+                <td>With HR guidance</td>
+              </tr>
+              <tr>
+                <td><strong>Physical Security</strong></td>
+                <td>Badge access review, building access</td>
+                <td>If physical access relevant</td>
+              </tr>
+              <tr>
+                <td><strong>Privacy/Compliance</strong></td>
+                <td>Data protection, regulatory requirements</td>
+                <td>If regulated data involved</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Do NOT</div>
+          <ul style="margin: 0;">
+            <li>Interview the subject without HR/Legal guidance</li>
+            <li>Discuss investigation with unauthorized parties</li>
+            <li>Access data beyond authorized scope</li>
+            <li>Alert the subject through unusual account activity</li>
+            <li>Make assumptions about guilt or intent</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Options</h2>
+        <p>Response decisions are made by HR/Legal/Management, not SOC:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>When Used</th>
+                <th>Who Decides</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Continue Monitoring</strong></td>
+                <td>Gather more evidence, unclear situation</td>
+                <td>Security + HR</td>
+              </tr>
+              <tr>
+                <td><strong>Enhanced Monitoring</strong></td>
+                <td>High-risk user, pre-termination period</td>
+                <td>HR + Legal</td>
+              </tr>
+              <tr>
+                <td><strong>Access Restriction</strong></td>
+                <td>Limit access to sensitive data/systems</td>
+                <td>Management + HR</td>
+              </tr>
+              <tr>
+                <td><strong>Interview/Confrontation</strong></td>
+                <td>Sufficient evidence, seek explanation</td>
+                <td>HR + Legal</td>
+              </tr>
+              <tr>
+                <td><strong>Account Suspension</strong></td>
+                <td>Immediate risk, pending investigation</td>
+                <td>HR + Management</td>
+              </tr>
+              <tr>
+                <td><strong>Termination</strong></td>
+                <td>Policy violation confirmed</td>
+                <td>HR + Legal + Management</td>
+              </tr>
+              <tr>
+                <td><strong>Law Enforcement</strong></td>
+                <td>Criminal activity, significant theft/fraud</td>
+                <td>Legal + Executive</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Coordinate:</strong> Get HR/Legal authorization before investigating</li>
+          <li><strong>Baseline:</strong> Understand normal user behavior</li>
+          <li><strong>Investigate:</strong> Review activity, focus on sensitive data</li>
+          <li><strong>Timeline:</strong> Build chronological sequence</li>
+          <li><strong>Assess:</strong> Malicious vs. negligent vs. compromised</li>
+          <li><strong>Report:</strong> Provide findings to HR/Legal for decision</li>
+          <li><strong>Maintain confidentiality throughout</strong></li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-data-exfiltration.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Data Exfiltration</span>
+          </a>
+          <a href="../index.html#playbooks" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Section →</span>
+            <span class="footer-link-title">All Playbooks</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

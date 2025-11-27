@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft Defender for Endpoint | SOC Analyst Guide</title>
+  <meta name="description" content="MDE overview for SOC analysts: architecture, portal navigation, key features, and daily operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="mde-overview.html" class="nav-link active"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> MDE Alerts</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> MDE Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">⚡</span> MDE Response Actions</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Concepts</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>MDE Overview</span>
+        </nav>
+        <h1>Microsoft Defender for Endpoint</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 4.2</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">What is MDE?</a></li>
+          <li><a href="#capabilities">Key Capabilities</a></li>
+          <li><a href="#portal">Portal Navigation</a></li>
+          <li><a href="#tables">Key Data Tables</a></li>
+          <li><a href="#workflow">Daily Workflow</a></li>
+          <li><a href="#integration">M365 Defender Integration</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>What is Microsoft Defender for Endpoint?</h2>
+        <p>
+          Microsoft Defender for Endpoint (MDE) is Microsoft's enterprise endpoint security platform. 
+          It provides preventative protection, post-breach detection, automated investigation, and response 
+          capabilities for Windows, macOS, Linux, Android, and iOS devices.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Naming Note</div>
+          <p style="margin: 0;">
+            MDE was previously known as "Microsoft Defender ATP" (MDATP), "Windows Defender ATP" (WDATP), 
+            and is part of "Microsoft 365 Defender" (now "Microsoft Defender XDR").
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">EDR</div>
+            <div class="stat-label">Endpoint Detection & Response</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">AV</div>
+            <div class="stat-label">Next-Gen Antivirus</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">TVM</div>
+            <div class="stat-label">Threat & Vulnerability Mgmt</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">AIR</div>
+            <div class="stat-label">Automated Investigation</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="capabilities">
+        <h2>Key Capabilities</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Endpoint Detection & Response (EDR)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Core detection and investigation capabilities:</p>
+              <ul>
+                <li><strong>Behavioral Sensors:</strong> Collect endpoint telemetry (process, file, network, registry)</li>
+                <li><strong>Cloud Analytics:</strong> ML-based detection and threat intelligence</li>
+                <li><strong>Alert Generation:</strong> Security alerts with severity and MITRE mapping</li>
+                <li><strong>Incident Correlation:</strong> Group related alerts into incidents</li>
+                <li><strong>Advanced Hunting:</strong> KQL-based threat hunting</li>
+                <li><strong>Timeline:</strong> Chronological view of device activity</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Next-Generation Antivirus</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Built-in Microsoft Defender Antivirus with cloud-powered protection:</p>
+              <ul>
+                <li><strong>Real-time Protection:</strong> On-access scanning of files and processes</li>
+                <li><strong>Cloud-delivered Protection:</strong> Rapid signature updates, ML analysis</li>
+                <li><strong>Behavior Monitoring:</strong> Detect suspicious process behavior</li>
+                <li><strong>Exploit Protection:</strong> Mitigate memory-based attacks</li>
+                <li><strong>Attack Surface Reduction:</strong> Block risky behaviors (macros, scripts)</li>
+                <li><strong>Network Protection:</strong> Block connections to malicious domains</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Threat & Vulnerability Management (TVM)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Continuous vulnerability assessment and prioritization:</p>
+              <ul>
+                <li><strong>Software Inventory:</strong> Discover installed applications</li>
+                <li><strong>Vulnerability Assessment:</strong> Identify known CVEs</li>
+                <li><strong>Security Recommendations:</strong> Prioritized remediation guidance</li>
+                <li><strong>Exposure Score:</strong> Organization-wide risk metric</li>
+                <li><strong>Configuration Assessment:</strong> Security baseline compliance</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Automated Investigation & Response (AIR)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Automated playbooks to investigate and remediate alerts:</p>
+              <ul>
+                <li><strong>Auto-investigation:</strong> Automatically analyze alerts and collect evidence</li>
+                <li><strong>Remediation Actions:</strong> Quarantine files, stop processes, isolate devices</li>
+                <li><strong>Approval Workflows:</strong> Require analyst approval for sensitive actions</li>
+                <li><strong>Investigation Packages:</strong> Collect forensic data from devices</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Response Actions</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Manual response capabilities for analysts:</p>
+              <ul>
+                <li><strong>Device Isolation:</strong> Network isolate while maintaining MDE connection</li>
+                <li><strong>Restrict App Execution:</strong> Only allow Microsoft-signed apps</li>
+                <li><strong>Run Antivirus Scan:</strong> Trigger on-demand scan</li>
+                <li><strong>Collect Investigation Package:</strong> Gather forensic artifacts</li>
+                <li><strong>Initiate Live Response:</strong> Remote shell access to device</li>
+                <li><strong>Stop and Quarantine File:</strong> Block and quarantine specific file</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="portal">
+        <h2>Portal Navigation</h2>
+        <p>MDE is accessed through the Microsoft Defender portal at <a href="https://security.microsoft.com" target="_blank">security.microsoft.com</a>.</p>
+
+        <div class="card">
+          <h3>Key Portal Areas</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Purpose</th>
+                  <th>Daily Use</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Incidents & Alerts</strong></td>
+                  <td>View and manage security incidents and alerts</td>
+                  <td>⭐ Primary workspace for analysts</td>
+                </tr>
+                <tr>
+                  <td><strong>Hunting → Advanced Hunting</strong></td>
+                  <td>KQL-based threat hunting</td>
+                  <td>⭐ Investigation and hunting</td>
+                </tr>
+                <tr>
+                  <td><strong>Assets → Devices</strong></td>
+                  <td>Device inventory and details</td>
+                  <td>⭐ Device investigation</td>
+                </tr>
+                <tr>
+                  <td><strong>Actions & Submissions</strong></td>
+                  <td>Pending actions, action history</td>
+                  <td>Track response actions</td>
+                </tr>
+                <tr>
+                  <td><strong>Threat Analytics</strong></td>
+                  <td>Threat intelligence reports</td>
+                  <td>Stay informed on campaigns</td>
+                </tr>
+                <tr>
+                  <td><strong>Vulnerability Management</strong></td>
+                  <td>TVM dashboard and recommendations</td>
+                  <td>Vulnerability assessment</td>
+                </tr>
+                <tr>
+                  <td><strong>Reports</strong></td>
+                  <td>Security reports and dashboards</td>
+                  <td>Management reporting</td>
+                </tr>
+                <tr>
+                  <td><strong>Settings</strong></td>
+                  <td>Configuration and policies</td>
+                  <td>Admin tasks</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Navigation Tip</div>
+          <p style="margin: 0;">
+            Use <strong>Ctrl+K</strong> (or click the search bar) to quickly search for devices, users, 
+            files, or IPs across the portal. This is the fastest way to investigate specific IOCs.
+          </p>
+        </div>
+      </section>
+
+      <section id="tables">
+        <h2>Key Data Tables</h2>
+        <p>MDE data is available in Advanced Hunting using KQL. Key tables include:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Table</th>
+                <th>Contains</th>
+                <th>Common Use Cases</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>DeviceProcessEvents</code></td>
+                <td>Process creation and termination</td>
+                <td>Execution analysis, parent-child chains</td>
+              </tr>
+              <tr>
+                <td><code>DeviceNetworkEvents</code></td>
+                <td>Network connections</td>
+                <td>C2 detection, lateral movement</td>
+              </tr>
+              <tr>
+                <td><code>DeviceFileEvents</code></td>
+                <td>File creation, modification, deletion</td>
+                <td>Malware drops, data staging</td>
+              </tr>
+              <tr>
+                <td><code>DeviceRegistryEvents</code></td>
+                <td>Registry changes</td>
+                <td>Persistence detection</td>
+              </tr>
+              <tr>
+                <td><code>DeviceLogonEvents</code></td>
+                <td>User logons to devices</td>
+                <td>Authentication analysis</td>
+              </tr>
+              <tr>
+                <td><code>DeviceImageLoadEvents</code></td>
+                <td>DLL loading</td>
+                <td>DLL hijacking, injection</td>
+              </tr>
+              <tr>
+                <td><code>DeviceEvents</code></td>
+                <td>Miscellaneous events (AMSI, etc.)</td>
+                <td>Script content, security events</td>
+              </tr>
+              <tr>
+                <td><code>DeviceInfo</code></td>
+                <td>Device inventory and details</td>
+                <td>Asset information</td>
+              </tr>
+              <tr>
+                <td><code>AlertInfo</code></td>
+                <td>Alert details</td>
+                <td>Alert analysis</td>
+              </tr>
+              <tr>
+                <td><code>AlertEvidence</code></td>
+                <td>Evidence associated with alerts</td>
+                <td>Alert investigation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Sample query: Process activity on device</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> DeviceName =~ <span class="st">"WORKSTATION01"</span>
+| <span class="kw">project</span> TimeGenerated, FileName, ProcessCommandLine, 
+    InitiatingProcessFileName, AccountName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span>
+| <span class="kw">take</span> <span class="nu">100</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <h2>Daily SOC Workflow</h2>
+
+        <div class="card">
+          <h3>Typical Analyst Day with MDE</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">Start</div>
+              <div class="timeline-title">Review Alert Queue</div>
+              <div class="timeline-desc">Check Incidents & Alerts for new high/medium severity items</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Triage</div>
+              <div class="timeline-title">Investigate Alerts</div>
+              <div class="timeline-desc">Review alert details, device timeline, related evidence</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Analyze</div>
+              <div class="timeline-title">Advanced Hunting</div>
+              <div class="timeline-desc">Deep dive using KQL queries for context</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Respond</div>
+              <div class="timeline-title">Take Action</div>
+              <div class="timeline-desc">Isolate devices, quarantine files, or escalate</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Document</div>
+              <div class="timeline-title">Update & Close</div>
+              <div class="timeline-desc">Document findings, update incident, classify resolution</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Alert Investigation Checklist</h3>
+        <ul class="checklist">
+          <li>Read alert title and description—what is being detected?</li>
+          <li>Check alert severity and MITRE ATT&CK mapping</li>
+          <li>Review the process tree in alert details</li>
+          <li>Check the device timeline for context before/after alert</li>
+          <li>Identify affected device and user</li>
+          <li>Check if file hash is known malware (VT, MDE file page)</li>
+          <li>Look for related alerts on same device or user</li>
+          <li>Determine if this is True Positive, Benign TP, or False Positive</li>
+        </ul>
+      </section>
+
+      <section id="integration">
+        <h2>Microsoft 365 Defender Integration</h2>
+        <p>MDE is part of Microsoft's broader XDR platform, integrating with:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Microsoft Defender for Identity</h4>
+            <p>Identity threat detection for Active Directory</p>
+            <ul>
+              <li>Lateral movement detection</li>
+              <li>Credential attacks</li>
+              <li>AD reconnaissance</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Microsoft Defender for Office 365</h4>
+            <p>Email and collaboration security</p>
+            <ul>
+              <li>Phishing protection</li>
+              <li>Malicious attachment blocking</li>
+              <li>Safe Links</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Microsoft Defender for Cloud Apps</h4>
+            <p>Cloud application security (CASB)</p>
+            <ul>
+              <li>Shadow IT discovery</li>
+              <li>App governance</li>
+              <li>Data protection</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Microsoft Sentinel</h4>
+            <p>Cloud-native SIEM</p>
+            <ul>
+              <li>Central log aggregation</li>
+              <li>Cross-platform correlation</li>
+              <li>SOAR capabilities</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">XDR Value</div>
+          <p style="margin: 0;">
+            When integrated, M365 Defender correlates signals across endpoint, identity, email, and cloud apps. 
+            An incident might show: phishing email → user clicked → malware downloaded → lateral movement attempted. 
+            All in one unified view.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>MDE provides EDR, AV, TVM, and automated response in one platform</li>
+          <li>Access via security.microsoft.com—learn the portal layout</li>
+          <li>Master KQL and the key data tables for effective investigation</li>
+          <li>Use device timeline and process tree for alert analysis</li>
+          <li>Integration with M365 Defender provides XDR capabilities</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="edr-fundamentals.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR Fundamentals</span>
+          </a>
+          <a href="mde-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">MDE Alerts</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

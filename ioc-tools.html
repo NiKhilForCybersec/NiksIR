@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IOC Lookup Tools | SOC Analyst Guide</title>
+  <meta name="description" content="Essential threat intelligence and IOC lookup tools for SOC analysts: VirusTotal, AbuseIPDB, Shodan, URLScan, and more.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Event IDs</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+          <a href="ioc-tools.html" class="nav-link active"><span class="nav-link-icon">🔍</span> IOC Lookup Tools</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>IOC Lookup Tools</span>
+        </nav>
+        <h1>IOC Lookup Tools</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">REF-04</span>
+          <span class="meta-item">Bookmark This Page</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Tool Categories
+        </div>
+        <ul class="toc-list">
+          <li><a href="#multi">Multi-Purpose Tools</a></li>
+          <li><a href="#ip">IP Address Tools</a></li>
+          <li><a href="#domain">Domain & URL Tools</a></li>
+          <li><a href="#hash">File Hash Tools</a></li>
+          <li><a href="#email">Email Analysis</a></li>
+          <li><a href="#sandbox">Sandboxes</a></li>
+          <li><a href="#osint">OSINT Resources</a></li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">OPSEC Reminder</div>
+        <p style="margin: 0;">
+          When using public lookup tools, be aware that your queries may be logged and visible to others. 
+          For sensitive investigations, consider using private/enterprise tools or be cautious about what 
+          IOCs you submit publicly.
+        </p>
+      </div>
+
+      <section id="multi">
+        <h2>Multi-Purpose Tools</h2>
+        <p>These tools analyze multiple IOC types and should be your first stop.</p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>🔬 VirusTotal</h3>
+          <p><a href="https://www.virustotal.com" target="_blank">virustotal.com</a></p>
+          <p>The most widely used threat intelligence platform. Analyzes files, URLs, domains, and IPs against 70+ security vendors.</p>
+          
+          <div class="tabs">
+            <div class="tab-buttons">
+              <button class="tab-btn active">Features</button>
+              <button class="tab-btn">Use Cases</button>
+              <button class="tab-btn">Tips</button>
+            </div>
+            <div class="tab-content active">
+              <ul>
+                <li><strong>File Analysis:</strong> Upload files or search by hash (MD5, SHA1, SHA256)</li>
+                <li><strong>URL Scanning:</strong> Check URLs against multiple URL scanners</li>
+                <li><strong>Domain/IP Info:</strong> WHOIS, DNS, passive DNS, related files</li>
+                <li><strong>Behavior Reports:</strong> Sandbox execution results for files</li>
+                <li><strong>Relations:</strong> See connected IOCs (contacted IPs, downloaded files)</li>
+                <li><strong>Community:</strong> Comments and votes from analysts</li>
+              </ul>
+            </div>
+            <div class="tab-content">
+              <ul>
+                <li>Verify if a file hash is known malware</li>
+                <li>Check detection ratio across vendors</li>
+                <li>Find related IOCs from a single indicator</li>
+                <li>Review behavioral analysis results</li>
+                <li>Determine first/last seen dates</li>
+              </ul>
+            </div>
+            <div class="tab-content">
+              <ul>
+                <li>Check the <strong>Detection</strong> tab first for quick verdict</li>
+                <li>Review <strong>Behavior</strong> tab for sandbox results</li>
+                <li>Use <strong>Relations</strong> to pivot to connected IOCs</li>
+                <li>Check <strong>Community</strong> for analyst notes</li>
+                <li>Note: 0 detections doesn't mean safe—could be new/targeted</li>
+                <li>Free tier has rate limits; enterprise version available</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-green);">
+          <h3>🔍 AlienVault OTX</h3>
+          <p><a href="https://otx.alienvault.com" target="_blank">otx.alienvault.com</a></p>
+          <p>Open Threat Exchange - community-driven threat intelligence platform with pulses (threat reports) containing IOCs.</p>
+          <ul>
+            <li>Search IPs, domains, URLs, file hashes</li>
+            <li>View related pulses and threat context</li>
+            <li>Free API access for automation</li>
+            <li>Community-contributed threat intelligence</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-orange);">
+          <h3>🌐 IBM X-Force Exchange</h3>
+          <p><a href="https://exchange.xforce.ibmcloud.com" target="_blank">exchange.xforce.ibmcloud.com</a></p>
+          <p>IBM's threat intelligence sharing platform with risk scores and threat analysis.</p>
+          <ul>
+            <li>IP/URL/domain reputation and risk scores</li>
+            <li>Malware analysis reports</li>
+            <li>Vulnerability information</li>
+            <li>Threat group profiles</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="ip">
+        <h2>IP Address Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>URL</th>
+                <th>Best For</th>
+                <th>Key Features</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AbuseIPDB</strong></td>
+                <td><a href="https://www.abuseipdb.com" target="_blank">abuseipdb.com</a></td>
+                <td>IP reputation, abuse reports</td>
+                <td>Community reports, confidence score, abuse categories</td>
+              </tr>
+              <tr>
+                <td><strong>Shodan</strong></td>
+                <td><a href="https://www.shodan.io" target="_blank">shodan.io</a></td>
+                <td>Internet-connected device info</td>
+                <td>Open ports, services, banners, vulnerabilities</td>
+              </tr>
+              <tr>
+                <td><strong>Censys</strong></td>
+                <td><a href="https://search.censys.io" target="_blank">censys.io</a></td>
+                <td>Internet asset discovery</td>
+                <td>Certificates, services, historical data</td>
+              </tr>
+              <tr>
+                <td><strong>GreyNoise</strong></td>
+                <td><a href="https://www.greynoise.io" target="_blank">greynoise.io</a></td>
+                <td>Internet background noise</td>
+                <td>Identifies scanners, benign vs malicious</td>
+              </tr>
+              <tr>
+                <td><strong>IPinfo</strong></td>
+                <td><a href="https://ipinfo.io" target="_blank">ipinfo.io</a></td>
+                <td>IP geolocation, ASN info</td>
+                <td>Location, ISP, ASN, company info</td>
+              </tr>
+              <tr>
+                <td><strong>Talos Intelligence</strong></td>
+                <td><a href="https://talosintelligence.com" target="_blank">talosintelligence.com</a></td>
+                <td>IP/domain reputation (Cisco)</td>
+                <td>Email reputation, web reputation, threat context</td>
+              </tr>
+              <tr>
+                <td><strong>IPVoid</strong></td>
+                <td><a href="https://www.ipvoid.com" target="_blank">ipvoid.com</a></td>
+                <td>Multi-blacklist check</td>
+                <td>Checks 100+ blacklists at once</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">IP Investigation Workflow</div>
+          <ol style="margin: 0;">
+            <li><strong>AbuseIPDB</strong> - Quick reputation check</li>
+            <li><strong>VirusTotal</strong> - Related files, URLs, domains</li>
+            <li><strong>Shodan/Censys</strong> - What's running on the IP?</li>
+            <li><strong>GreyNoise</strong> - Is this just scanner noise?</li>
+            <li><strong>IPinfo</strong> - Who owns it? Where is it?</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="domain">
+        <h2>Domain & URL Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>URL</th>
+                <th>Best For</th>
+                <th>Key Features</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>URLScan.io</strong></td>
+                <td><a href="https://urlscan.io" target="_blank">urlscan.io</a></td>
+                <td>URL analysis, screenshots</td>
+                <td>Safe browsing, DOM capture, network requests, screenshot</td>
+              </tr>
+              <tr>
+                <td><strong>URLhaus</strong></td>
+                <td><a href="https://urlhaus.abuse.ch" target="_blank">urlhaus.abuse.ch</a></td>
+                <td>Malware URL database</td>
+                <td>Known malware distribution URLs</td>
+              </tr>
+              <tr>
+                <td><strong>PhishTank</strong></td>
+                <td><a href="https://phishtank.org" target="_blank">phishtank.org</a></td>
+                <td>Phishing URL verification</td>
+                <td>Community-verified phishing sites</td>
+              </tr>
+              <tr>
+                <td><strong>WHOIS</strong></td>
+                <td><a href="https://whois.domaintools.com" target="_blank">whois.domaintools.com</a></td>
+                <td>Domain registration info</td>
+                <td>Registrant, dates, nameservers</td>
+              </tr>
+              <tr>
+                <td><strong>SecurityTrails</strong></td>
+                <td><a href="https://securitytrails.com" target="_blank">securitytrails.com</a></td>
+                <td>DNS history, subdomain enum</td>
+                <td>Historical DNS, associated domains</td>
+              </tr>
+              <tr>
+                <td><strong>DNSDumpster</strong></td>
+                <td><a href="https://dnsdumpster.com" target="_blank">dnsdumpster.com</a></td>
+                <td>DNS reconnaissance</td>
+                <td>DNS records, subdomains, map visualization</td>
+              </tr>
+              <tr>
+                <td><strong>MXToolbox</strong></td>
+                <td><a href="https://mxtoolbox.com" target="_blank">mxtoolbox.com</a></td>
+                <td>Email/DNS diagnostics</td>
+                <td>MX records, blacklist check, SPF/DKIM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>🔗 URLScan.io Deep Dive</h3>
+          <p>URLScan is essential for safely analyzing suspicious URLs without visiting them.</p>
+          <h4>Key Features:</h4>
+          <ul>
+            <li><strong>Screenshot:</strong> See what the page looks like</li>
+            <li><strong>DOM:</strong> View page source code</li>
+            <li><strong>HTTP Transactions:</strong> All requests made by the page</li>
+            <li><strong>Links:</strong> Extracted URLs from the page</li>
+            <li><strong>Behavior:</strong> Redirects, cookies, console messages</li>
+            <li><strong>Verdicts:</strong> Malicious/suspicious indicators</li>
+          </ul>
+          <p class="text-muted"><strong>Tip:</strong> Use "Private" scan mode for sensitive URLs to prevent public visibility.</p>
+        </div>
+      </section>
+
+      <section id="hash">
+        <h2>File Hash Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>URL</th>
+                <th>Best For</th>
+                <th>Key Features</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>VirusTotal</strong></td>
+                <td><a href="https://www.virustotal.com" target="_blank">virustotal.com</a></td>
+                <td>Multi-AV scanning</td>
+                <td>70+ AV engines, behavior, relations</td>
+              </tr>
+              <tr>
+                <td><strong>MalwareBazaar</strong></td>
+                <td><a href="https://bazaar.abuse.ch" target="_blank">bazaar.abuse.ch</a></td>
+                <td>Malware sample database</td>
+                <td>Download samples, YARA rules, tags</td>
+              </tr>
+              <tr>
+                <td><strong>Hybrid Analysis</strong></td>
+                <td><a href="https://www.hybrid-analysis.com" target="_blank">hybrid-analysis.com</a></td>
+                <td>Free malware sandbox</td>
+                <td>Detailed behavior reports, MITRE mapping</td>
+              </tr>
+              <tr>
+                <td><strong>ANY.RUN</strong></td>
+                <td><a href="https://any.run" target="_blank">any.run</a></td>
+                <td>Interactive sandbox</td>
+                <td>Watch execution in real-time, interact</td>
+              </tr>
+              <tr>
+                <td><strong>Joe Sandbox</strong></td>
+                <td><a href="https://www.joesandbox.com" target="_blank">joesandbox.com</a></td>
+                <td>Deep malware analysis</td>
+                <td>Comprehensive reports, multiple OS</td>
+              </tr>
+              <tr>
+                <td><strong>Triage</strong></td>
+                <td><a href="https://tria.ge" target="_blank">tria.ge</a></td>
+                <td>Malware sandbox</td>
+                <td>Fast analysis, family detection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Hash Types</div>
+          <p style="margin: 0;">
+            <strong>MD5:</strong> 32 characters (legacy, collisions possible)<br>
+            <strong>SHA1:</strong> 40 characters (legacy, collisions demonstrated)<br>
+            <strong>SHA256:</strong> 64 characters (current standard, use this)
+          </p>
+        </div>
+      </section>
+
+      <section id="email">
+        <h2>Email Analysis Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>URL</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MXToolbox Header Analyzer</strong></td>
+                <td><a href="https://mxtoolbox.com/EmailHeaders.aspx" target="_blank">mxtoolbox.com/EmailHeaders.aspx</a></td>
+                <td>Parse and analyze email headers</td>
+              </tr>
+              <tr>
+                <td><strong>Google Admin Toolbox</strong></td>
+                <td><a href="https://toolbox.googleapps.com/apps/messageheader/" target="_blank">toolbox.googleapps.com</a></td>
+                <td>Email header analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Email Header Analyzer</strong></td>
+                <td><a href="https://www.emailheaderanalyzer.com" target="_blank">emailheaderanalyzer.com</a></td>
+                <td>Visualize email routing</td>
+              </tr>
+              <tr>
+                <td><strong>Have I Been Pwned</strong></td>
+                <td><a href="https://haveibeenpwned.com" target="_blank">haveibeenpwned.com</a></td>
+                <td>Check if email was in breaches</td>
+              </tr>
+              <tr>
+                <td><strong>Hunter.io</strong></td>
+                <td><a href="https://hunter.io" target="_blank">hunter.io</a></td>
+                <td>Email verification, domain search</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sandbox">
+        <h2>Malware Sandboxes</h2>
+        <p>Safely execute and analyze suspicious files in isolated environments.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">ANY.RUN</h4>
+            <p><a href="https://any.run" target="_blank">any.run</a></p>
+            <ul>
+              <li>Interactive execution</li>
+              <li>Watch in real-time</li>
+              <li>Click through prompts</li>
+              <li>Free tier available</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Hybrid Analysis</h4>
+            <p><a href="https://hybrid-analysis.com" target="_blank">hybrid-analysis.com</a></p>
+            <ul>
+              <li>Free, detailed reports</li>
+              <li>MITRE ATT&CK mapping</li>
+              <li>Multiple environments</li>
+              <li>CrowdStrike powered</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Joe Sandbox</h4>
+            <p><a href="https://joesandbox.com" target="_blank">joesandbox.com</a></p>
+            <ul>
+              <li>Deep analysis</li>
+              <li>Windows, macOS, Android, Linux</li>
+              <li>Evasion detection</li>
+              <li>Enterprise features</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Triage</h4>
+            <p><a href="https://tria.ge" target="_blank">tria.ge</a></p>
+            <ul>
+              <li>Fast analysis</li>
+              <li>Family classification</li>
+              <li>Config extraction</li>
+              <li>Hatching team</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Sandbox OPSEC</div>
+          <p style="margin: 0;">
+            Public sandboxes share results publicly. For sensitive samples (targeted attacks, internal incidents), 
+            use private sandbox instances or enterprise tools that don't share results.
+          </p>
+        </div>
+      </section>
+
+      <section id="osint">
+        <h2>OSINT Resources</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Resource</th>
+                <th>URL</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OSINT Framework</strong></td>
+                <td><a href="https://osintframework.com" target="_blank">osintframework.com</a></td>
+                <td>Comprehensive collection of OSINT tools organized by category</td>
+              </tr>
+              <tr>
+                <td><strong>IntelTechniques</strong></td>
+                <td><a href="https://inteltechniques.com/tools/" target="_blank">inteltechniques.com/tools</a></td>
+                <td>OSINT search tools by Michael Bazzell</td>
+              </tr>
+              <tr>
+                <td><strong>ThreatCrowd</strong></td>
+                <td><a href="https://www.threatcrowd.org" target="_blank">threatcrowd.org</a></td>
+                <td>Threat intel search engine with visualizations</td>
+              </tr>
+              <tr>
+                <td><strong>Pulsedive</strong></td>
+                <td><a href="https://pulsedive.com" target="_blank">pulsedive.com</a></td>
+                <td>Free threat intelligence platform</td>
+              </tr>
+              <tr>
+                <td><strong>ThreatFox</strong></td>
+                <td><a href="https://threatfox.abuse.ch" target="_blank">threatfox.abuse.ch</a></td>
+                <td>IOC database from abuse.ch</td>
+              </tr>
+              <tr>
+                <td><strong>Feodo Tracker</strong></td>
+                <td><a href="https://feodotracker.abuse.ch" target="_blank">feodotracker.abuse.ch</a></td>
+                <td>Botnet C2 tracking</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Quick Lookup Workflow</div>
+        <ol style="margin: 0;">
+          <li><strong>IP Address:</strong> AbuseIPDB → VirusTotal → Shodan → GreyNoise</li>
+          <li><strong>Domain/URL:</strong> URLScan.io → VirusTotal → WHOIS → SecurityTrails</li>
+          <li><strong>File Hash:</strong> VirusTotal → MalwareBazaar → Hybrid Analysis</li>
+          <li><strong>Email:</strong> Header Analyzer → Check sender domain → Check links</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="common-ports.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Ports & Protocols</span>
+          </a>
+          <a href="mitre-reference.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">MITRE ATT&CK</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

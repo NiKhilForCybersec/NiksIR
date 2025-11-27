@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ransomware Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Emergency response playbook for ransomware incidents: immediate actions, containment, recovery, and critical decisions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link active"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🛑</span> Containment</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Ransomware</span>
+        </nav>
+        <h1>💀 Ransomware Incident Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="priority-badge priority-p1">P1 CRITICAL</span></span>
+          <span class="meta-item">PB-02</span>
+          <span class="meta-item">Emergency Response</span>
+        </div>
+      </div>
+
+      <!-- Critical Alert Banner -->
+      <div class="callout callout-danger" style="border: 2px solid var(--accent-red); animation: pulse 2s infinite;">
+        <div class="callout-title">⚠️ RANSOMWARE REQUIRES IMMEDIATE ESCALATION</div>
+        <p style="margin: 0; font-size: 1.1rem;">
+          <strong>Do NOT attempt to handle alone.</strong> Immediately notify SOC Lead, IR Team, and Management. 
+          Every minute counts—act fast to contain spread.
+        </p>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-red);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p1">P1 Critical</span> Always</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Response SLA</strong>
+            <p style="margin: 0;">Immediate (< 15 minutes)</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation</strong>
+            <p style="margin: 0;">Automatic to IR Team + Management</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Authority</strong>
+            <p style="margin: 0;">IR Lead/CISO for major decisions</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Response Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#indicators">Ransomware Indicators</a></li>
+          <li><a href="#immediate">Immediate Actions (First 15 min)</a></li>
+          <li><a href="#containment">Containment</a></li>
+          <li><a href="#assessment">Scope Assessment</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+          <li><a href="#recovery">Recovery Planning</a></li>
+          <li><a href="#donts">Critical Don'ts</a></li>
+        </ul>
+      </div>
+
+      <section id="indicators">
+        <h2>Ransomware Indicators</h2>
+        <p>Signs that may indicate active ransomware:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Clear Indicators</h4>
+            <ul>
+              <li>Ransom note files (README.txt, DECRYPT.txt)</li>
+              <li>Changed desktop wallpaper with ransom message</li>
+              <li>Files with new extensions (.encrypted, .locked)</li>
+              <li>Users unable to open files</li>
+              <li>Mass file encryption alerts</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Early Warning Signs</h4>
+            <ul>
+              <li>Unusual high CPU/disk activity</li>
+              <li>Shadow copy deletion (vssadmin)</li>
+              <li>Backup deletion attempts</li>
+              <li>Mass file modifications</li>
+              <li>Suspicious PowerShell/cmd activity</li>
+              <li>Lateral movement indicators</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect ransomware indicators</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Shadow copy deletion (common ransomware behavior)</span>
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (
+    <span class="st">"vssadmin delete shadows"</span>,
+    <span class="st">"wmic shadowcopy delete"</span>,
+    <span class="st">"bcdedit /set"</span>,
+    <span class="st">"wbadmin delete catalog"</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName, ProcessCommandLine, 
+    InitiatingProcessFileName, AccountName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="immediate">
+        <h2>Immediate Actions (First 15 Minutes)</h2>
+        
+        <div class="callout callout-danger">
+          <div class="callout-title">🚨 Do These NOW</div>
+          <p style="margin-bottom: 1rem;">Execute in order. Speed is critical to prevent spread.</p>
+        </div>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">0-2 min</div>
+            <div class="timeline-title">1. ESCALATE IMMEDIATELY</div>
+            <div class="timeline-desc">
+              <ul>
+                <li>Call SOC Lead (don't just email/message)</li>
+                <li>Notify IR Team via emergency channel</li>
+                <li>Alert IT Operations</li>
+                <li>Trigger incident bridge/war room if available</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">2-5 min</div>
+            <div class="timeline-title">2. ISOLATE AFFECTED SYSTEMS</div>
+            <div class="timeline-desc">
+              <ul>
+                <li><strong>Network isolate</strong> confirmed infected hosts via EDR</li>
+                <li><strong>Do NOT power off</strong> (preserves memory evidence)</li>
+                <li>Disconnect from network but leave powered on</li>
+                <li>Block known malicious IPs/domains at firewall</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">5-10 min</div>
+            <div class="timeline-title">3. STOP THE SPREAD</div>
+            <div class="timeline-desc">
+              <ul>
+                <li>Identify and isolate any systems showing similar behavior</li>
+                <li>Consider isolating entire network segments if spreading fast</li>
+                <li>Disable compromised accounts</li>
+                <li>Block lateral movement ports if needed (SMB 445, RDP 3389)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">10-15 min</div>
+            <div class="timeline-title">4. PRESERVE EVIDENCE</div>
+            <div class="timeline-desc">
+              <ul>
+                <li>Screenshot ransom notes</li>
+                <li>Collect investigation package from EDR</li>
+                <li>Note affected hostnames, IPs, users</li>
+                <li>Capture any IOCs (file hashes, C2 IPs, domains)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="containment">
+        <h2>Containment Actions</h2>
+
+        <div class="card" style="border-left: 4px solid var(--accent-orange);">
+          <h3>Network Containment Options</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>When to Use</th>
+                  <th>Impact</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Isolate Host (EDR)</strong></td>
+                  <td>First choice for individual systems</td>
+                  <td>Low - affects only target host</td>
+                </tr>
+                <tr>
+                  <td><strong>VLAN Isolation</strong></td>
+                  <td>Segment appears compromised</td>
+                  <td>Medium - affects network segment</td>
+                </tr>
+                <tr>
+                  <td><strong>Block SMB/RDP</strong></td>
+                  <td>Lateral movement detected</td>
+                  <td>Medium - affects remote admin</td>
+                </tr>
+                <tr>
+                  <td><strong>Internet Disconnect</strong></td>
+                  <td>C2 communication ongoing</td>
+                  <td>High - affects business operations</td>
+                </tr>
+                <tr>
+                  <td><strong>Full Network Shutdown</strong></td>
+                  <td>Widespread, rapid encryption</td>
+                  <td>Critical - executive decision required</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Containment Authority</div>
+          <p style="margin: 0;">
+            Individual host isolation: L2 analyst can execute<br>
+            Segment isolation: SOC Lead approval<br>
+            Full network actions: IR Lead/CISO approval required
+          </p>
+        </div>
+
+        <h3>Immediate Blocks</h3>
+        <ul class="checklist">
+          <li>Block known ransomware C2 IPs at perimeter firewall</li>
+          <li>Block malicious domains at DNS/proxy</li>
+          <li>Add file hashes to EDR block list</li>
+          <li>Disable compromised user accounts</li>
+          <li>Reset credentials for any accessed admin accounts</li>
+        </ul>
+      </section>
+
+      <section id="assessment">
+        <h2>Scope Assessment</h2>
+        <p>Rapidly determine the extent of the incident:</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find all hosts with ransomware file hash</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> ransomwareHash = <span class="st">"abc123..."</span>;  <span class="cm">// SHA256 of ransomware</span>
+DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> SHA256 == ransomwareHash
+| <span class="kw">summarize</span> FirstSeen = <span class="fn">min</span>(TimeGenerated), 
+    LastSeen = <span class="fn">max</span>(TimeGenerated),
+    FileCount = <span class="fn">count</span>() <span class="kw">by</span> DeviceName
+| <span class="kw">order by</span> FirstSeen <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find hosts with mass file modifications</span>
+          </div>
+          <div class="query-body">
+<code>DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">2h</span>)
+| <span class="kw">where</span> ActionType <span class="kw">in</span> (<span class="st">"FileModified"</span>, <span class="st">"FileRenamed"</span>)
+| <span class="kw">summarize</span> FileCount = <span class="fn">count</span>() <span class="kw">by</span> DeviceName, bin(TimeGenerated, <span class="nu">5m</span>)
+| <span class="kw">where</span> FileCount > <span class="nu">500</span>  <span class="cm">// Unusual volume</span>
+| <span class="kw">order by</span> FileCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <h3>Scope Checklist</h3>
+        <ul class="checklist">
+          <li>How many endpoints are affected?</li>
+          <li>Are servers affected? Which ones?</li>
+          <li>Are domain controllers affected? (Critical escalation)</li>
+          <li>Are backups affected or accessible?</li>
+          <li>What data/systems are encrypted?</li>
+          <li>Is encryption still active or stopped?</li>
+          <li>What is the ransomware family? (Check ransom note, extensions)</li>
+        </ul>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Focus Areas</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Initial Access Vector</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Determine how attackers got in:</p>
+              <ul>
+                <li><strong>Phishing:</strong> Check email logs for malicious attachments/links</li>
+                <li><strong>Exploit:</strong> Check for vulnerable public-facing services (VPN, RDP)</li>
+                <li><strong>Credential Theft:</strong> Check for brute force or credential stuffing</li>
+                <li><strong>Supply Chain:</strong> Check for compromised software updates</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Attacker Dwell Time</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Most ransomware actors are in the network days/weeks before encrypting:</p>
+              <ul>
+                <li>When did initial access occur?</li>
+                <li>What reconnaissance was performed?</li>
+                <li>What data was accessed before encryption?</li>
+                <li>Was data exfiltrated? (Double extortion)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Lateral Movement Path</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Trace how ransomware spread:</p>
+              <ul>
+                <li>What accounts were used for lateral movement?</li>
+                <li>What tools were used (PsExec, WMI, RDP)?</li>
+                <li>Which systems were accessed?</li>
+                <li>How did they get domain admin?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Ransomware Identification</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Identify the ransomware family:</p>
+              <ul>
+                <li>Check ransom note text and file names</li>
+                <li>Check encrypted file extensions</li>
+                <li>Upload sample to <a href="https://id-ransomware.malwarehunterteam.com" target="_blank">ID Ransomware</a></li>
+                <li>Check for known decryptors at <a href="https://www.nomoreransom.org" target="_blank">No More Ransom</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="recovery">
+        <h2>Recovery Planning</h2>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Recovery Decisions Require Executive Input</div>
+          <p style="margin: 0;">
+            Major recovery decisions (restore from backup, rebuild, negotiate) require CISO/executive 
+            approval. SOC's role is to provide information and options.
+          </p>
+        </div>
+
+        <h3>Recovery Options</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Prerequisites</th>
+                <th>Timeframe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Restore from Backup</strong></td>
+                <td>Clean, recent backups available; backups not encrypted</td>
+                <td>Hours to days</td>
+              </tr>
+              <tr>
+                <td><strong>Use Decryptor</strong></td>
+                <td>Known ransomware with available decryptor</td>
+                <td>Hours</td>
+              </tr>
+              <tr>
+                <td><strong>Rebuild Systems</strong></td>
+                <td>No backups; clean images available</td>
+                <td>Days to weeks</td>
+              </tr>
+              <tr>
+                <td><strong>Pay Ransom</strong></td>
+                <td>Last resort; executive/legal decision; no guarantee</td>
+                <td>Days (negotiation)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Before Recovery</h3>
+        <ul class="checklist">
+          <li>Ensure attacker access is fully removed</li>
+          <li>Patch exploited vulnerabilities</li>
+          <li>Reset all potentially compromised credentials</li>
+          <li>Verify backup integrity before restore</li>
+          <li>Plan for enhanced monitoring post-recovery</li>
+        </ul>
+      </section>
+
+      <section id="donts">
+        <h2>Critical Don'ts</h2>
+
+        <div class="card" style="background: linear-gradient(135deg, rgba(255, 51, 102, 0.1), rgba(255, 107, 53, 0.1)); border: 1px solid var(--accent-red);">
+          <h3 style="color: var(--accent-red);">❌ Do NOT:</h3>
+          <ul>
+            <li><strong>Do NOT power off systems</strong> - Preserves memory evidence, encryption keys may be in RAM</li>
+            <li><strong>Do NOT pay ransom immediately</strong> - Executive/legal decision, may be illegal, no guarantee of decryption</li>
+            <li><strong>Do NOT restore backups to infected network</strong> - They'll get encrypted too</li>
+            <li><strong>Do NOT delete ransomware files</strong> - Needed for identification and potential decryption</li>
+            <li><strong>Do NOT communicate ransom demands via work email</strong> - Attackers may be monitoring</li>
+            <li><strong>Do NOT assume it's contained</strong> - Attackers often have multiple access points</li>
+            <li><strong>Do NOT rush recovery</strong> - Incomplete eradication leads to re-infection</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>ESCALATE</strong> - Immediately notify leadership</li>
+          <li><strong>ISOLATE</strong> - Contain affected systems (don't power off)</li>
+          <li><strong>STOP SPREAD</strong> - Block lateral movement and C2</li>
+          <li><strong>PRESERVE</strong> - Collect evidence and IOCs</li>
+          <li><strong>ASSESS</strong> - Determine scope of encryption</li>
+          <li><strong>INVESTIGATE</strong> - Find initial access and dwell time</li>
+          <li><strong>RECOVER</strong> - Plan recovery with leadership approval</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-malware.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Malware Playbook</span>
+          </a>
+          <a href="pb-phishing.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Phishing Playbook</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

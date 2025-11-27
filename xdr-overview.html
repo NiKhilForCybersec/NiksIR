@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XDR Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Extended Detection and Response: cross-platform correlation, unified incidents, and integrated security operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔍</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="xdr-overview.html" class="nav-link active"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>XDR Overview</span>
+        </nav>
+        <h1>XDR Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 4.4</span>
+          <span class="meta-item">~18 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#what-is-xdr">What is XDR</a></li>
+          <li><a href="#vs-edr">XDR vs EDR vs SIEM</a></li>
+          <li><a href="#data-sources">Data Sources</a></li>
+          <li><a href="#correlation">Cross-Platform Correlation</a></li>
+          <li><a href="#incidents">Unified Incidents</a></li>
+          <li><a href="#investigation">Investigation in XDR</a></li>
+        </ul>
+      </div>
+
+      <section id="what-is-xdr">
+        <h2>What is XDR</h2>
+        <p>
+          Extended Detection and Response (XDR) unifies security data from multiple 
+          sources—endpoints, network, cloud, email, identity—into a single platform 
+          for detection, investigation, and response.
+        </p>
+
+        <div class="card">
+          <h3>XDR Value Proposition</h3>
+          <div class="card-grid">
+            <div class="card">
+              <h4>Unified Visibility</h4>
+              <p>Single pane of glass across endpoint, network, cloud, email, and identity.</p>
+            </div>
+            <div class="card">
+              <h4>Correlated Detections</h4>
+              <p>Connect related alerts across domains into unified incidents.</p>
+            </div>
+            <div class="card">
+              <h4>Automated Response</h4>
+              <p>Orchestrated actions across multiple security controls.</p>
+            </div>
+            <div class="card">
+              <h4>Reduced Alert Fatigue</h4>
+              <p>Correlation reduces duplicate/related alerts to single incidents.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">XDR Types</div>
+          <p style="margin: 0;">
+            <strong>Native XDR:</strong> Single vendor's integrated product suite (Microsoft, Palo Alto, CrowdStrike).<br>
+            <strong>Open XDR:</strong> Platform that integrates multiple vendor products via APIs.
+          </p>
+        </div>
+      </section>
+
+      <section id="vs-edr">
+        <h2>XDR vs EDR vs SIEM</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Capability</th>
+                <th>EDR</th>
+                <th>XDR</th>
+                <th>SIEM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Primary Focus</strong></td>
+                <td>Endpoint only</td>
+                <td>Multiple security domains</td>
+                <td>Log aggregation and search</td>
+              </tr>
+              <tr>
+                <td><strong>Data Sources</strong></td>
+                <td>Endpoint telemetry</td>
+                <td>Endpoint, network, cloud, email, identity</td>
+                <td>Any log source</td>
+              </tr>
+              <tr>
+                <td><strong>Detection</strong></td>
+                <td>Endpoint behavioral</td>
+                <td>Cross-domain correlation</td>
+                <td>Rule-based, depends on content</td>
+              </tr>
+              <tr>
+                <td><strong>Response</strong></td>
+                <td>Endpoint actions</td>
+                <td>Multi-domain automated response</td>
+                <td>SOAR integration typically</td>
+              </tr>
+              <tr>
+                <td><strong>Investigation</strong></td>
+                <td>Endpoint-centric</td>
+                <td>Cross-domain attack chain</td>
+                <td>Log search and correlation</td>
+              </tr>
+              <tr>
+                <td><strong>Deployment</strong></td>
+                <td>Agent on endpoints</td>
+                <td>Integrated suite/platform</td>
+                <td>Log collectors everywhere</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>When XDR Shines</h3>
+        <ul class="checklist">
+          <li>Attack spans multiple domains (email → endpoint → cloud)</li>
+          <li>Need to reduce alert volume through correlation</li>
+          <li>Want automated cross-domain response</li>
+          <li>Limited SOC resources need efficiency</li>
+          <li>Single vendor stack enables tight integration</li>
+        </ul>
+
+        <h3>XDR Limitations</h3>
+        <ul>
+          <li>Native XDR creates vendor lock-in</li>
+          <li>May not replace SIEM for compliance/long-term retention</li>
+          <li>Open XDR integration quality varies</li>
+          <li>Cross-vendor correlation can be inconsistent</li>
+        </ul>
+      </section>
+
+      <section id="data-sources">
+        <h2>Data Sources</h2>
+
+        <h3>XDR Telemetry Sources</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Endpoint</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Process creation and termination</li>
+                <li>File operations (create, modify, delete)</li>
+                <li>Registry changes</li>
+                <li>Network connections from processes</li>
+                <li>Memory operations</li>
+                <li>User logon events</li>
+              </ul>
+              <p><strong>Detection Examples:</strong> Malware execution, persistence, credential theft</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Email</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Email metadata (sender, recipient, subject)</li>
+                <li>Attachment analysis</li>
+                <li>URL analysis</li>
+                <li>Delivery actions (delivered, blocked, quarantined)</li>
+                <li>User clicks on links</li>
+              </ul>
+              <p><strong>Detection Examples:</strong> Phishing, BEC, malware delivery</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Identity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Authentication events (success, failure)</li>
+                <li>MFA challenges and results</li>
+                <li>Privilege changes</li>
+                <li>Password changes</li>
+                <li>Risk detections (impossible travel, etc.)</li>
+              </ul>
+              <p><strong>Detection Examples:</strong> Account compromise, privilege escalation</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Cloud</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Cloud app access</li>
+                <li>File sharing activity</li>
+                <li>Configuration changes</li>
+                <li>API calls (CloudTrail, Activity Log)</li>
+                <li>Resource creation/deletion</li>
+              </ul>
+              <p><strong>Detection Examples:</strong> Data exfiltration, misconfiguration, resource abuse</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Firewall logs</li>
+                <li>Proxy/web filtering</li>
+                <li>DNS queries</li>
+                <li>IDS/IPS alerts</li>
+                <li>Network flow data</li>
+              </ul>
+              <p><strong>Detection Examples:</strong> C2 communication, lateral movement, exfiltration</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="correlation">
+        <h2>Cross-Platform Correlation</h2>
+        <p>
+          XDR's power comes from correlating signals across domains to detect 
+          attacks that span multiple systems.
+        </p>
+
+        <h3>Example: Phishing to Compromise Attack Chain</h3>
+        <div class="card">
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-cyan);"></div>
+              <div class="timeline-content">
+                <strong>1. Email Delivery</strong>
+                <p>Phishing email with malicious attachment delivered to user</p>
+                <small>Source: Email telemetry</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-yellow);"></div>
+              <div class="timeline-content">
+                <strong>2. Attachment Opened</strong>
+                <p>User opens attachment, macro executes PowerShell</p>
+                <small>Source: Endpoint telemetry</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-orange);"></div>
+              <div class="timeline-content">
+                <strong>3. Payload Download</strong>
+                <p>PowerShell downloads second-stage payload from C2</p>
+                <small>Source: Endpoint + Network telemetry</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-red);"></div>
+              <div class="timeline-content">
+                <strong>4. Credential Theft</strong>
+                <p>Malware dumps credentials, attacker uses them</p>
+                <small>Source: Endpoint + Identity telemetry</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-purple);"></div>
+              <div class="timeline-content">
+                <strong>5. Lateral Movement</strong>
+                <p>Attacker accesses cloud resources with stolen credentials</p>
+                <small>Source: Identity + Cloud telemetry</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Correlation Power</div>
+          <p style="margin: 0;">
+            Without XDR, each of these might be separate low/medium alerts in different 
+            tools. XDR correlates them into a single high-severity incident showing the 
+            complete attack chain.
+          </p>
+        </div>
+
+        <h3>Common Correlation Patterns</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>Sources Correlated</th>
+                <th>Attack Detected</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Email → Endpoint execution</td>
+                <td>Email + Endpoint</td>
+                <td>Phishing/malware delivery</td>
+              </tr>
+              <tr>
+                <td>Endpoint → Network C2</td>
+                <td>Endpoint + Network</td>
+                <td>Active compromise</td>
+              </tr>
+              <tr>
+                <td>Identity risk → Cloud access</td>
+                <td>Identity + Cloud</td>
+                <td>Account takeover</td>
+              </tr>
+              <tr>
+                <td>Endpoint credential → Lateral auth</td>
+                <td>Endpoint + Identity</td>
+                <td>Credential theft + reuse</td>
+              </tr>
+              <tr>
+                <td>Multiple endpoints same IOC</td>
+                <td>Endpoint + Endpoint</td>
+                <td>Spreading malware</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="incidents">
+        <h2>Unified Incidents</h2>
+        <p>
+          XDR creates unified incidents that group related alerts from multiple 
+          sources, reducing alert fatigue and providing complete attack context.
+        </p>
+
+        <h3>Incident Components</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Alerts</strong></td>
+                <td>Individual detections from each data source</td>
+              </tr>
+              <tr>
+                <td><strong>Entities</strong></td>
+                <td>Users, devices, IPs, files involved across alerts</td>
+              </tr>
+              <tr>
+                <td><strong>Evidence</strong></td>
+                <td>Artifacts supporting each detection</td>
+              </tr>
+              <tr>
+                <td><strong>Timeline</strong></td>
+                <td>Chronological view of all related events</td>
+              </tr>
+              <tr>
+                <td><strong>Attack Story</strong></td>
+                <td>Visual representation of attack chain</td>
+              </tr>
+              <tr>
+                <td><strong>Severity</strong></td>
+                <td>Calculated based on combined risk</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Incident Severity Escalation</h3>
+        <p>XDR may elevate severity based on correlation:</p>
+        <ul>
+          <li>Single medium alert → remains medium</li>
+          <li>Multiple related medium alerts → elevated to high</li>
+          <li>Attack chain across domains → elevated to critical</li>
+          <li>High-value target involved → severity boost</li>
+        </ul>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation in XDR</h2>
+
+        <h3>XDR Investigation Workflow</h3>
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Review Incident</strong><br>
+                <small>Severity, entities, timeline</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Analyze Attack Story</strong><br>
+                <small>Visual attack chain</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Deep Dive Alerts</strong><br>
+                <small>Individual alert evidence</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Respond</strong><br>
+                <small>Cross-domain actions</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Cross-Domain Hunting</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Hunt across email, endpoint, and identity</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find complete attack chain for compromised user</span>
+<span class="kw">let</span> TargetUser = <span class="st">"user@company.com"</span>;
+<span class="kw">let</span> TimeRange = <span class="fn">ago</span>(<span class="nu">24h</span>);
+
+<span class="cm">// Email events</span>
+<span class="kw">let</span> EmailActivity = EmailEvents
+| <span class="kw">where</span> TimeGenerated > TimeRange
+| <span class="kw">where</span> RecipientEmailAddress =~ TargetUser
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"Email"</span>,
+    Activity = <span class="fn">strcat</span>(<span class="st">"Email from "</span>, SenderFromAddress),
+    Details = Subject;
+
+<span class="cm">// Endpoint events</span>
+<span class="kw">let</span> EndpointActivity = DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > TimeRange
+| <span class="kw">where</span> AccountUpn =~ TargetUser
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (<span class="st">"powershell.exe"</span>, <span class="st">"cmd.exe"</span>)
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"Endpoint"</span>,
+    Activity = <span class="fn">strcat</span>(FileName, <span class="st">" on "</span>, DeviceName),
+    Details = ProcessCommandLine;
+
+<span class="cm">// Identity events</span>
+<span class="kw">let</span> IdentityActivity = SigninLogs
+| <span class="kw">where</span> TimeGenerated > TimeRange
+| <span class="kw">where</span> UserPrincipalName =~ TargetUser
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"Identity"</span>,
+    Activity = <span class="fn">strcat</span>(<span class="st">"Sign-in to "</span>, AppDisplayName),
+    Details = <span class="fn">strcat</span>(IPAddress, <span class="st">" - "</span>, Location);
+
+<span class="kw">union</span> EmailActivity, EndpointActivity, IdentityActivity
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <h3>XDR Response Actions</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th>Available Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Endpoint</strong></td>
+                <td>Isolate device, kill process, quarantine file, collect investigation package</td>
+              </tr>
+              <tr>
+                <td><strong>Email</strong></td>
+                <td>Soft/hard delete email, block sender, quarantine attachment</td>
+              </tr>
+              <tr>
+                <td><strong>Identity</strong></td>
+                <td>Disable account, revoke sessions, force password reset, block sign-in</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud</strong></td>
+                <td>Revoke OAuth tokens, suspend user, quarantine files</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>XDR unifies endpoint, email, identity, cloud, and network into one platform</li>
+          <li>Cross-domain correlation reveals complete attack chains</li>
+          <li>Unified incidents reduce alert fatigue by grouping related alerts</li>
+          <li>Native XDR has tighter integration; Open XDR offers flexibility</li>
+          <li>XDR doesn't replace SIEM for compliance/long-term retention</li>
+          <li>Investigation follows the attack story across domains</li>
+          <li>Response actions span all integrated security controls</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="edr-investigation.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR Investigation</span>
+          </a>
+          <a href="mde-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">MDE Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

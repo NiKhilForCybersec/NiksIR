@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Step-by-step playbook for responding to phishing incidents including user reports, clicked links, and credential compromise.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link active"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔨</span> Brute Force</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🔗</span> URL Analysis</a>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Phishing</span>
+        </nav>
+        <h1>🎣 Phishing Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">PB-03</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-orange);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">User report, email gateway alert, EDR click detection</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p3">P3 Medium</span> (escalates based on actions)</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Target SLA</strong>
+            <p style="margin: 0;">Response: 1 hour | Resolution: 4 hours</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation Path</strong>
+            <p style="margin: 0;">L1 → L2 (if credentials entered)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#scenarios">Scenario Classification</a></li>
+          <li><a href="#scenario-a">Scenario A: Email Reported (No Click)</a></li>
+          <li><a href="#scenario-b">Scenario B: Link Clicked</a></li>
+          <li><a href="#scenario-c">Scenario C: Credentials Entered</a></li>
+          <li><a href="#scope">Scope Assessment</a></li>
+          <li><a href="#containment">Containment & Remediation</a></li>
+        </ul>
+      </div>
+
+      <section id="scenarios">
+        <h2>Scenario Classification</h2>
+        <p>Phishing response varies significantly based on what actions the user took. Classify immediately.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Description</th>
+                <th>Severity</th>
+                <th>Key Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>A: Reported Only</strong></td>
+                <td>User reported suspicious email, did NOT click</td>
+                <td><span class="priority-badge priority-p4">P4 Low</span></td>
+                <td>Analyze email, check scope, block IOCs, thank user</td>
+              </tr>
+              <tr>
+                <td><strong>B: Link Clicked</strong></td>
+                <td>User clicked link but did NOT enter credentials</td>
+                <td><span class="priority-badge priority-p3">P3 Medium</span></td>
+                <td>+ Check for drive-by download, scan endpoint</td>
+              </tr>
+              <tr>
+                <td><strong>C: Credentials Entered</strong></td>
+                <td>User submitted credentials on phishing page</td>
+                <td><span class="priority-badge priority-p2">P2 High</span></td>
+                <td>+ Immediate password reset, session revocation, account review</td>
+              </tr>
+              <tr>
+                <td><strong>D: Attachment Opened</strong></td>
+                <td>User opened malicious attachment</td>
+                <td><span class="priority-badge priority-p2">P2 High</span></td>
+                <td>→ Use Malware Playbook</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">First Question to User</div>
+          <p style="margin: 0;">"Did you click any links in the email? If yes, did you enter any information like your password or personal details?"</p>
+        </div>
+      </section>
+
+      <section id="scenario-a">
+        <h2>Scenario A: Email Reported (No Click)</h2>
+        <p>The user correctly identified and reported a suspicious email without interacting with it.</p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-green);">
+          <h3>Investigation Steps</h3>
+          <ul class="checklist">
+            <li>Obtain the original email (from user or email logs)</li>
+            <li>Analyze email headers for sender information</li>
+            <li>Check sender address and display name for spoofing</li>
+            <li>Analyze any URLs (without clicking) - use URL analysis tools</li>
+            <li>Check attachment hashes if present</li>
+            <li>Verify SPF/DKIM/DMARC results</li>
+            <li>Determine if this is a known phishing campaign</li>
+          </ul>
+        </div>
+
+        <h3>Email Header Analysis</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">Headers</span>
+            <span class="query-title">Key fields to examine</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Sender verification</span>
+<span class="kw">From:</span> Display Name &lt;actual@email.com&gt;    <span class="cm">← Compare these</span>
+<span class="kw">Return-Path:</span> bounce@different-domain.com  <span class="cm">← Often reveals true sender</span>
+<span class="kw">Reply-To:</span> attacker@evil.com               <span class="cm">← Where replies go</span>
+
+<span class="cm"># Authentication results</span>
+<span class="kw">Authentication-Results:</span>
+  spf=<span class="st">pass</span> / <span class="op">fail</span> / <span class="op">softfail</span>
+  dkim=<span class="st">pass</span> / <span class="op">fail</span>
+  dmarc=<span class="st">pass</span> / <span class="op">fail</span>
+
+<span class="cm"># Path analysis</span>
+<span class="kw">Received:</span> from [IP] by [server]           <span class="cm">← Trace delivery path</span>
+<span class="kw">X-Originating-IP:</span> [IP]                    <span class="cm">← Original sender IP</span></code>
+          </div>
+        </div>
+
+        <h3>URL Analysis (Safe Methods)</h3>
+        <ul>
+          <li><strong>VirusTotal:</strong> Check URL reputation without visiting</li>
+          <li><strong>URLScan.io:</strong> Screenshot and analysis of landing page</li>
+          <li><strong>Hover/Copy:</strong> Check actual URL vs displayed text</li>
+          <li><strong>Sandbox:</strong> Detonate URL in isolated environment</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Never Click Suspicious URLs Directly</div>
+          <p style="margin: 0;">Always use safe analysis tools. Even "just checking" can trigger drive-by downloads or alert attackers.</p>
+        </div>
+      </section>
+
+      <section id="scenario-b">
+        <h2>Scenario B: Link Clicked</h2>
+        <p>User clicked the phishing link but reports they did not enter any information.</p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-orange);">
+          <h3>Additional Investigation Steps</h3>
+          <ul class="checklist">
+            <li>All steps from Scenario A</li>
+            <li>Check proxy/web logs for the user's access to the URL</li>
+            <li>Determine what the landing page was (credential harvester? malware?)</li>
+            <li>Check endpoint for any file downloads around that time</li>
+            <li>Run quick AV/EDR scan on the endpoint</li>
+            <li>Review browser history and downloads folder</li>
+            <li>Check for any new processes or network connections</li>
+          </ul>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check web activity for user</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+<span class="kw">let</span> timeWindow = <span class="nu">1h</span>;
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(timeWindow)
+| <span class="kw">where</span> InitiatingProcessAccountUpn =~ targetUser
+| <span class="kw">where</span> RemoteUrl <span class="kw">has_any</span> (<span class="st">"suspicious-domain.com"</span>, <span class="st">"phishing-site.net"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, RemoteUrl, RemoteIP, 
+    InitiatingProcessFileName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check for file downloads after click</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetDevice = <span class="st">"HOSTNAME"</span>;
+<span class="kw">let</span> clickTime = <span class="fn">datetime</span>(<span class="nu">2024-01-15T10:30:00Z</span>);
+DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (clickTime .. (clickTime + <span class="nu">1h</span>))
+| <span class="kw">where</span> DeviceName =~ targetDevice
+| <span class="kw">where</span> ActionType == <span class="st">"FileCreated"</span>
+| <span class="kw">where</span> FolderPath <span class="kw">has_any</span> (<span class="st">"Downloads"</span>, <span class="st">"Temp"</span>, <span class="st">"AppData"</span>)
+| <span class="kw">project</span> TimeGenerated, FileName, FolderPath, SHA256, FileSize</code>
+          </div>
+        </div>
+
+        <h3>Drive-By Download Indicators</h3>
+        <ul>
+          <li>Unexpected file downloads (especially .exe, .js, .hta, .ps1)</li>
+          <li>Browser spawning child processes (cmd.exe, powershell.exe)</li>
+          <li>New scheduled tasks or services created</li>
+          <li>Outbound connections to new IPs shortly after click</li>
+        </ul>
+      </section>
+
+      <section id="scenario-c">
+        <h2>Scenario C: Credentials Entered</h2>
+        <p>User submitted credentials on the phishing page. This is an account compromise—act immediately.</p>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Immediate Actions Required</div>
+          <ol style="margin: 0;">
+            <li><strong>Reset password immediately</strong> - Don't wait for investigation</li>
+            <li><strong>Revoke all active sessions</strong> - Force re-authentication</li>
+            <li><strong>Enable/verify MFA</strong> - If not already enabled</li>
+            <li><strong>Check for email forwarding rules</strong> - Attackers add these quickly</li>
+          </ol>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-red);">
+          <h3>Credential Compromise Investigation</h3>
+          <ul class="checklist">
+            <li>All steps from Scenarios A and B</li>
+            <li>Reset user password (coordinate with user)</li>
+            <li>Revoke all OAuth tokens and active sessions</li>
+            <li>Check for mailbox rules (forwarding, auto-delete)</li>
+            <li>Review sign-in logs for suspicious access</li>
+            <li>Check for MFA changes or new MFA methods added</li>
+            <li>Review sent items for attacker activity</li>
+            <li>Check OneDrive/SharePoint for unusual access</li>
+            <li>Review any connected applications</li>
+          </ul>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check for suspicious sign-ins after credential theft</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+<span class="kw">let</span> phishTime = <span class="fn">datetime</span>(<span class="nu">2024-01-15T10:30:00Z</span>);
+SigninLogs
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (phishTime .. (phishTime + <span class="nu">24h</span>))
+| <span class="kw">where</span> UserPrincipalName =~ targetUser
+| <span class="kw">project</span> TimeGenerated, ResultType, ResultDescription, 
+    IPAddress, Location, AppDisplayName, DeviceDetail,
+    ConditionalAccessStatus, MfaDetail
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check for mailbox rule changes</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">where</span> Operation <span class="kw">in</span> (<span class="st">"New-InboxRule"</span>, <span class="st">"Set-InboxRule"</span>, <span class="st">"Set-Mailbox"</span>)
+| <span class="kw">project</span> TimeGenerated, Operation, Parameters, ClientIP</code>
+          </div>
+        </div>
+
+        <h3>Common Attacker Actions Post-Compromise</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Purpose</th>
+                <th>How to Check</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Add email forwarding rule</td>
+                <td>Intercept communications</td>
+                <td>Inbox rules, mail flow rules</td>
+              </tr>
+              <tr>
+                <td>Add MFA method</td>
+                <td>Maintain access after password reset</td>
+                <td>Azure AD audit logs, MFA registration</td>
+              </tr>
+              <tr>
+                <td>Create OAuth app consent</td>
+                <td>Persistent mailbox access</td>
+                <td>Enterprise applications, user consents</td>
+              </tr>
+              <tr>
+                <td>Send phishing to contacts</td>
+                <td>Spread attack internally</td>
+                <td>Sent items, message trace</td>
+              </tr>
+              <tr>
+                <td>Access SharePoint/OneDrive</td>
+                <td>Data theft</td>
+                <td>Unified audit log, file access logs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="scope">
+        <h2>Scope Assessment</h2>
+        <p>Determine if other users received the same phishing email.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find all recipients of phishing email</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Search by subject line</span>
+EmailEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> Subject <span class="kw">has</span> <span class="st">"Urgent: Verify Your Account"</span>
+| <span class="kw">summarize</span> Recipients = <span class="fn">make_set</span>(RecipientEmailAddress), 
+    Count = <span class="fn">count</span>() <span class="kw">by</span> SenderFromAddress, Subject
+    
+<span class="cm">// Search by sender domain</span>
+EmailEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> SenderFromDomain =~ <span class="st">"suspicious-domain.com"</span>
+| <span class="kw">project</span> TimeGenerated, RecipientEmailAddress, Subject, 
+    DeliveryAction, ThreatTypes</code>
+          </div>
+        </div>
+
+        <h3>Scope Assessment Checklist</h3>
+        <ul class="checklist">
+          <li>How many users received this email?</li>
+          <li>How many clicked the link?</li>
+          <li>How many entered credentials?</li>
+          <li>Were emails delivered or blocked?</li>
+          <li>Is this part of a known campaign?</li>
+        </ul>
+      </section>
+
+      <section id="containment">
+        <h2>Containment & Remediation</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Block IOCs</h4>
+            <ul>
+              <li>Add sender address/domain to block list</li>
+              <li>Block phishing URL at proxy/firewall</li>
+              <li>Add URL to Safe Links block list</li>
+              <li>Block attachment hash if applicable</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Purge Emails</h4>
+            <ul>
+              <li>Search and delete from all mailboxes</li>
+              <li>Remove from quarantine if needed</li>
+              <li>Check deleted items for user recovery</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">User Actions</h4>
+            <ul>
+              <li>Notify affected users</li>
+              <li>Reset credentials if compromised</li>
+              <li>Provide guidance on what to watch for</li>
+              <li>Consider targeted security training</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Purge phishing email from mailboxes (M365)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Search for phishing emails</span>
+$search = New-ComplianceSearch -Name <span class="st">"Phishing_Cleanup"</span> `
+  -ExchangeLocation All `
+  -ContentMatchQuery <span class="st">'subject:"Urgent: Verify Your Account" AND from:attacker@evil.com'</span>
+Start-ComplianceSearch -Identity <span class="st">"Phishing_Cleanup"</span>
+
+<span class="cm"># After reviewing results, purge (soft delete)</span>
+New-ComplianceSearchAction -SearchName <span class="st">"Phishing_Cleanup"</span> -Purge -PurgeType SoftDelete</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Classify:</strong> Determine scenario (reported only, clicked, credentials entered)</li>
+          <li><strong>Analyze:</strong> Examine email headers, URLs, attachments safely</li>
+          <li><strong>Contain:</strong> Reset credentials if compromised, block IOCs</li>
+          <li><strong>Scope:</strong> Find all recipients, determine who clicked/submitted</li>
+          <li><strong>Remediate:</strong> Purge emails, notify users, update defenses</li>
+          <li><strong>Document:</strong> Record findings for future reference and training</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-ransomware.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Ransomware Playbook</span>
+          </a>
+          <a href="pb-account-compromise.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Account Compromise Playbook</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

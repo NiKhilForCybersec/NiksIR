@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyst Skills Matrix | SOC Analyst Guide</title>
+  <meta name="description" content="SOC analyst skill requirements by tier: technical skills, soft skills, and career progression from L1 to L3.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link active"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</span></a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Skills Matrix</span>
+        </nav>
+        <h1>Analyst Skills Matrix</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 1.3</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Skills Overview</a></li>
+          <li><a href="#technical">Technical Skills</a></li>
+          <li><a href="#soft">Soft Skills</a></li>
+          <li><a href="#certifications">Certifications</a></li>
+          <li><a href="#progression">Career Progression</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Skills Overview by Tier</h2>
+        <p>
+          SOC analyst skills build progressively from foundational (L1) to advanced (L3). 
+          This matrix helps you understand what's expected at each level and how to grow.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4><span class="tier-badge tier-l1">L1</span> Tier 1</h4>
+            <p><strong>Focus:</strong> Alert triage, initial assessment</p>
+            <ul>
+              <li>Follow documented procedures</li>
+              <li>Basic tool operation</li>
+              <li>Escalation decisions</li>
+              <li>Clear documentation</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4><span class="tier-badge tier-l2">L2</span> Tier 2</h4>
+            <p><strong>Focus:</strong> Deep investigation, incident handling</p>
+            <ul>
+              <li>Complex analysis</li>
+              <li>Root cause determination</li>
+              <li>Remediation guidance</li>
+              <li>Procedure development</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4><span class="tier-badge tier-l3">L3</span> Tier 3</h4>
+            <p><strong>Focus:</strong> Advanced threats, engineering</p>
+            <ul>
+              <li>Threat hunting</li>
+              <li>Detection engineering</li>
+              <li>Malware analysis</li>
+              <li>Strategic improvements</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="technical">
+        <h2>Technical Skills Matrix</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Skill Area</th>
+                <th><span class="tier-badge tier-l1">L1</span></th>
+                <th><span class="tier-badge tier-l2">L2</span></th>
+                <th><span class="tier-badge tier-l3">L3</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>SIEM</strong></td>
+                <td>Navigate UI, run saved queries</td>
+                <td>Write custom queries, build dashboards</td>
+                <td>Optimize performance, architect solutions</td>
+              </tr>
+              <tr>
+                <td><strong>Query Languages</strong></td>
+                <td>Modify existing queries</td>
+                <td>Write KQL/SPL from scratch</td>
+                <td>Complex correlations, statistical analysis</td>
+              </tr>
+              <tr>
+                <td><strong>EDR</strong></td>
+                <td>Review alerts, basic containment</td>
+                <td>Deep investigation, custom queries</td>
+                <td>Detection rule creation, YARA rules</td>
+              </tr>
+              <tr>
+                <td><strong>Networking</strong></td>
+                <td>TCP/IP basics, common ports</td>
+                <td>Packet analysis, protocol understanding</td>
+                <td>Deep protocol analysis, traffic decoding</td>
+              </tr>
+              <tr>
+                <td><strong>Windows</strong></td>
+                <td>Event log basics, common Event IDs</td>
+                <td>Registry, services, persistence</td>
+                <td>Internals, memory forensics</td>
+              </tr>
+              <tr>
+                <td><strong>Linux</strong></td>
+                <td>Basic commands, log locations</td>
+                <td>Process analysis, shell scripts</td>
+                <td>Kernel, memory analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud (Azure/AWS)</strong></td>
+                <td>Understand cloud concepts</td>
+                <td>Query cloud logs, investigate</td>
+                <td>Cloud security architecture</td>
+              </tr>
+              <tr>
+                <td><strong>Scripting</strong></td>
+                <td>Run provided scripts</td>
+                <td>Write basic Python/PowerShell</td>
+                <td>Automation, tool development</td>
+              </tr>
+              <tr>
+                <td><strong>Malware</strong></td>
+                <td>Identify malware indicators</td>
+                <td>Static analysis basics</td>
+                <td>Dynamic analysis, reverse engineering</td>
+              </tr>
+              <tr>
+                <td><strong>Threat Intel</strong></td>
+                <td>Use TI feeds, lookup IOCs</td>
+                <td>Analyze TI reports, apply to detection</td>
+                <td>Produce TI, track threat actors</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="soft">
+        <h2>Soft Skills</h2>
+        <p>Technical skills get you hired; soft skills get you promoted.</p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Communication</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Level</th><th>Expectation</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="tier-badge tier-l1">L1</span></td><td>Clear ticket documentation, concise escalations</td></tr>
+                    <tr><td><span class="tier-badge tier-l2">L2</span></td><td>Write incident reports, explain technical to non-technical</td></tr>
+                    <tr><td><span class="tier-badge tier-l3">L3</span></td><td>Executive briefings, cross-team collaboration</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Critical Thinking</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Level</th><th>Expectation</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="tier-badge tier-l1">L1</span></td><td>Follow decision trees, know when to escalate</td></tr>
+                    <tr><td><span class="tier-badge tier-l2">L2</span></td><td>Form hypotheses, test theories, determine root cause</td></tr>
+                    <tr><td><span class="tier-badge tier-l3">L3</span></td><td>Think like an attacker, anticipate threats</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Time Management</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Level</th><th>Expectation</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="tier-badge tier-l1">L1</span></td><td>Manage alert queue, prioritize by severity</td></tr>
+                    <tr><td><span class="tier-badge tier-l2">L2</span></td><td>Balance investigations with mentoring L1</td></tr>
+                    <tr><td><span class="tier-badge tier-l3">L3</span></td><td>Project management, strategic initiatives</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Collaboration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Level</th><th>Expectation</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><span class="tier-badge tier-l1">L1</span></td><td>Work with shift team, smooth handoffs</td></tr>
+                    <tr><td><span class="tier-badge tier-l2">L2</span></td><td>Coordinate with IT, mentor juniors</td></tr>
+                    <tr><td><span class="tier-badge tier-l3">L3</span></td><td>Lead cross-functional projects, external relationships</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="certifications">
+        <h2>Recommended Certifications</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tier</th>
+                <th>Certifications</th>
+                <th>Focus</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tier-badge tier-l1">L1</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>CompTIA Security+</li>
+                    <li>CompTIA CySA+</li>
+                    <li>SC-200 (Microsoft Security Operations)</li>
+                  </ul>
+                </td>
+                <td>Foundational security concepts, SOC operations</td>
+              </tr>
+              <tr>
+                <td><span class="tier-badge tier-l2">L2</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>SANS GCIA (Intrusion Analyst)</li>
+                    <li>SANS GCIH (Incident Handler)</li>
+                    <li>BTL1 (Blue Team Level 1)</li>
+                    <li>SC-200 + AZ-500</li>
+                  </ul>
+                </td>
+                <td>Deep technical analysis, incident response</td>
+              </tr>
+              <tr>
+                <td><span class="tier-badge tier-l3">L3</span></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>SANS GREM (Reverse Engineering)</li>
+                    <li>SANS GCFA (Forensic Analyst)</li>
+                    <li>OSCP (Offensive Security)</li>
+                    <li>BTL2 (Blue Team Level 2)</li>
+                  </ul>
+                </td>
+                <td>Advanced analysis, threat hunting, malware</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Experience Over Certs</div>
+          <p style="margin: 0;">
+            Certifications validate knowledge, but hands-on experience matters more. 
+            Build home labs, participate in CTFs, and contribute to open-source projects.
+          </p>
+        </div>
+      </section>
+
+      <section id="progression">
+        <h2>Career Progression</h2>
+
+        <div class="card">
+          <h3>Typical Progression Path</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">0-2 years</div>
+              <div class="timeline-title">L1 SOC Analyst</div>
+              <div class="timeline-desc">Alert triage, learn tools, follow procedures</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">2-4 years</div>
+              <div class="timeline-title">L2 SOC Analyst</div>
+              <div class="timeline-desc">Deep investigation, incident handling, mentor L1</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">4-6 years</div>
+              <div class="timeline-title">L3 / Senior Analyst</div>
+              <div class="timeline-desc">Threat hunting, detection engineering, complex incidents</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">6+ years</div>
+              <div class="timeline-title">Specialist / Lead</div>
+              <div class="timeline-desc">SOC Lead, Threat Hunter, Detection Engineer, IR Lead</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Specialization Paths</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Threat Hunter</h4>
+            <p>Proactively search for threats</p>
+            <ul>
+              <li>Advanced query skills</li>
+              <li>Threat intelligence</li>
+              <li>Attacker TTPs</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Detection Engineer</h4>
+            <p>Build and tune detections</p>
+            <ul>
+              <li>SIEM engineering</li>
+              <li>SIGMA/YARA rules</li>
+              <li>Automation</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Incident Responder</h4>
+            <p>Lead major incidents</p>
+            <ul>
+              <li>Forensics</li>
+              <li>Malware analysis</li>
+              <li>Crisis management</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">SOC Lead/Manager</h4>
+            <p>Lead SOC team</p>
+            <ul>
+              <li>Team management</li>
+              <li>Process improvement</li>
+              <li>Stakeholder relations</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Skills build progressively—master fundamentals before advancing</li>
+          <li>Soft skills are as important as technical skills</li>
+          <li>Certifications validate; experience demonstrates</li>
+          <li>Multiple specialization paths exist—find your interest</li>
+          <li>Continuous learning is essential—security evolves constantly</li>
+          <li>Document your growth—maintain a portfolio of work</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="soc-roles.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SOC Roles & Tiers</span>
+          </a>
+          <a href="soc-metrics.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SOC Metrics</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOC Metrics & KPIs | SOC Analyst Guide</title>
+  <meta name="description" content="Key performance indicators and metrics for SOC operations: MTTD, MTTR, alert volumes, and analyst performance tracking.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link active"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>SOC Metrics</span>
+        </nav>
+        <h1>SOC Metrics & KPIs</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span> <span class="tier-badge tier-lead">Lead</span></span>
+          <span class="meta-item">Section 1.4</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#why">Why Metrics Matter</a></li>
+          <li><a href="#core">Core SOC Metrics</a></li>
+          <li><a href="#operational">Operational Metrics</a></li>
+          <li><a href="#quality">Quality Metrics</a></li>
+          <li><a href="#benchmarks">Industry Benchmarks</a></li>
+          <li><a href="#pitfalls">Common Pitfalls</a></li>
+        </ul>
+      </div>
+
+      <section id="why">
+        <h2>Why Metrics Matter</h2>
+        <p>
+          Metrics provide visibility into SOC performance, help justify resources, identify improvement 
+          areas, and demonstrate value to leadership. The right metrics drive the right behaviors.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Performance Tracking</h4>
+            <p>Measure how well the SOC is detecting and responding to threats</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Resource Justification</h4>
+            <p>Data-driven arguments for staffing, tools, and budget</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Process Improvement</h4>
+            <p>Identify bottlenecks and inefficiencies</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Analyst Development</h4>
+            <p>Track individual and team growth</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Metrics Can Mislead</div>
+          <p style="margin: 0;">
+            Be careful what you measure—people optimize for metrics. Measuring only "tickets closed" 
+            might lead to rushing investigations. Balance speed metrics with quality metrics.
+          </p>
+        </div>
+      </section>
+
+      <section id="core">
+        <h2>Core SOC Metrics</h2>
+        <p>The essential metrics every SOC should track:</p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">MTTD</div>
+            <div class="stat-label">Mean Time to Detect</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">MTTR</div>
+            <div class="stat-label">Mean Time to Respond</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">MTTC</div>
+            <div class="stat-label">Mean Time to Contain</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">MTTR</div>
+            <div class="stat-label">Mean Time to Remediate</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Definition</th>
+                <th>Why It Matters</th>
+                <th>Target Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MTTD</strong></td>
+                <td>Time from threat occurrence to detection</td>
+                <td>Measures detection capability effectiveness</td>
+                <td>Minutes to hours (varies by threat)</td>
+              </tr>
+              <tr>
+                <td><strong>MTTR (Respond)</strong></td>
+                <td>Time from alert to analyst response</td>
+                <td>Measures SOC responsiveness</td>
+                <td>P1: &lt;15min, P2: &lt;30min</td>
+              </tr>
+              <tr>
+                <td><strong>MTTC</strong></td>
+                <td>Time from detection to containment</td>
+                <td>Measures ability to stop active threats</td>
+                <td>P1: &lt;1hr, P2: &lt;4hr</td>
+              </tr>
+              <tr>
+                <td><strong>MTTR (Remediate)</strong></td>
+                <td>Time to fully resolve an incident</td>
+                <td>Measures end-to-end response capability</td>
+                <td>P1: &lt;24hr, P2: &lt;72hr</td>
+              </tr>
+              <tr>
+                <td><strong>Dwell Time</strong></td>
+                <td>Time attacker is present before detection</td>
+                <td>Overall security posture indicator</td>
+                <td>Goal: &lt;24 hours</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Calculation Example</div>
+          <p style="margin: 0;">
+            <strong>MTTD:</strong> If malware executed at 09:00 and alert fired at 09:05, MTTD = 5 minutes<br>
+            <strong>MTTR:</strong> If alert fired at 09:05 and analyst began work at 09:12, MTTR = 7 minutes
+          </p>
+        </div>
+      </section>
+
+      <section id="operational">
+        <h2>Operational Metrics</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Alert Metrics</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Metric</th><th>Description</th><th>Healthy Range</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Alert Volume</strong></td>
+                      <td>Total alerts per day/week/month</td>
+                      <td>Track trend, not absolute</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Alerts per Analyst</strong></td>
+                      <td>Average daily workload per analyst</td>
+                      <td>10-25 quality investigations/day</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Alert Queue Age</strong></td>
+                      <td>Oldest unaddressed alert</td>
+                      <td>No P1/P2 older than SLA</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Alert Backlog</strong></td>
+                      <td>Alerts awaiting investigation</td>
+                      <td>Manageable within shift</td>
+                    </tr>
+                    <tr>
+                      <td><strong>False Positive Rate</strong></td>
+                      <td>% of alerts that are FP</td>
+                      <td>&lt;70% (lower is better)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Incident Metrics</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Metric</th><th>Description</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Incidents by Severity</strong></td>
+                      <td>Distribution of P1/P2/P3/P4 incidents</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Incidents by Type</strong></td>
+                      <td>Malware, phishing, unauthorized access, etc.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Incident Trend</strong></td>
+                      <td>Month-over-month incident count</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Repeat Incidents</strong></td>
+                      <td>Same root cause occurring multiple times</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Escalation Rate</strong></td>
+                      <td>% escalated from L1 to L2/L3</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Coverage Metrics</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Metric</th><th>Description</th><th>Target</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Log Source Coverage</strong></td>
+                      <td>% of critical systems sending logs</td>
+                      <td>100% of critical assets</td>
+                    </tr>
+                    <tr>
+                      <td><strong>EDR Coverage</strong></td>
+                      <td>% of endpoints with EDR agent</td>
+                      <td>&gt;98%</td>
+                    </tr>
+                    <tr>
+                      <td><strong>ATT&CK Coverage</strong></td>
+                      <td>% of techniques with detection rules</td>
+                      <td>Focus on common techniques</td>
+                    </tr>
+                    <tr>
+                      <td><strong>24/7 Coverage</strong></td>
+                      <td>Hours with analyst availability</td>
+                      <td>24/7 or defined SLA</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="quality">
+        <h2>Quality Metrics</h2>
+        <p>Speed without quality is dangerous. Track these to ensure thorough work:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Description</th>
+                <th>How to Measure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Investigation Quality Score</strong></td>
+                <td>Completeness and accuracy of investigations</td>
+                <td>Peer review, QA sampling</td>
+              </tr>
+              <tr>
+                <td><strong>Documentation Completeness</strong></td>
+                <td>Are tickets properly documented?</td>
+                <td>Checklist audit</td>
+              </tr>
+              <tr>
+                <td><strong>Missed Detection Rate</strong></td>
+                <td>Threats found by other means (not SOC)</td>
+                <td>Track discovery source</td>
+              </tr>
+              <tr>
+                <td><strong>Re-opened Incidents</strong></td>
+                <td>Incidents reopened due to incomplete work</td>
+                <td>Ticket tracking</td>
+              </tr>
+              <tr>
+                <td><strong>Correct Classification Rate</strong></td>
+                <td>Accuracy of TP/FP/BTP determination</td>
+                <td>QA review, L2 validation</td>
+              </tr>
+              <tr>
+                <td><strong>SLA Compliance</strong></td>
+                <td>% of alerts handled within SLA</td>
+                <td>Automated tracking</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Quality Review Process</div>
+          <p style="margin: 0;">
+            Implement regular ticket reviews where L2/L3 analysts review L1 work. This improves quality, 
+            provides coaching opportunities, and ensures consistent standards.
+          </p>
+        </div>
+      </section>
+
+      <section id="benchmarks">
+        <h2>Industry Benchmarks</h2>
+        <p>Compare your metrics against industry standards (these vary by organization size and maturity):</p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>Typical Ranges</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Average</th>
+                  <th>Good</th>
+                  <th>Excellent</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>MTTD (external threat)</td>
+                  <td>~200 days</td>
+                  <td>&lt;30 days</td>
+                  <td>&lt;1 day</td>
+                </tr>
+                <tr>
+                  <td>MTTR (response)</td>
+                  <td>~4 hours</td>
+                  <td>&lt;1 hour</td>
+                  <td>&lt;15 min</td>
+                </tr>
+                <tr>
+                  <td>MTTC (contain)</td>
+                  <td>~24 hours</td>
+                  <td>&lt;4 hours</td>
+                  <td>&lt;1 hour</td>
+                </tr>
+                <tr>
+                  <td>False Positive Rate</td>
+                  <td>70-90%</td>
+                  <td>50-70%</td>
+                  <td>&lt;50%</td>
+                </tr>
+                <tr>
+                  <td>Analyst Alert Load</td>
+                  <td>50+/day</td>
+                  <td>20-30/day</td>
+                  <td>10-20/day</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-muted" style="margin-top: 1rem;">
+            Note: "Average" often reflects immature SOCs. Target "Good" and work toward "Excellent."
+          </p>
+        </div>
+      </section>
+
+      <section id="pitfalls">
+        <h2>Common Metrics Pitfalls</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pitfall</th>
+                <th>Problem</th>
+                <th>Better Approach</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Ticket Counting</strong></td>
+                <td>Analysts rush through tickets, miss things</td>
+                <td>Balance with quality metrics</td>
+              </tr>
+              <tr>
+                <td><strong>MTTR Only</strong></td>
+                <td>Fast closure without proper investigation</td>
+                <td>Add investigation completeness score</td>
+              </tr>
+              <tr>
+                <td><strong>Alert Volume Goals</strong></td>
+                <td>Creating alerts just to hit numbers</td>
+                <td>Focus on meaningful detection</td>
+              </tr>
+              <tr>
+                <td><strong>Ignoring FP Rate</strong></td>
+                <td>Drowning in noise, analyst burnout</td>
+                <td>Track and actively reduce FPs</td>
+              </tr>
+              <tr>
+                <td><strong>Individual Competition</strong></td>
+                <td>Analysts compete instead of collaborate</td>
+                <td>Team metrics, peer support</td>
+              </tr>
+              <tr>
+                <td><strong>Static Targets</strong></td>
+                <td>Gaming metrics once targets are known</td>
+                <td>Evolve metrics over time</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Track both speed (MTTD, MTTR) and quality metrics</li>
+          <li>Measure what matters, not just what's easy to count</li>
+          <li>Use benchmarks as guides, not absolute targets</li>
+          <li>Review metrics regularly and evolve them over time</li>
+          <li>Be aware of gaming—metrics change behavior</li>
+          <li>Balance individual and team metrics</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="analyst-skills.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Analyst Skills Matrix</span>
+          </a>
+          <a href="shift-handoff.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Shift Handoff</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

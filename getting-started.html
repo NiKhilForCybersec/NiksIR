@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started | SOC Analyst Guide</title>
+  <meta name="description" content="New SOC analyst orientation: first day guide, learning path, and essential skills to develop.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link active"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">🏢</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Getting Started</span>
+        </nav>
+        <h1>Getting Started</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span></span>
+          <span class="meta-item">Section 1.0</span>
+          <span class="meta-item">~8 min read</span>
+        </div>
+      </div>
+
+      <section>
+        <h2>Welcome to the SOC</h2>
+        <p>
+          This guide is designed to help you become an effective SOC analyst. 
+          Whether you're brand new to security or transitioning from IT, this 
+          resource will help you build the skills you need.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">How to Use This Guide</div>
+          <p style="margin: 0;">
+            Pages are tagged by tier (L1/L2/L3). Start with L1 content, then 
+            progress as you grow. Use the search feature to find specific topics.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>First Week Priorities</h2>
+        <ol>
+          <li><strong>Access:</strong> Get credentials for all SOC tools</li>
+          <li><strong>Read:</strong> Review runbooks and playbooks</li>
+          <li><strong>Shadow:</strong> Watch experienced analysts work</li>
+          <li><strong>Ask:</strong> Questions are expected—ask them</li>
+          <li><strong>Document:</strong> Take notes on processes</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Essential Starting Pages</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Understand the SOC</h4>
+            <ul>
+              <li><a href="soc-overview.html">SOC Overview</a></li>
+              <li><a href="soc-roles.html">SOC Roles & Tiers</a></li>
+              <li><a href="alert-triage.html">Alert Triage</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Learn the Tools</h4>
+            <ul>
+              <li><a href="sentinel-overview.html">SIEM Overview</a></li>
+              <li><a href="edr-fundamentals.html">EDR Fundamentals</a></li>
+              <li><a href="analyst-toolkit.html">Analyst Toolkit</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Handle Alerts</h4>
+            <ul>
+              <li><a href="investigation-methodology.html">Investigation Method</a></li>
+              <li><a href="ticket-management.html">Ticket Management</a></li>
+              <li><a href="escalation-management.html">When to Escalate</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Quick Reference</h4>
+            <ul>
+              <li><a href="quick-reference.html">Quick Reference Card</a></li>
+              <li><a href="common-ports.html">Common Ports</a></li>
+              <li><a href="windows-events.html">Windows Events</a></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Learning Path</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Focus</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1. Orientation</strong></td>
+                <td>Tools, processes, shadowing</td>
+                <td>Week 1-2</td>
+              </tr>
+              <tr>
+                <td><strong>2. Guided Practice</strong></td>
+                <td>Handle alerts with supervision</td>
+                <td>Week 3-4</td>
+              </tr>
+              <tr>
+                <td><strong>3. Independent</strong></td>
+                <td>Work alerts independently</td>
+                <td>Month 2</td>
+              </tr>
+              <tr>
+                <td><strong>4. Proficient</strong></td>
+                <td>Handle complex alerts, mentor others</td>
+                <td>Month 3+</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Success Tips</h2>
+        <ul class="checklist">
+          <li>Document everything you learn</li>
+          <li>Ask "why" not just "how"</li>
+          <li>Review closed tickets to learn patterns</li>
+          <li>Build relationships with other teams</li>
+          <li>Stay curious—security is always evolving</li>
+          <li>It's okay to not know—never okay to not ask</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">You've Got This</div>
+        <p style="margin: 0;">
+          Everyone starts somewhere. The best analysts are curious, thorough, 
+          and not afraid to ask questions. Welcome to the team!
+        </p>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Home</span>
+          </a>
+          <a href="soc-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SOC Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

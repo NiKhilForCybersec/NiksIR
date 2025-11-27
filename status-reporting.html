@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status Reporting | SOC Analyst Guide</title>
+  <meta name="description" content="SOC status reporting: daily reports, metrics dashboards, and management updates.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">⬆️</span> Escalation</a>
+          <a href="status-reporting.html" class="nav-link active"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#itsm">Ticketing & ITSM</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Status Reporting</span>
+        </nav>
+        <h1>Status Reporting</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-lead">Lead</span></span>
+          <span class="meta-item">Section 2.5</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#types">Report Types</a></li>
+          <li><a href="#daily">Daily Reports</a></li>
+          <li><a href="#metrics">Key Metrics</a></li>
+          <li><a href="#management">Management Reports</a></li>
+        </ul>
+      </div>
+
+      <section id="types">
+        <h2>Report Types</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Report</th>
+                <th>Frequency</th>
+                <th>Audience</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Shift Handoff</strong></td>
+                <td>Every shift</td>
+                <td>Incoming shift</td>
+                <td>Continuity</td>
+              </tr>
+              <tr>
+                <td><strong>Daily Summary</strong></td>
+                <td>Daily</td>
+                <td>SOC Manager</td>
+                <td>Operations overview</td>
+              </tr>
+              <tr>
+                <td><strong>Weekly Metrics</strong></td>
+                <td>Weekly</td>
+                <td>Management</td>
+                <td>Performance tracking</td>
+              </tr>
+              <tr>
+                <td><strong>Monthly Report</strong></td>
+                <td>Monthly</td>
+                <td>Leadership</td>
+                <td>Trends, improvements</td>
+              </tr>
+              <tr>
+                <td><strong>Incident Report</strong></td>
+                <td>Per incident</td>
+                <td>Varies</td>
+                <td>Specific incident details</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="daily">
+        <h2>Daily Report Template</h2>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Daily SOC Report</span>
+          </div>
+          <div class="terminal-body">
+<pre><strong>SOC Daily Report - [Date]</strong>
+
+<strong>SUMMARY</strong>
+Total Alerts: [#]
+Incidents Created: [#]
+SLA Compliance: [%]
+
+<strong>INCIDENTS</strong>
+| ID | Priority | Status | Summary |
+|----|----------|--------|---------|
+| 001 | P2 | Investigating | Malware on endpoint |
+| 002 | P3 | Resolved | Phishing campaign |
+
+<strong>NOTABLE EVENTS</strong>
+- [Significant finding or trend]
+- [Any escalations or blockers]
+
+<strong>PENDING ITEMS</strong>
+- [Items requiring follow-up]
+
+<strong>QUEUE STATUS</strong>
+Open: [#] | In Progress: [#] | Pending: [#]</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="metrics">
+        <h2>Key Metrics</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>What It Measures</th>
+                <th>Target</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Alert Volume</strong></td>
+                <td>Total alerts received</td>
+                <td>Track trend</td>
+              </tr>
+              <tr>
+                <td><strong>MTTA</strong></td>
+                <td>Mean time to acknowledge</td>
+                <td>< 15 min (P1)</td>
+              </tr>
+              <tr>
+                <td><strong>MTTR</strong></td>
+                <td>Mean time to resolve</td>
+                <td>Varies by priority</td>
+              </tr>
+              <tr>
+                <td><strong>SLA Compliance</strong></td>
+                <td>% tickets meeting SLA</td>
+                <td>> 95%</td>
+              </tr>
+              <tr>
+                <td><strong>False Positive Rate</strong></td>
+                <td>% alerts that are FP</td>
+                <td>< 30%</td>
+              </tr>
+              <tr>
+                <td><strong>Escalation Rate</strong></td>
+                <td>% escalated to higher tier</td>
+                <td>Track trend</td>
+              </tr>
+              <tr>
+                <td><strong>True Positive Rate</strong></td>
+                <td>% alerts that are real threats</td>
+                <td>Track for rule tuning</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="management">
+        <h2>Management Reports</h2>
+
+        <h3>What Management Wants to Know</h3>
+        <ul class="checklist">
+          <li>Are we protected? (threat landscape)</li>
+          <li>Are we efficient? (SLA, response times)</li>
+          <li>What's improving? (trends over time)</li>
+          <li>What do we need? (resource gaps)</li>
+          <li>Any significant incidents? (risk awareness)</li>
+        </ul>
+
+        <h3>Weekly Summary Structure</h3>
+        <ol>
+          <li><strong>Executive Summary:</strong> 2-3 key points</li>
+          <li><strong>Metrics Dashboard:</strong> Visual trends</li>
+          <li><strong>Significant Incidents:</strong> Brief summaries</li>
+          <li><strong>Improvements:</strong> What's gotten better</li>
+          <li><strong>Concerns/Needs:</strong> Resource or coverage gaps</li>
+        </ol>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Keep It Visual</div>
+          <p style="margin: 0;">
+            Use charts and graphs for trends. Executives prefer visuals over 
+            walls of text. Show week-over-week or month-over-month comparisons.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Different audiences need different report formats</li>
+          <li>Daily reports maintain operational continuity</li>
+          <li>Track key metrics consistently over time</li>
+          <li>Management wants business impact, not technical details</li>
+          <li>Use visuals to communicate trends effectively</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="communication-practices.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Communication</span>
+          </a>
+          <a href="sla-management.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SLA Management</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

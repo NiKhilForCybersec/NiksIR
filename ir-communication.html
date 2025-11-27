@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incident Communication | SOC Analyst Guide</title>
+  <meta name="description" content="Incident communication: stakeholder management, status updates, executive briefings, and communication templates.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link active"><span class="nav-link-icon">📢</span> Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📦</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Communication</span>
+        </nav>
+        <h1>Incident Communication</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-lead">Lead</span></span>
+          <span class="meta-item">Section 10.8</span>
+          <span class="meta-item">~18 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#principles">Communication Principles</a></li>
+          <li><a href="#stakeholders">Stakeholder Management</a></li>
+          <li><a href="#cadence">Update Cadence</a></li>
+          <li><a href="#templates">Communication Templates</a></li>
+          <li><a href="#executive">Executive Briefings</a></li>
+          <li><a href="#external">External Communication</a></li>
+        </ul>
+      </div>
+
+      <section id="principles">
+        <h2>Communication Principles</h2>
+        <p>
+          Effective incident communication keeps stakeholders informed, maintains trust, 
+          and ensures coordinated response. Poor communication causes confusion, delays, 
+          and reputational damage.
+        </p>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-green);">
+            <h4>✓ Do</h4>
+            <ul>
+              <li>Communicate early and often</li>
+              <li>Be factual—state what you know</li>
+              <li>Acknowledge what you don't know</li>
+              <li>Provide clear next steps</li>
+              <li>Tailor message to audience</li>
+              <li>Document all communications</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>✗ Don't</h4>
+            <ul>
+              <li>Speculate or guess</li>
+              <li>Assign blame during incident</li>
+              <li>Over-promise on timelines</li>
+              <li>Use technical jargon with execs</li>
+              <li>Go silent during investigation</li>
+              <li>Communicate inconsistent messages</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">The Golden Rule</div>
+          <p style="margin: 0;">
+            No news feels like bad news. Even if you have no new information, communicate 
+            that you're still investigating. Silence breeds anxiety and speculation.
+          </p>
+        </div>
+      </section>
+
+      <section id="stakeholders">
+        <h2>Stakeholder Management</h2>
+
+        <h3>Stakeholder Matrix by Severity</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Stakeholder</th>
+                <th>P1 Critical</th>
+                <th>P2 High</th>
+                <th>P3 Medium</th>
+                <th>P4 Low</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>SOC Team</strong></td>
+                <td>Immediate</td>
+                <td>Immediate</td>
+                <td>Immediate</td>
+                <td>Immediate</td>
+              </tr>
+              <tr>
+                <td><strong>SOC Manager</strong></td>
+                <td>Immediate</td>
+                <td>Immediate</td>
+                <td>Daily</td>
+                <td>Weekly</td>
+              </tr>
+              <tr>
+                <td><strong>IT Operations</strong></td>
+                <td>Immediate</td>
+                <td>Within 1hr</td>
+                <td>As needed</td>
+                <td>As needed</td>
+              </tr>
+              <tr>
+                <td><strong>CISO</strong></td>
+                <td>Within 15min</td>
+                <td>Within 1hr</td>
+                <td>Daily summary</td>
+                <td>Weekly</td>
+              </tr>
+              <tr>
+                <td><strong>Executive Team</strong></td>
+                <td>Within 1hr</td>
+                <td>Within 4hr</td>
+                <td>Not typically</td>
+                <td>Not typically</td>
+              </tr>
+              <tr>
+                <td><strong>Legal/Compliance</strong></td>
+                <td>Immediate</td>
+                <td>Within 2hr</td>
+                <td>If regulatory</td>
+                <td>Not typically</td>
+              </tr>
+              <tr>
+                <td><strong>HR</strong></td>
+                <td>If insider</td>
+                <td>If insider</td>
+                <td>If insider</td>
+                <td>Not typically</td>
+              </tr>
+              <tr>
+                <td><strong>PR/Communications</strong></td>
+                <td>Standby</td>
+                <td>If public-facing</td>
+                <td>Not typically</td>
+                <td>Not typically</td>
+              </tr>
+              <tr>
+                <td><strong>Affected Business Units</strong></td>
+                <td>Immediate</td>
+                <td>Within 2hr</td>
+                <td>As needed</td>
+                <td>As needed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Information Needs by Audience</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Technical Team (SOC, IT)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Technical details of attack</li>
+                <li>IOCs for hunting/blocking</li>
+                <li>Affected systems and scope</li>
+                <li>Containment actions needed</li>
+                <li>Investigation findings</li>
+                <li>Remediation steps</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Management (CISO, Directors)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Business impact assessment</li>
+                <li>Scope of compromise</li>
+                <li>Current response status</li>
+                <li>Resource needs</li>
+                <li>Timeline estimates</li>
+                <li>Risk level and trajectory</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Executives (CEO, Board)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What happened (one sentence)</li>
+                <li>Business impact (revenue, customers, operations)</li>
+                <li>Are we contained?</li>
+                <li>Legal/regulatory exposure</li>
+                <li>What are we doing about it?</li>
+                <li>When will we know more?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Legal/Compliance</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What data was potentially accessed/exfiltrated?</li>
+                <li>PII, PHI, PCI data involved?</li>
+                <li>Notification obligations triggered?</li>
+                <li>Evidence preservation status</li>
+                <li>Third-party involvement</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cadence">
+        <h2>Update Cadence</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Update Frequency</th>
+                <th>Format</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge p1">P1 Critical</span></td>
+                <td>Every 30-60 minutes during active response</td>
+                <td>War room + written updates</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge p2">P2 High</span></td>
+                <td>Every 2-4 hours</td>
+                <td>Email/Slack + bridge call if needed</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge p3">P3 Medium</span></td>
+                <td>Daily or when significant progress</td>
+                <td>Email/ticket updates</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge p4">P4 Low</span></td>
+                <td>Upon resolution or weekly</td>
+                <td>Ticket updates</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Even When Nothing Changes</div>
+          <p style="margin: 0;">
+            For P1/P2 incidents, send updates even if there's no new information: 
+            "Investigation continues. No significant new findings in last hour. 
+            Next update at [time]." This prevents stakeholders from wondering if 
+            you've forgotten about them.
+          </p>
+        </div>
+      </section>
+
+      <section id="templates">
+        <h2>Communication Templates</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Initial Notification Template</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                  <span style="margin-left: 1rem; color: var(--text-muted);">Initial Alert</span>
+                </div>
+                <div class="terminal-body">
+<pre><strong>Subject:</strong> [P1/P2] Security Incident - [Brief Description]
+
+<strong>Summary:</strong>
+At [TIME] on [DATE], the SOC detected [brief description of incident].
+
+<strong>Current Status:</strong>
+- Severity: [P1/P2/P3]
+- Status: [Investigating/Containing/Contained]
+- Affected Systems: [List or "Under investigation"]
+
+<strong>What We Know:</strong>
+- [Bullet points of confirmed facts]
+
+<strong>What We're Doing:</strong>
+- [Current response actions]
+
+<strong>Business Impact:</strong>
+- [Known or potential impact]
+
+<strong>Next Steps:</strong>
+- [Planned actions]
+- Next update: [TIME]
+
+<strong>Contact:</strong>
+Incident Commander: [Name]
+Bridge/War Room: [Link/Number]</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Status Update Template</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                  <span style="margin-left: 1rem; color: var(--text-muted);">Status Update</span>
+                </div>
+                <div class="terminal-body">
+<pre><strong>Subject:</strong> [UPDATE #X] Security Incident - [Brief Description]
+
+<strong>Status:</strong> [Investigating/Containing/Contained/Eradicating/Recovered]
+
+<strong>Changes Since Last Update:</strong>
+- [What's new since last communication]
+
+<strong>Current Understanding:</strong>
+- [Updated scope and findings]
+
+<strong>Actions Taken:</strong>
+- [Completed actions since last update]
+
+<strong>Open Items:</strong>
+- [Pending actions or blockers]
+
+<strong>Timeline Estimate:</strong>
+- [If applicable]
+
+<strong>Next Update:</strong> [TIME]</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Resolution Notification Template</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                  <span style="margin-left: 1rem; color: var(--text-muted);">Resolution Notice</span>
+                </div>
+                <div class="terminal-body">
+<pre><strong>Subject:</strong> [RESOLVED] Security Incident - [Brief Description]
+
+<strong>Status:</strong> RESOLVED
+
+<strong>Summary:</strong>
+The security incident that began on [DATE] has been resolved.
+
+<strong>What Happened:</strong>
+- [Brief description of incident]
+
+<strong>Impact:</strong>
+- [Confirmed impact]
+- [Duration of impact]
+
+<strong>Resolution:</strong>
+- [How it was resolved]
+- [Remediation completed]
+
+<strong>Preventive Measures:</strong>
+- [What we're doing to prevent recurrence]
+
+<strong>Follow-up:</strong>
+- Lessons learned review scheduled for [DATE]
+- Post-incident report to follow
+
+<strong>Questions:</strong>
+Contact [Name] for any questions.</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="executive">
+        <h2>Executive Briefings</h2>
+
+        <h3>Executive Summary Format</h3>
+        <p>
+          Executives need concise, business-focused information. Use the BLUF 
+          (Bottom Line Up Front) approach.
+        </p>
+
+        <div class="card">
+          <h4>Executive Briefing Structure</h4>
+          <ol>
+            <li><strong>Bottom Line</strong> (1-2 sentences) - What happened and current status</li>
+            <li><strong>Business Impact</strong> - How this affects operations, customers, revenue</li>
+            <li><strong>Scope</strong> - What/who is affected</li>
+            <li><strong>Response Status</strong> - What we're doing, contained or not</li>
+            <li><strong>Risk Level</strong> - Current and trending</li>
+            <li><strong>Timeline</strong> - When we expect resolution</li>
+            <li><strong>Decisions Needed</strong> - If any from leadership</li>
+          </ol>
+        </div>
+
+        <h3>What NOT to Include for Executives</h3>
+        <ul>
+          <li>Technical details (IOCs, CVE numbers, attack techniques)</li>
+          <li>Tool names and log sources</li>
+          <li>Internal team discussions</li>
+          <li>Speculation or theories</li>
+          <li>Blame or finger-pointing</li>
+        </ul>
+      </section>
+
+      <section id="external">
+        <h2>External Communication</h2>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">External Communication Approval</div>
+          <p style="margin: 0;">
+            All external communication during incidents must be approved by Legal 
+            and Communications/PR. SOC analysts should never communicate externally 
+            without explicit authorization.
+          </p>
+        </div>
+
+        <h3>External Parties</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Party</th>
+                <th>When to Notify</th>
+                <th>Who Owns</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Customers</strong></td>
+                <td>If their data affected</td>
+                <td>Legal + Communications</td>
+              </tr>
+              <tr>
+                <td><strong>Regulators</strong></td>
+                <td>Per regulatory requirements</td>
+                <td>Legal + Compliance</td>
+              </tr>
+              <tr>
+                <td><strong>Law Enforcement</strong></td>
+                <td>Criminal activity, per policy</td>
+                <td>Legal</td>
+              </tr>
+              <tr>
+                <td><strong>Cyber Insurance</strong></td>
+                <td>Per policy requirements</td>
+                <td>Risk/Legal</td>
+              </tr>
+              <tr>
+                <td><strong>Third-party IR Firm</strong></td>
+                <td>If engaged for support</td>
+                <td>CISO</td>
+              </tr>
+              <tr>
+                <td><strong>Media</strong></td>
+                <td>Only if necessary</td>
+                <td>Communications/PR</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Regulatory Notification Timelines</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Regulation</th>
+                <th>Timeline</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>GDPR</strong></td>
+                <td>72 hours</td>
+                <td>To supervisory authority</td>
+              </tr>
+              <tr>
+                <td><strong>HIPAA</strong></td>
+                <td>60 days</td>
+                <td>To HHS and affected individuals</td>
+              </tr>
+              <tr>
+                <td><strong>PCI DSS</strong></td>
+                <td>Immediately</td>
+                <td>To card brands and acquirer</td>
+              </tr>
+              <tr>
+                <td><strong>State Breach Laws</strong></td>
+                <td>Varies (30-90 days)</td>
+                <td>Check applicable state laws</td>
+              </tr>
+              <tr>
+                <td><strong>SEC (Public Co.)</strong></td>
+                <td>4 business days</td>
+                <td>Material cybersecurity incidents</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Communicate early, often, and consistently</li>
+          <li>Tailor message to audience—executives need business impact, not technical details</li>
+          <li>Even "no update" is an update—don't go silent</li>
+          <li>Use templates for consistency and speed</li>
+          <li>Document all communications in the incident record</li>
+          <li>External communication requires Legal/PR approval</li>
+          <li>Know regulatory notification requirements and timelines</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ir-recovery.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Recovery</span>
+          </a>
+          <a href="evidence-handling.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Evidence Handling</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOC Analyst Guide | Comprehensive Security Operations Reference</title>
+  <meta name="description" content="Complete SOC Analyst training guide covering SIEM, EDR, incident response, threat hunting, and security operations procedures.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span>SOC Analyst Guide</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 92 Pages</p>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide... (Press /)">
+        </div>
+
+        <!-- Section 1: Foundations (9 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="pages/getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="pages/soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="pages/soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="pages/analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="pages/analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="pages/soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="pages/shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="pages/alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="pages/investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <!-- Section 2: ITSM (6 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="pages/ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="pages/escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="pages/communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="pages/status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="pages/handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="pages/sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <!-- Section 3: SIEM (11 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="pages/siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="pages/sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="pages/sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="pages/kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="pages/alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="pages/siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="pages/workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="pages/log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="pages/log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="pages/threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="pages/hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <!-- Section 4: EDR/XDR (8 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="pages/edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="pages/edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="pages/edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="pages/edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="pages/isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="pages/xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="pages/mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="pages/mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <!-- Section 5: Network (10 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="pages/network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="pages/firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewall Basics</a>
+          <a href="pages/ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="pages/proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="pages/dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="pages/traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="pages/network-forensics.html" class="nav-link"><span class="nav-link-icon">🔎</span> Network Forensics</a>
+          <a href="pages/vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="pages/network-segmentation.html" class="nav-link"><span class="nav-link-icon">🔀</span> Segmentation</a>
+          <a href="pages/zero-trust.html" class="nav-link"><span class="nav-link-icon">🔐</span> Zero Trust</a>
+        </div>
+
+        <!-- Section 6: Cloud (8 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="pages/cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="pages/aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="pages/azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="pages/gcp-security.html" class="nav-link"><span class="nav-link-icon">🔴</span> GCP Security</a>
+          <a href="pages/m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="pages/cloud-iam.html" class="nav-link"><span class="nav-link-icon">🔑</span> Cloud IAM</a>
+          <a href="pages/container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="pages/serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
+        <!-- Section 7: Email (5 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="pages/email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="pages/phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="pages/email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="pages/email-auth.html" class="nav-link"><span class="nav-link-icon">🔐</span> Email Authentication</a>
+          <a href="pages/bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+
+        <!-- Section 8: Identity (6 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="pages/identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="pages/azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure AD Security</a>
+          <a href="pages/ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="pages/privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="pages/mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="pages/service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <!-- Section 9: Data Protection (3 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="pages/data-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Data Classification</a>
+          <a href="pages/dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="pages/dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <!-- Section 10: Incident Response (8 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="pages/ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="pages/ir-classification.html" class="nav-link"><span class="nav-link-icon">📋</span> Classification</a>
+          <a href="pages/ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="pages/ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="pages/ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="pages/ir-communication.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="pages/evidence-handling.html" class="nav-link"><span class="nav-link-icon">📦</span> Evidence Handling</a>
+          <a href="pages/lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <!-- Section 11: Playbooks (10 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pages/pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pages/pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pages/pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pages/pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pages/pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pages/pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pages/pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pages/pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pages/pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pages/pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <!-- Section 12: Reference (8 pages) -->
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="pages/quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="pages/common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Common Ports</a>
+          <a href="pages/windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="pages/kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="pages/regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔣</span> Regex Patterns</a>
+          <a href="pages/mitre-reference.html" class="nav-link"><span class="nav-link-icon">🗺️</span> MITRE Reference</a>
+          <a href="pages/ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="pages/documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <h1>SOC Analyst Guide</h1>
+        <p class="lead">
+          Comprehensive reference for Security Operations Center analysts. 
+          92 pages covering SIEM, EDR, incident response, threat hunting, and more.
+        </p>
+      </div>
+
+      <!-- Quick Start -->
+      <section id="quickstart">
+        <h2>Quick Start</h2>
+        <div class="card-grid">
+          <a href="pages/getting-started.html" class="card card-link">
+            <h3>🚀 New to SOC?</h3>
+            <p>Start here for orientation and learning path</p>
+          </a>
+          <a href="pages/alert-triage.html" class="card card-link">
+            <h3>⚡ Alert Triage</h3>
+            <p>How to efficiently process security alerts</p>
+          </a>
+          <a href="pages/quick-reference.html" class="card card-link">
+            <h3>📋 Quick Reference</h3>
+            <p>One-page cheat sheet for common tasks</p>
+          </a>
+          <a href="pages/investigation-methodology.html" class="card card-link">
+            <h3>🔍 Investigation</h3>
+            <p>Structured approach to security investigation</p>
+          </a>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section id="stats">
+        <h2>Guide Contents</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h3 style="color: var(--accent-cyan);">92</h3>
+            <p>Total Pages</p>
+          </div>
+          <div class="card">
+            <h3 style="color: var(--accent-green);">12</h3>
+            <p>Sections</p>
+          </div>
+          <div class="card">
+            <h3 style="color: var(--accent-orange);">65+</h3>
+            <p>KQL Queries</p>
+          </div>
+          <div class="card">
+            <h3 style="color: var(--accent-purple);">10</h3>
+            <p>Playbooks</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sections Overview -->
+      <section id="sections">
+        <h2>Sections Overview</h2>
+        
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">1. SOC Foundations (9 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Core SOC knowledge: roles, metrics, triage, and investigation methodology.</p>
+              <a href="pages/getting-started.html">Start with Getting Started →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">2. Ticketing & ITSM (6 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Ticket management, escalation procedures, SLAs, and communication.</p>
+              <a href="pages/ticket-management.html">Start with Ticket Management →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">3. SIEM & Log Analysis (11 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>SIEM fundamentals, Microsoft Sentinel, KQL queries, threat hunting.</p>
+              <a href="pages/siem-fundamentals.html">Start with SIEM Fundamentals →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">4. EDR/XDR (8 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Endpoint detection and response, investigation, hunting, and XDR.</p>
+              <a href="pages/edr-fundamentals.html">Start with EDR Fundamentals →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">5. Network Security (10 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Firewalls, IDS/IPS, DNS, traffic analysis, forensics, Zero Trust.</p>
+              <a href="pages/network-fundamentals.html">Start with Network Fundamentals →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">6. Cloud Security (8 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>AWS, Azure, GCP security monitoring, Cloud IAM, containers, serverless.</p>
+              <a href="pages/cloud-overview.html">Start with Cloud Overview →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">7. Email & Phishing (5 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Email security, phishing analysis, headers, authentication, BEC.</p>
+              <a href="pages/email-security.html">Start with Email Security →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">8. Identity & Access (6 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Identity security, Azure AD, Active Directory, MFA, service accounts.</p>
+              <a href="pages/identity-overview.html">Start with Identity Overview →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">9. Data Protection (3 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Data classification, DLP overview, and DLP investigation.</p>
+              <a href="pages/data-classification.html">Start with Data Classification →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">10. Incident Response (8 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Complete IR lifecycle: classification, containment, eradication, recovery.</p>
+              <a href="pages/ir-overview.html">Start with IR Overview →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">11. Playbooks (10 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Step-by-step response playbooks for common security scenarios.</p>
+              <a href="pages/pb-phishing.html">Start with Phishing Playbook →</a>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">12. Reference (8 pages)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Quick reference, ports, Windows events, KQL cheatsheet, MITRE mapping.</p>
+              <a href="pages/quick-reference.html">Start with Quick Reference →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tier Badges -->
+      <section id="tiers">
+        <h2>Content Tiers</h2>
+        <p>Pages are tagged by analyst level:</p>
+        <div class="card-grid">
+          <div class="card">
+            <span class="tier-badge tier-l1">L1</span>
+            <p><strong>Tier 1 Analyst</strong><br>Alert monitoring, initial triage</p>
+          </div>
+          <div class="card">
+            <span class="tier-badge tier-l2">L2</span>
+            <p><strong>Tier 2 Analyst</strong><br>Deep investigation, incident handling</p>
+          </div>
+          <div class="card">
+            <span class="tier-badge tier-l3">L3</span>
+            <p><strong>Tier 3 Analyst</strong><br>Threat hunting, engineering</p>
+          </div>
+          <div class="card">
+            <span class="tier-badge tier-all">All</span>
+            <p><strong>All Tiers</strong><br>Essential for everyone</p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        <p style="text-align: center; color: var(--text-muted);">
+          SOC Analyst Guide v2.0 | 92 Pages | Built for Security Operations
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

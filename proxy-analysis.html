@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proxy & Web Filtering | SOC Analyst Guide</title>
+  <meta name="description" content="Web proxy and content filtering for SOC analysts: log analysis, common use cases, and threat detection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewalls</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🛡️</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link active"><span class="nav-link-icon">🔀</span> Proxy & Web Filtering</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Proxy & Web Filtering</span>
+        </nav>
+        <h1>Proxy & Web Filtering</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 5.4</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">What is a Proxy?</a></li>
+          <li><a href="#types">Proxy Types</a></li>
+          <li><a href="#logs">Log Analysis</a></li>
+          <li><a href="#detection">Threat Detection</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>What is a Web Proxy?</h2>
+        <p>
+          A web proxy acts as an intermediary between users and the internet. All web traffic 
+          flows through the proxy, enabling inspection, filtering, logging, and policy enforcement.
+        </p>
+
+        <div class="card">
+          <h3>Proxy Traffic Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>User</strong><br>
+                <small>Requests website</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Proxy</strong><br>
+                <small>Inspect, filter, log</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Internet</strong><br>
+                <small>Fetch content</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>User</strong><br>
+                <small>Receive content</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Why Use a Proxy?</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Security</h4>
+            <ul>
+              <li>Block malicious websites</li>
+              <li>Prevent malware downloads</li>
+              <li>Inspect encrypted traffic (SSL)</li>
+              <li>Detect data exfiltration</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Policy Enforcement</h4>
+            <ul>
+              <li>Block inappropriate content</li>
+              <li>Enforce acceptable use</li>
+              <li>Limit bandwidth usage</li>
+              <li>Restrict cloud apps</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Visibility</h4>
+            <ul>
+              <li>Log all web activity</li>
+              <li>User attribution</li>
+              <li>Application identification</li>
+              <li>Forensic evidence</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="types">
+        <h2>Proxy Types</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Forward Proxy</strong></td>
+                <td>Sits in front of clients, handles outbound requests</td>
+                <td>Squid, Bluecoat</td>
+              </tr>
+              <tr>
+                <td><strong>Reverse Proxy</strong></td>
+                <td>Sits in front of servers, handles inbound requests</td>
+                <td>Nginx, HAProxy, CloudFlare</td>
+              </tr>
+              <tr>
+                <td><strong>Transparent Proxy</strong></td>
+                <td>Intercepts traffic without client configuration</td>
+                <td>Network-level interception</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud Proxy (SWG)</strong></td>
+                <td>Cloud-based secure web gateway</td>
+                <td>Zscaler, Netskope, Umbrella</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Modern Trend: Cloud Proxies</div>
+          <p style="margin: 0;">
+            With remote work, many organizations use cloud-based Secure Web Gateways (SWG) 
+            like Zscaler or Netskope. These provide proxy functionality for users anywhere, 
+            not just on-premises.
+          </p>
+        </div>
+      </section>
+
+      <section id="logs">
+        <h2>Log Analysis</h2>
+
+        <h3>Key Proxy Log Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Timestamp</strong></td>
+                <td>When request occurred</td>
+                <td>Timeline, correlation</td>
+              </tr>
+              <tr>
+                <td><strong>User</strong></td>
+                <td>Username (if authenticated)</td>
+                <td>Attribution, insider threat</td>
+              </tr>
+              <tr>
+                <td><strong>Source IP</strong></td>
+                <td>Client IP address</td>
+                <td>Host identification</td>
+              </tr>
+              <tr>
+                <td><strong>URL/Domain</strong></td>
+                <td>Requested URL or domain</td>
+                <td>C2, phishing detection</td>
+              </tr>
+              <tr>
+                <td><strong>Category</strong></td>
+                <td>URL categorization</td>
+                <td>Policy violation, risky sites</td>
+              </tr>
+              <tr>
+                <td><strong>Action</strong></td>
+                <td>Allowed, blocked, warned</td>
+                <td>Threat prevention</td>
+              </tr>
+              <tr>
+                <td><strong>HTTP Method</strong></td>
+                <td>GET, POST, PUT, etc.</td>
+                <td>Data upload detection</td>
+              </tr>
+              <tr>
+                <td><strong>Response Code</strong></td>
+                <td>HTTP status (200, 404, etc.)</td>
+                <td>Scan detection</td>
+              </tr>
+              <tr>
+                <td><strong>Bytes</strong></td>
+                <td>Data transferred</td>
+                <td>Exfiltration detection</td>
+              </tr>
+              <tr>
+                <td><strong>User-Agent</strong></td>
+                <td>Browser/application identifier</td>
+                <td>Malware identification</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Example Proxy Log Entry</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">proxy.log</span>
+          </div>
+          <div class="terminal-body">
+<pre>2024-01-15 09:23:45 <span style="color: var(--accent-cyan);">user:jsmith</span> <span style="color: var(--accent-green);">src:10.0.1.50</span>
+<span style="color: var(--accent-orange);">GET</span> https://suspicious-domain.xyz/update.exe
+category:<span style="color: var(--accent-red);">Malware</span> action:<span style="color: var(--accent-red);">BLOCKED</span>
+bytes:0 response:403 user-agent:Mozilla/5.0</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Threat Detection Use Cases</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Malware Download Attempts</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Category: Malware, Phishing, Uncategorized</li>
+                <li>File types: .exe, .dll, .scr, .ps1, .bat</li>
+                <li>Newly registered domains</li>
+                <li>Low reputation scores</li>
+              </ul>
+              <h4>Action:</h4>
+              <p>Check if blocked. If allowed, investigate endpoint for compromise.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Command & Control (C2) Communication</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Repeated connections to same domain</li>
+                <li>Regular timing intervals (beaconing)</li>
+                <li>POST requests with encoded data</li>
+                <li>Unusual user-agents</li>
+                <li>Category: Uncategorized, newly seen</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Data Exfiltration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Large POST requests (unusual byte counts)</li>
+                <li>Uploads to cloud storage (Dropbox, Google Drive)</li>
+                <li>Traffic to paste sites (Pastebin)</li>
+                <li>Unusual protocols over port 443</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Crypto Mining</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Connections to mining pools</li>
+                <li>High-volume WebSocket connections</li>
+                <li>Category: Crypto Mining</li>
+                <li>Known mining domains</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Proxy Bypass Attempts</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Category: Anonymizer, VPN, Proxy Avoidance</li>
+                <li>Connections to known VPN/Tor services</li>
+                <li>Non-standard ports for HTTP traffic</li>
+                <li>Attempts to reach IP addresses directly</li>
+              </ul>
+              <h4>Why It Matters:</h4>
+              <p>Users bypassing proxy may be hiding malicious activity or violating policy.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Blocked malware downloads</span>
+          </div>
+          <div class="query-body">
+<code>CommonSecurityLog
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> DeviceVendor == <span class="st">"Zscaler"</span>  <span class="cm">// or your proxy vendor</span>
+| <span class="kw">where</span> Activity == <span class="st">"Blocked"</span>
+| <span class="kw">where</span> DeviceCustomString1 <span class="kw">has_any</span> (<span class="st">"Malware"</span>, <span class="st">"Phishing"</span>, <span class="st">"Botnet"</span>)
+| <span class="kw">project</span> TimeGenerated, SourceUserName, SourceIP,
+    RequestURL, DeviceCustomString1, DeviceAction
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Large uploads (potential exfiltration)</span>
+          </div>
+          <div class="query-body">
+<code>CommonSecurityLog
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RequestMethod == <span class="st">"POST"</span>
+| <span class="kw">where</span> SentBytes > <span class="nu">10000000</span>  <span class="cm">// 10 MB</span>
+| <span class="kw">project</span> TimeGenerated, SourceUserName, SourceIP,
+    RequestURL, SentBytes, DeviceCustomString1
+| <span class="kw">order by</span> SentBytes <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">User activity to specific domain</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> suspiciousDomain = <span class="st">"suspicious.com"</span>;
+CommonSecurityLog
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RequestURL <span class="kw">contains</span> suspiciousDomain
+| <span class="kw">summarize</span> RequestCount = <span class="fn">count</span>(), 
+    FirstSeen = <span class="fn">min</span>(TimeGenerated),
+    LastSeen = <span class="fn">max</span>(TimeGenerated)
+    <span class="kw">by</span> SourceUserName, SourceIP
+| <span class="kw">order by</span> RequestCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <h3>Common Proxy Vendors & Log Sources</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Sentinel Table</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Zscaler</td>
+                <td>CommonSecurityLog (ZscalerNSS)</td>
+              </tr>
+              <tr>
+                <td>Netskope</td>
+                <td>Netskope_CL</td>
+              </tr>
+              <tr>
+                <td>Palo Alto (Prisma)</td>
+                <td>CommonSecurityLog</td>
+              </tr>
+              <tr>
+                <td>Cisco Umbrella</td>
+                <td>Cisco_Umbrella_dns_CL</td>
+              </tr>
+              <tr>
+                <td>Bluecoat/Symantec</td>
+                <td>CommonSecurityLog</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Proxies provide visibility into all web traffic with user attribution</li>
+          <li>Check if blocked downloads reached the endpoint</li>
+          <li>Look for beaconing patterns (regular intervals to same destination)</li>
+          <li>Large uploads, especially to cloud storage, may indicate exfiltration</li>
+          <li>Proxy bypass attempts are often suspicious</li>
+          <li>Correlate proxy logs with endpoint data for full picture</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ids-ips.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">IDS/IPS</span>
+          </a>
+          <a href="dns-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">DNS Security</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

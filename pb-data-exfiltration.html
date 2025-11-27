@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Exfiltration Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Response playbook for data exfiltration incidents: detection indicators, investigation steps, and containment actions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-data-exfiltration.html" class="nav-link active"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🔒</span> DLP Overview</a>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Data Exfiltration</span>
+        </nav>
+        <h1>📤 Data Exfiltration Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">PB-05</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-orange);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">DLP alert, unusual data transfer, cloud storage anomaly</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p2">P2 High</span></p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Response SLA</strong>
+            <p style="margin: 0;">Response: 30 min | Resolution: 4 hours</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation</strong>
+            <p style="margin: 0;">Legal/Privacy if PII/regulated data involved</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#indicators">Exfiltration Indicators</a></li>
+          <li><a href="#channels">Common Exfil Channels</a></li>
+          <li><a href="#investigation">Investigation Steps</a></li>
+          <li><a href="#assessment">Data Assessment</a></li>
+          <li><a href="#containment">Containment</a></li>
+          <li><a href="#notification">Notification Requirements</a></li>
+        </ul>
+      </div>
+
+      <section id="indicators">
+        <h2>Data Exfiltration Indicators</h2>
+        <p>Signs that data may be leaving the organization without authorization:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">High Confidence</h4>
+            <ul>
+              <li>DLP alert: sensitive data to external destination</li>
+              <li>Large upload to personal cloud storage</li>
+              <li>Email with sensitive attachments to external</li>
+              <li>USB device with large file copies</li>
+              <li>Known exfil tool detected (rclone, megasync)</li>
+              <li>Data staging in unusual locations</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Medium Confidence</h4>
+            <ul>
+              <li>Unusual volume of file access</li>
+              <li>Access to files outside normal scope</li>
+              <li>Large outbound transfers</li>
+              <li>After-hours bulk file activity</li>
+              <li>Archive creation (.zip, .rar, .7z)</li>
+              <li>Print queue anomalies</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Contextual</h4>
+            <ul>
+              <li>Employee gave notice recently</li>
+              <li>Access from unusual location</li>
+              <li>First-time use of cloud service</li>
+              <li>Encrypted archive creation</li>
+              <li>Use of anonymization tools</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="channels">
+        <h2>Common Exfiltration Channels</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>Examples</th>
+                <th>Detection Sources</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Email</strong></td>
+                <td>Attachments, forwarding to personal email</td>
+                <td>Email gateway, DLP, O365 audit logs</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud Storage</strong></td>
+                <td>Dropbox, Google Drive, OneDrive personal, Box</td>
+                <td>CASB, proxy logs, DLP</td>
+              </tr>
+              <tr>
+                <td><strong>Web Upload</strong></td>
+                <td>File sharing sites, paste sites, social media</td>
+                <td>Proxy logs, DLP</td>
+              </tr>
+              <tr>
+                <td><strong>Removable Media</strong></td>
+                <td>USB drives, external HDD</td>
+                <td>EDR, Windows events (4663)</td>
+              </tr>
+              <tr>
+                <td><strong>FTP/SFTP</strong></td>
+                <td>Direct file transfer to external servers</td>
+                <td>Firewall, netflow, proxy</td>
+              </tr>
+              <tr>
+                <td><strong>DNS Tunneling</strong></td>
+                <td>Data encoded in DNS queries</td>
+                <td>DNS logs, anomaly detection</td>
+              </tr>
+              <tr>
+                <td><strong>Encrypted Channels</strong></td>
+                <td>HTTPS to unknown destinations, VPN to personal</td>
+                <td>SSL inspection, netflow</td>
+              </tr>
+              <tr>
+                <td><strong>Physical</strong></td>
+                <td>Print, photos of screens</td>
+                <td>Print logs, physical security</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Attacker vs Insider</div>
+          <p style="margin: 0;">
+            <strong>External attackers</strong> typically use network channels (HTTP/S, DNS, C2) and try to blend in.<br>
+            <strong>Insiders</strong> often use simpler methods (email, USB, personal cloud) since they have legitimate access.
+          </p>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Understand the Alert</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What triggered the alert? (DLP rule, volume anomaly, etc.)</li>
+                <li>What data was involved? (File names, classifications)</li>
+                <li>Where was data going? (Destination URL, email, device)</li>
+                <li>Who initiated the action?</li>
+                <li>How much data was involved?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Assess the User Context</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Is this activity expected for user's role?</li>
+                <li>Has user accessed this data type before?</li>
+                <li>Any HR flags? (resignation, PIP, termination pending)</li>
+                <li>What is the user's normal data access pattern?</li>
+                <li>Is the user working at an unusual time or location?</li>
+              </ul>
+              <div class="callout callout-warning" style="margin-top: 1rem;">
+                <div class="callout-title">HR Coordination</div>
+                <p style="margin: 0;">Before contacting the user or their manager, coordinate with HR on sensitive cases. HR may have context that changes the investigation approach.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Analyze the Data</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What files/data was accessed or transferred?</li>
+                <li>Data classification (public, internal, confidential, restricted)</li>
+                <li>Does data contain PII, PHI, PCI, or trade secrets?</li>
+                <li>Volume and scope of data access</li>
+              </ul>
+              
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">User file activity in SharePoint/OneDrive</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"user@domain.com"</span>;
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> UserId =~ targetUser
+| <span class="kw">where</span> Operation <span class="kw">in</span> (<span class="st">"FileDownloaded"</span>, <span class="st">"FileSyncDownloadedFull"</span>, 
+    <span class="st">"FileAccessed"</span>, <span class="st">"FileCopied"</span>)
+| <span class="kw">summarize</span> FileCount = <span class="fn">count</span>(), 
+    TotalSize = <span class="fn">sum</span>(OfficeObjectId),
+    Files = <span class="fn">make_set</span>(SourceFileName)
+    <span class="kw">by</span> Operation, bin(TimeGenerated, <span class="nu">1d</span>)
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Examine the Destination</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Email:</strong> Is recipient internal, business partner, or unknown?</li>
+                <li><strong>Cloud service:</strong> Corporate or personal account?</li>
+                <li><strong>Website:</strong> Known file sharing site? Competitor domain?</li>
+                <li><strong>USB:</strong> Corporate-issued or personal device?</li>
+              </ul>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Check user's cloud app uploads</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm">// Microsoft Defender for Cloud Apps</span>
+CloudAppEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> AccountDisplayName =~ <span class="st">"John Smith"</span>
+| <span class="kw">where</span> ActionType <span class="kw">has</span> <span class="st">"Upload"</span>
+| <span class="kw">project</span> TimeGenerated, Application, ActionType, 
+    ObjectName, IPAddress
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 5: Build Timeline</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Reconstruct the sequence of events:</p>
+              <ul>
+                <li>When did unusual access begin?</li>
+                <li>What data was accessed first?</li>
+                <li>Was there staging (archive creation, copying to temp folder)?</li>
+                <li>When did data leave the organization?</li>
+                <li>Did activity continue after initial exfiltration?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="assessment">
+        <h2>Data Impact Assessment</h2>
+        <p>Determine the severity based on data sensitivity and volume:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Type</th>
+                <th>Impact</th>
+                <th>Notification</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>PII (Personal Identifiable Info)</strong></td>
+                <td><span class="priority-badge priority-p1">Critical</span></td>
+                <td>Legal, Privacy Officer, potentially regulators</td>
+              </tr>
+              <tr>
+                <td><strong>PHI (Health Information)</strong></td>
+                <td><span class="priority-badge priority-p1">Critical</span></td>
+                <td>Legal, HIPAA officer, HHS if breach confirmed</td>
+              </tr>
+              <tr>
+                <td><strong>PCI (Payment Card Data)</strong></td>
+                <td><span class="priority-badge priority-p1">Critical</span></td>
+                <td>Legal, PCI compliance, card brands</td>
+              </tr>
+              <tr>
+                <td><strong>Trade Secrets/IP</strong></td>
+                <td><span class="priority-badge priority-p2">High</span></td>
+                <td>Legal, Business leadership</td>
+              </tr>
+              <tr>
+                <td><strong>Confidential Business</strong></td>
+                <td><span class="priority-badge priority-p2">High</span></td>
+                <td>Management, potentially Legal</td>
+              </tr>
+              <tr>
+                <td><strong>Internal Only</strong></td>
+                <td><span class="priority-badge priority-p3">Medium</span></td>
+                <td>Management if significant volume</td>
+              </tr>
+              <tr>
+                <td><strong>Public</strong></td>
+                <td><span class="priority-badge priority-p4">Low</span></td>
+                <td>Generally no notification needed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Regulatory Data</div>
+          <p style="margin: 0;">
+            If PII, PHI, or PCI data is involved, immediately engage Legal and your Privacy/Compliance team. 
+            Breach notification laws have strict timelines (e.g., 72 hours for GDPR).
+          </p>
+        </div>
+      </section>
+
+      <section id="containment">
+        <h2>Containment Actions</h2>
+
+        <h3>Immediate Actions (based on severity)</h3>
+        <ul class="checklist">
+          <li><strong>Block destination:</strong> Block external domain/IP at proxy/firewall</li>
+          <li><strong>Disable external sharing:</strong> Revoke sharing links if cloud storage</li>
+          <li><strong>Account action:</strong> Disable account if malicious insider confirmed</li>
+          <li><strong>Device action:</strong> Isolate endpoint if attacker-driven exfiltration</li>
+          <li><strong>Email recall:</strong> Attempt to recall/delete sent emails (limited success)</li>
+          <li><strong>USB block:</strong> Disable USB access for user/device</li>
+        </ul>
+
+        <h3>Evidence Preservation</h3>
+        <ul class="checklist">
+          <li>Screenshot/export DLP alerts and details</li>
+          <li>Export relevant logs before retention expires</li>
+          <li>Document destination details before blocking</li>
+          <li>Preserve email/file copies if needed for investigation</li>
+          <li>Image endpoint if forensics required</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Legal Hold</div>
+          <p style="margin: 0;">
+            For significant exfiltration incidents, Legal may initiate a litigation hold to preserve 
+            all related evidence. Do not delete any data until cleared.
+          </p>
+        </div>
+      </section>
+
+      <section id="notification">
+        <h2>Escalation & Notification</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Stakeholder</th>
+                <th>When to Notify</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Legal/Privacy</strong></td>
+                <td>Any confirmed exfil of PII, PHI, PCI, or regulated data</td>
+              </tr>
+              <tr>
+                <td><strong>HR</strong></td>
+                <td>If insider threat suspected, before user contact</td>
+              </tr>
+              <tr>
+                <td><strong>User's Manager</strong></td>
+                <td>After HR coordination, if user interview needed</td>
+              </tr>
+              <tr>
+                <td><strong>CISO/Security Leadership</strong></td>
+                <td>High-value data or confirmed breach</td>
+              </tr>
+              <tr>
+                <td><strong>Communications/PR</strong></td>
+                <td>If public disclosure may be required</td>
+              </tr>
+              <tr>
+                <td><strong>Affected Business Unit</strong></td>
+                <td>If their data was exfiltrated</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Identify:</strong> What data, where to, by whom?</li>
+          <li><strong>Assess:</strong> Data sensitivity and regulatory implications</li>
+          <li><strong>Context:</strong> User role, HR status, business justification?</li>
+          <li><strong>Contain:</strong> Block destination, preserve evidence</li>
+          <li><strong>Engage:</strong> Legal/HR for sensitive cases</li>
+          <li><strong>Document:</strong> Full timeline and data impact assessment</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-account-compromise.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Account Compromise</span>
+          </a>
+          <a href="pb-insider-threat.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Insider Threat</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azure AD Security | SOC Analyst Guide</title>
+  <meta name="description" content="Azure Active Directory security monitoring: sign-in logs, risky users, conditional access, and identity protection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">🔑</span> IAM Overview</a>
+          <a href="azure-ad-security.html" class="nav-link active"><span class="nav-link-icon">☁️</span> Azure AD Security</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> Active Directory</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#identity">Identity & Access</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Azure AD Security</span>
+        </nav>
+        <h1>Azure AD Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 8.2</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">Microsoft Entra ID</div>
+        <p style="margin: 0;">
+          Azure Active Directory has been renamed to Microsoft Entra ID. The functionality 
+          remains the same. This guide uses both names interchangeably.
+        </p>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#logs">Sign-in Logs</a></li>
+          <li><a href="#risk">Risk Detection</a></li>
+          <li><a href="#ca">Conditional Access</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+          <li><a href="#response">Response Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="logs">
+        <h2>Sign-in Logs</h2>
+        <p>
+          Azure AD sign-in logs are your primary data source for authentication monitoring. 
+          They capture every authentication attempt to Azure AD-integrated resources.
+        </p>
+
+        <h3>Key Sign-in Log Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>UserPrincipalName</strong></td>
+                <td>User's email/UPN</td>
+                <td>Identify targeted account</td>
+              </tr>
+              <tr>
+                <td><strong>IPAddress</strong></td>
+                <td>Source IP of authentication</td>
+                <td>Location analysis, VPN detection</td>
+              </tr>
+              <tr>
+                <td><strong>Location</strong></td>
+                <td>City, State, Country</td>
+                <td>Impossible travel, unusual location</td>
+              </tr>
+              <tr>
+                <td><strong>ResultType</strong></td>
+                <td>Error code (0 = success)</td>
+                <td>Failed login analysis</td>
+              </tr>
+              <tr>
+                <td><strong>AppDisplayName</strong></td>
+                <td>Application accessed</td>
+                <td>Unusual app access</td>
+              </tr>
+              <tr>
+                <td><strong>DeviceDetail</strong></td>
+                <td>Device info (browser, OS)</td>
+                <td>New device detection</td>
+              </tr>
+              <tr>
+                <td><strong>ConditionalAccessStatus</strong></td>
+                <td>CA policy result</td>
+                <td>Policy bypass attempts</td>
+              </tr>
+              <tr>
+                <td><strong>RiskLevelDuringSignIn</strong></td>
+                <td>Microsoft's risk assessment</td>
+                <td>High-risk sign-ins</td>
+              </tr>
+              <tr>
+                <td><strong>MfaDetail</strong></td>
+                <td>MFA method used</td>
+                <td>MFA bypass attempts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Common Result Codes</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Meaning</th>
+                <th>Investigation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>0</strong></td>
+                <td>Success</td>
+                <td>Normal login</td>
+              </tr>
+              <tr>
+                <td><strong>50126</strong></td>
+                <td>Invalid username/password</td>
+                <td>Brute force, password spray</td>
+              </tr>
+              <tr>
+                <td><strong>50053</strong></td>
+                <td>Account locked</td>
+                <td>Too many failed attempts</td>
+              </tr>
+              <tr>
+                <td><strong>50057</strong></td>
+                <td>Account disabled</td>
+                <td>Attempt on disabled account</td>
+              </tr>
+              <tr>
+                <td><strong>50074</strong></td>
+                <td>MFA required</td>
+                <td>User prompted for MFA</td>
+              </tr>
+              <tr>
+                <td><strong>50076</strong></td>
+                <td>MFA not completed</td>
+                <td>MFA challenge failed/abandoned</td>
+              </tr>
+              <tr>
+                <td><strong>53003</strong></td>
+                <td>Blocked by CA policy</td>
+                <td>Policy working as intended</td>
+              </tr>
+              <tr>
+                <td><strong>50158</strong></td>
+                <td>External security challenge</td>
+                <td>Third-party MFA required</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="risk">
+        <h2>Risk Detection</h2>
+        <p>
+          Azure AD Identity Protection uses machine learning to detect risky sign-ins and users.
+        </p>
+
+        <h3>Risk Detection Types</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Sign-in Risk (Real-time)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Anonymous IP:</strong> Sign-in from Tor, VPN, or anonymous proxy</li>
+                <li><strong>Atypical travel:</strong> Impossible geographic movement</li>
+                <li><strong>Malware-linked IP:</strong> IP associated with known malware</li>
+                <li><strong>Unfamiliar sign-in properties:</strong> New device, location, etc.</li>
+                <li><strong>Password spray:</strong> Multiple accounts, same password pattern</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">User Risk (Cumulative)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Leaked credentials:</strong> Found in dark web dumps</li>
+                <li><strong>Azure AD threat intelligence:</strong> Microsoft's threat intel</li>
+                <li><strong>Anomalous user activity:</strong> Unusual patterns</li>
+              </ul>
+              <p>User risk persists until remediated (password reset, admin dismiss).</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Risk Levels</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Meaning</th>
+                <th>Typical Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-red);"><strong>High</strong></span></td>
+                <td>Strong indicator of compromise</td>
+                <td>Block + force password reset</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);"><strong>Medium</strong></span></td>
+                <td>Possible compromise</td>
+                <td>Require MFA or block</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);"><strong>Low</strong></span></td>
+                <td>Minor anomaly</td>
+                <td>Monitor, may require MFA</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="ca">
+        <h2>Conditional Access</h2>
+        <p>
+          Conditional Access policies enforce access controls based on conditions. Understanding 
+          CA is essential for investigating blocked sign-ins and policy gaps.
+        </p>
+
+        <h3>Common CA Conditions</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Who (Users)</h4>
+            <ul>
+              <li>All users</li>
+              <li>Specific groups</li>
+              <li>Guest users</li>
+              <li>Exclude break-glass accounts</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>What (Apps)</h4>
+            <ul>
+              <li>All cloud apps</li>
+              <li>Office 365</li>
+              <li>Specific applications</li>
+              <li>Microsoft Admin Portals</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Where (Location)</h4>
+            <ul>
+              <li>Named locations (trusted)</li>
+              <li>Countries allowed/blocked</li>
+              <li>Corporate network</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Controls</h4>
+            <ul>
+              <li>Require MFA</li>
+              <li>Require compliant device</li>
+              <li>Block access</li>
+              <li>Require password change</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">CA Policy Gaps</div>
+          <p style="margin: 0;">
+            Common gaps: legacy authentication allowed, break-glass exclusions too broad, 
+            not all apps covered, guest access not restricted. Review CA policies during 
+            incident investigations.
+          </p>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">High-risk sign-ins</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RiskLevelDuringSignIn <span class="kw">in</span> (<span class="st">"high"</span>, <span class="st">"medium"</span>)
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, 
+    RiskLevelDuringSignIn, RiskEventTypes,
+    IPAddress, Location, AppDisplayName,
+    ResultType, ResultDescription
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Failed logins by IP (password spray detection)</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50126"</span>
+| <span class="kw">summarize</span> 
+    TargetedAccounts = <span class="fn">dcount</span>(UserPrincipalName),
+    AttemptCount = <span class="fn">count</span>(),
+    Accounts = <span class="fn">make_set</span>(UserPrincipalName, <span class="nu">20</span>)
+    <span class="kw">by</span> IPAddress
+| <span class="kw">where</span> TargetedAccounts > <span class="nu">5</span>
+| <span class="kw">order by</span> TargetedAccounts <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Successful logins after multiple failures</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> FailedLogins = SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>
+| <span class="kw">summarize</span> FailCount = <span class="fn">count</span>() <span class="kw">by</span> UserPrincipalName, IPAddress;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">join</span> <span class="kw">kind</span>=inner FailedLogins <span class="kw">on</span> UserPrincipalName, IPAddress
+| <span class="kw">where</span> FailCount > <span class="nu">5</span>
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, IPAddress, 
+    FailCount, AppDisplayName, Location</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">MFA fatigue / push spam</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50074"</span>  <span class="cm">// MFA required</span>
+| <span class="kw">summarize</span> MfaPrompts = <span class="fn">count</span>() <span class="kw">by</span> UserPrincipalName, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> MfaPrompts > <span class="nu">10</span>  <span class="cm">// Many prompts in one hour</span>
+| <span class="kw">order by</span> MfaPrompts <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Legacy authentication attempts</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ClientAppUsed <span class="kw">in</span> (<span class="st">"Exchange ActiveSync"</span>, <span class="st">"IMAP4"</span>, 
+    <span class="st">"POP3"</span>, <span class="st">"SMTP"</span>, <span class="st">"Authenticated SMTP"</span>, <span class="st">"Other clients"</span>)
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>() <span class="kw">by</span> UserPrincipalName, ClientAppUsed, ResultType
+| <span class="kw">order by</span> Count <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <h3>Account Remediation</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>When to Use</th>
+                <th>How</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Reset password</strong></td>
+                <td>Credentials compromised</td>
+                <td>Azure Portal > Users > Reset password</td>
+              </tr>
+              <tr>
+                <td><strong>Revoke sessions</strong></td>
+                <td>Active sessions may be hijacked</td>
+                <td>Azure Portal > Users > Revoke sessions</td>
+              </tr>
+              <tr>
+                <td><strong>Block sign-in</strong></td>
+                <td>Immediate containment needed</td>
+                <td>Azure Portal > Users > Block sign-in</td>
+              </tr>
+              <tr>
+                <td><strong>Require MFA re-registration</strong></td>
+                <td>MFA methods may be compromised</td>
+                <td>Delete MFA methods, require re-registration</td>
+              </tr>
+              <tr>
+                <td><strong>Confirm compromise</strong></td>
+                <td>Verified compromise (triggers CA)</td>
+                <td>Identity Protection > Risky users > Confirm</td>
+              </tr>
+              <tr>
+                <td><strong>Dismiss risk</strong></td>
+                <td>False positive confirmed</td>
+                <td>Identity Protection > Risky users > Dismiss</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Revoke user sessions</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Connect to Microsoft Graph</span>
+Connect-MgGraph -Scopes "User.ReadWrite.All"
+
+<span class="cm"># Revoke all sessions for user</span>
+Revoke-MgUserSignInSession -UserId "user@company.com"
+
+<span class="cm"># Block sign-in</span>
+Update-MgUser -UserId "user@company.com" -AccountEnabled:$false</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Sign-in logs are primary source for authentication investigation</li>
+          <li>Result code 50126 = invalid credentials (brute force indicator)</li>
+          <li>High/Medium risk sign-ins need immediate investigation</li>
+          <li>Check for MFA fatigue (many prompts = potential attack)</li>
+          <li>Legacy authentication bypasses MFA—monitor and block</li>
+          <li>Revoke sessions after password reset to kick out attackers</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="identity-overview.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">IAM Overview</span>
+          </a>
+          <a href="ad-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Active Directory</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

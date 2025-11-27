@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Security | SOC Analyst Guide</title>
+  <meta name="description" content="AWS cloud security monitoring: CloudTrail, GuardDuty, IAM security, and investigating AWS threats.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="aws-security.html" class="nav-link active"><span class="nav-link-icon">🟠</span> AWS Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>AWS Security</span>
+        </nav>
+        <h1>AWS Security Monitoring</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 6.3</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#logs">AWS Log Sources</a></li>
+          <li><a href="#cloudtrail">CloudTrail</a></li>
+          <li><a href="#guardduty">GuardDuty</a></li>
+          <li><a href="#threats">Common Threats</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+        </ul>
+      </div>
+
+      <section id="logs">
+        <h2>AWS Log Sources</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Log Type</th>
+                <th>Content</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CloudTrail</strong></td>
+                <td>API calls across AWS services</td>
+                <td>Who did what, when</td>
+              </tr>
+              <tr>
+                <td><strong>VPC Flow Logs</strong></td>
+                <td>Network traffic metadata</td>
+                <td>Network forensics, lateral movement</td>
+              </tr>
+              <tr>
+                <td><strong>GuardDuty</strong></td>
+                <td>Threat detection findings</td>
+                <td>Security alerts</td>
+              </tr>
+              <tr>
+                <td><strong>S3 Access Logs</strong></td>
+                <td>S3 bucket access</td>
+                <td>Data exfiltration, unauthorized access</td>
+              </tr>
+              <tr>
+                <td><strong>CloudWatch Logs</strong></td>
+                <td>Application/system logs</td>
+                <td>Instance-level monitoring</td>
+              </tr>
+              <tr>
+                <td><strong>Security Hub</strong></td>
+                <td>Aggregated security findings</td>
+                <td>Centralized security view</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="cloudtrail">
+        <h2>CloudTrail Analysis</h2>
+        <p>
+          CloudTrail logs all API activity in AWS. It's your primary audit log for 
+          investigating who did what.
+        </p>
+
+        <h3>Key CloudTrail Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>eventTime</strong></td>
+                <td>When the action occurred</td>
+              </tr>
+              <tr>
+                <td><strong>eventSource</strong></td>
+                <td>AWS service (ec2.amazonaws.com)</td>
+              </tr>
+              <tr>
+                <td><strong>eventName</strong></td>
+                <td>API action (RunInstances, CreateUser)</td>
+              </tr>
+              <tr>
+                <td><strong>userIdentity</strong></td>
+                <td>Who performed action (user, role, service)</td>
+              </tr>
+              <tr>
+                <td><strong>sourceIPAddress</strong></td>
+                <td>Where the API call came from</td>
+              </tr>
+              <tr>
+                <td><strong>userAgent</strong></td>
+                <td>Tool used (Console, CLI, SDK)</td>
+              </tr>
+              <tr>
+                <td><strong>errorCode</strong></td>
+                <td>If failed, why (AccessDenied, etc.)</td>
+              </tr>
+              <tr>
+                <td><strong>requestParameters</strong></td>
+                <td>Parameters of the API call</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>High-Value Events to Monitor</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Risk</th>
+                <th>Why Monitor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CreateUser, CreateAccessKey</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Persistence, backdoor creation</td>
+              </tr>
+              <tr>
+                <td>AttachUserPolicy, PutUserPolicy</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Privilege escalation</td>
+              </tr>
+              <tr>
+                <td>ConsoleLogin</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Track console access</td>
+              </tr>
+              <tr>
+                <td>RunInstances</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Resource creation (crypto mining)</td>
+              </tr>
+              <tr>
+                <td>StopLogging</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+                <td>Defense evasion</td>
+              </tr>
+              <tr>
+                <td>PutBucketPolicy, PutBucketAcl</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Data exposure</td>
+              </tr>
+              <tr>
+                <td>AuthorizeSecurityGroupIngress</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Network exposure</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="guardduty">
+        <h2>GuardDuty Findings</h2>
+        <p>
+          GuardDuty is AWS's threat detection service. It analyzes CloudTrail, VPC Flow Logs, 
+          and DNS logs to detect threats.
+        </p>
+
+        <h3>Finding Types</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Recon Findings</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Recon:IAMUser/...</strong> - API reconnaissance activity</li>
+                <li><strong>Discovery:S3/...</strong> - S3 bucket enumeration</li>
+              </ul>
+              <p>Indicates attacker gathering information about your environment.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">UnauthorizedAccess Findings</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B</strong> - Unusual console login</li>
+                <li><strong>UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration</strong> - Instance creds used outside EC2</li>
+                <li><strong>UnauthorizedAccess:EC2/SSHBruteForce</strong> - SSH brute force</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">CryptoCurrency Findings</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>CryptoCurrency:EC2/BitcoinTool.B</strong> - Mining activity detected</li>
+              </ul>
+              <p>Common indicator of compromised credentials or instances.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Trojan/Backdoor Findings</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Trojan:EC2/...</strong> - Instance communicating with known malicious IPs</li>
+                <li><strong>Backdoor:EC2/...</strong> - C2 communication detected</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Stealth Findings</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Stealth:IAMUser/CloudTrailLoggingDisabled</strong> - Logging disabled</li>
+                <li><strong>Stealth:IAMUser/LoggingConfigurationModified</strong> - Logging tampered</li>
+              </ul>
+              <p>Critical! Attacker trying to cover tracks.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Severity Levels</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Range</th>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-red);"><strong>High</strong></span></td>
+                <td>7.0 - 8.9</td>
+                <td>Immediate investigation</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);"><strong>Medium</strong></span></td>
+                <td>4.0 - 6.9</td>
+                <td>Investigate within 24 hours</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);"><strong>Low</strong></span></td>
+                <td>0.1 - 3.9</td>
+                <td>Review as time permits</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>Common AWS Threats</h2>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>Credential Compromise</h4>
+            <ul>
+              <li>Access keys leaked in code</li>
+              <li>Phished console credentials</li>
+              <li>Stolen from compromised instances</li>
+            </ul>
+            <p><strong>Indicators:</strong> Unusual regions, new user agents, impossible travel</p>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-orange);">
+            <h4>Crypto Mining</h4>
+            <ul>
+              <li>Large EC2 instances spun up</li>
+              <li>GPU instances in unusual regions</li>
+              <li>High CPU, network to mining pools</li>
+            </ul>
+            <p><strong>Indicators:</strong> GuardDuty CryptoCurrency findings</p>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-yellow);">
+            <h4>S3 Data Exposure</h4>
+            <ul>
+              <li>Public bucket policies</li>
+              <li>Misconfigured ACLs</li>
+              <li>Mass data downloads</li>
+            </ul>
+            <p><strong>Indicators:</strong> PutBucketPolicy, unusual GetObject volume</p>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-purple);">
+            <h4>Privilege Escalation</h4>
+            <ul>
+              <li>Policy attachment to users</li>
+              <li>New admin users created</li>
+              <li>Role assumption abuse</li>
+            </ul>
+            <p><strong>Indicators:</strong> AttachUserPolicy, CreateUser, AssumeRole</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Queries</h2>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Query Language Note</div>
+          <p style="margin: 0;">
+            These queries are for CloudTrail logs in various formats. Adapt syntax for 
+            your SIEM (Sentinel, Splunk, native Athena, etc.).
+          </p>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Console logins from unusual locations</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventName == <span class="st">"ConsoleLogin"</span>
+| <span class="kw">where</span> ResponseElements <span class="kw">has</span> <span class="st">"Success"</span>
+| <span class="kw">project</span> TimeGenerated, UserIdentityUserName, 
+    SourceIpAddress, UserAgent, AWSRegion
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">IAM user/access key creation</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventName <span class="kw">in</span> (<span class="st">"CreateUser"</span>, <span class="st">"CreateAccessKey"</span>, 
+    <span class="st">"CreateLoginProfile"</span>)
+| <span class="kw">project</span> TimeGenerated, EventName, 
+    UserIdentityUserName, SourceIpAddress,
+    RequestParameters
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">EC2 instances launched</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventName == <span class="st">"RunInstances"</span>
+| <span class="kw">extend</span> InstanceType = <span class="fn">tostring</span>(
+    <span class="fn">parse_json</span>(RequestParameters).instanceType)
+| <span class="kw">project</span> TimeGenerated, UserIdentityUserName,
+    SourceIpAddress, AWSRegion, InstanceType
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">S3 bucket policy changes</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventSource == <span class="st">"s3.amazonaws.com"</span>
+| <span class="kw">where</span> EventName <span class="kw">in</span> (<span class="st">"PutBucketPolicy"</span>, <span class="st">"PutBucketAcl"</span>,
+    <span class="st">"PutBucketPublicAccessBlock"</span>)
+| <span class="kw">project</span> TimeGenerated, EventName, 
+    UserIdentityUserName, SourceIpAddress,
+    RequestParameters</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Failed API calls (access denied)</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ErrorCode == <span class="st">"AccessDenied"</span>
+| <span class="kw">summarize</span> FailedCount = <span class="fn">count</span>() <span class="kw">by</span> 
+    UserIdentityUserName, EventName, SourceIpAddress
+| <span class="kw">where</span> FailedCount > <span class="nu">5</span>
+| <span class="kw">order by</span> FailedCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>CloudTrail is your audit log—all API calls are recorded</li>
+          <li>GuardDuty provides automated threat detection</li>
+          <li>CreateUser/CreateAccessKey = potential persistence</li>
+          <li>StopLogging = critical alert (defense evasion)</li>
+          <li>EC2 launches in unusual regions = crypto mining risk</li>
+          <li>S3 policy changes can expose data publicly</li>
+          <li>Check sourceIPAddress for unusual locations</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="azure-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Azure Security</span>
+          </a>
+          <a href="m365-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">M365 Security</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

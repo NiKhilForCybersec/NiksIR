@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Loss Prevention Overview | SOC Analyst Guide</title>
+  <meta name="description" content="DLP fundamentals for SOC analysts: how DLP works, policy types, investigation approaches, and handling DLP alerts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="dlp-overview.html" class="nav-link active"><span class="nav-link-icon">🔒</span> DLP Overview</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🟦</span> Microsoft Purview DLP</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Exfiltration Playbook</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#dlp">Data Protection</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>DLP Overview</span>
+        </nav>
+        <h1>Data Loss Prevention Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 9.1</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#what">What is DLP?</a></li>
+          <li><a href="#how">How DLP Works</a></li>
+          <li><a href="#types">DLP Types</a></li>
+          <li><a href="#policies">Policy Components</a></li>
+          <li><a href="#actions">DLP Actions</a></li>
+          <li><a href="#soc-role">SOC Analyst Role</a></li>
+        </ul>
+      </div>
+
+      <section id="what">
+        <h2>What is DLP?</h2>
+        <p>
+          Data Loss Prevention (DLP) is a set of technologies and processes designed to detect and prevent 
+          unauthorized transmission of sensitive data outside the organization.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">Detect</div>
+            <div class="stat-label">Identify sensitive data</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">Monitor</div>
+            <div class="stat-label">Track data movement</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">Protect</div>
+            <div class="stat-label">Prevent unauthorized transfer</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">Report</div>
+            <div class="stat-label">Provide visibility</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">DLP vs. Encryption</div>
+          <p style="margin: 0;">
+            <strong>Encryption</strong> protects data if it's stolen (renders it unreadable).<br>
+            <strong>DLP</strong> prevents data from leaving in the first place.
+            Both work together for defense in depth.
+          </p>
+        </div>
+      </section>
+
+      <section id="how">
+        <h2>How DLP Works</h2>
+
+        <div class="card">
+          <h3>DLP Detection Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Content Inspection</strong><br>
+                <small>Scan data for sensitive patterns</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Policy Match</strong><br>
+                <small>Compare against rules</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Context Evaluation</strong><br>
+                <small>Who, where, how much?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Action</strong><br>
+                <small>Allow, warn, block, encrypt</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Detection Methods</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Regex Patterns</strong></td>
+                <td>Match specific data formats</td>
+                <td>Credit card: \d{4}-\d{4}-\d{4}-\d{4}</td>
+              </tr>
+              <tr>
+                <td><strong>Keywords</strong></td>
+                <td>Look for specific terms</td>
+                <td>"Confidential", "Internal Only"</td>
+              </tr>
+              <tr>
+                <td><strong>Data Fingerprinting</strong></td>
+                <td>Hash sensitive documents</td>
+                <td>Match against customer database export</td>
+              </tr>
+              <tr>
+                <td><strong>Machine Learning</strong></td>
+                <td>Classify content contextually</td>
+                <td>Recognize financial reports, PII patterns</td>
+              </tr>
+              <tr>
+                <td><strong>Exact Data Match</strong></td>
+                <td>Match specific values from database</td>
+                <td>Customer SSNs, employee IDs</td>
+              </tr>
+              <tr>
+                <td><strong>Sensitivity Labels</strong></td>
+                <td>User or auto-applied classification</td>
+                <td>Document marked "Highly Confidential"</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="types">
+        <h2>DLP Types</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Endpoint DLP</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Monitors and controls data on user devices.</p>
+              <h4>Channels Covered:</h4>
+              <ul>
+                <li>USB/removable storage</li>
+                <li>Clipboard (copy/paste)</li>
+                <li>Print to local/network printers</li>
+                <li>Upload to cloud services</li>
+                <li>Application access (browser, apps)</li>
+              </ul>
+              <p><strong>Vendors:</strong> Microsoft Purview Endpoint DLP, Symantec DLP, Digital Guardian, Forcepoint</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network DLP</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Monitors data in transit on the network.</p>
+              <h4>Channels Covered:</h4>
+              <ul>
+                <li>Email (SMTP)</li>
+                <li>Web traffic (HTTP/HTTPS with inspection)</li>
+                <li>FTP/SFTP</li>
+                <li>IM/collaboration tools</li>
+              </ul>
+              <p><strong>Vendors:</strong> Symantec DLP Network, Forcepoint, Netskope (inline)</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Cloud DLP</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Protects data in cloud applications and storage.</p>
+              <h4>Channels Covered:</h4>
+              <ul>
+                <li>Cloud storage (OneDrive, SharePoint, Box, Dropbox)</li>
+                <li>SaaS applications (Salesforce, Workday)</li>
+                <li>Cloud email (Exchange Online, Gmail)</li>
+                <li>Collaboration (Teams, Slack)</li>
+              </ul>
+              <p><strong>Vendors:</strong> Microsoft Purview, Netskope, Zscaler, Palo Alto Prisma</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="policies">
+        <h2>Policy Components</h2>
+
+        <div class="card">
+          <h3>Anatomy of a DLP Policy</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Sensitive Info Type</strong></td>
+                  <td>What data to look for</td>
+                  <td>Credit Card Number, SSN, Custom pattern</td>
+                </tr>
+                <tr>
+                  <td><strong>Location</strong></td>
+                  <td>Where policy applies</td>
+                  <td>Exchange, SharePoint, Endpoints, Teams</td>
+                </tr>
+                <tr>
+                  <td><strong>Conditions</strong></td>
+                  <td>When to trigger</td>
+                  <td>"Contains ≥10 SSNs AND shared externally"</td>
+                </tr>
+                <tr>
+                  <td><strong>Exceptions</strong></td>
+                  <td>When NOT to trigger</td>
+                  <td>"Except Legal department", "Internal only"</td>
+                </tr>
+                <tr>
+                  <td><strong>Actions</strong></td>
+                  <td>What to do when triggered</td>
+                  <td>Block, Warn, Encrypt, Notify</td>
+                </tr>
+                <tr>
+                  <td><strong>User Notifications</strong></td>
+                  <td>Educate user on policy</td>
+                  <td>Policy tip, email notification</td>
+                </tr>
+                <tr>
+                  <td><strong>Incident Reports</strong></td>
+                  <td>Alert security/compliance</td>
+                  <td>Send to DLP admin, generate alert</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="actions">
+        <h2>DLP Actions</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Audit Only</h4>
+            <p>Log activity but take no action. Used for:</p>
+            <ul>
+              <li>Testing new policies</li>
+              <li>Understanding data flows</li>
+              <li>Building baseline</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Warn (Policy Tip)</h4>
+            <p>Notify user but allow action. Used for:</p>
+            <ul>
+              <li>User education</li>
+              <li>Low-risk scenarios</li>
+              <li>Business justification collection</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Block with Override</h4>
+            <p>Block by default, allow with justification:</p>
+            <ul>
+              <li>Legitimate business need possible</li>
+              <li>Manager approval flow</li>
+              <li>Audit trail of overrides</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Block</h4>
+            <p>Prevent action completely:</p>
+            <ul>
+              <li>High-risk data types</li>
+              <li>Regulatory requirements</li>
+              <li>No legitimate external use</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Enforcement Progression</div>
+          <p style="margin: 0;">
+            Most organizations start with <strong>Audit → Warn → Block with Override → Block</strong> 
+            to minimize business disruption and gather feedback before full enforcement.
+          </p>
+        </div>
+      </section>
+
+      <section id="soc-role">
+        <h2>SOC Analyst Role in DLP</h2>
+
+        <h3>What SOC Typically Handles</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>SOC Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>High-severity DLP alerts</td>
+                <td>Investigate and escalate potential data breaches</td>
+              </tr>
+              <tr>
+                <td>Exfiltration patterns</td>
+                <td>Correlate DLP with other indicators (unusual volume, after-hours)</td>
+              </tr>
+              <tr>
+                <td>Insider threat indicators</td>
+                <td>Investigate users with repeated violations</td>
+              </tr>
+              <tr>
+                <td>Incident response</td>
+                <td>Assess data impact during security incidents</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>What Compliance/DLP Team Typically Handles</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>Owner</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Policy creation and tuning</td>
+                <td>DLP/Compliance Team</td>
+              </tr>
+              <tr>
+                <td>Low-severity policy violations</td>
+                <td>DLP/Compliance Team</td>
+              </tr>
+              <tr>
+                <td>User education</td>
+                <td>DLP/Compliance Team</td>
+              </tr>
+              <tr>
+                <td>False positive tuning</td>
+                <td>DLP/Compliance Team</td>
+              </tr>
+              <tr>
+                <td>Regulatory reporting</td>
+                <td>DLP/Compliance/Legal</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Know Your Escalation Path</div>
+          <p style="margin: 0;">
+            DLP incidents often require coordination with Legal, HR, and Compliance teams. 
+            Know who to contact before you need to—especially for potential data breaches 
+            involving regulated data (PII, PHI, PCI).
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>DLP detects and prevents sensitive data from leaving the organization</li>
+          <li>Three main types: Endpoint, Network, Cloud</li>
+          <li>Actions range from Audit → Warn → Block with Override → Block</li>
+          <li>SOC focuses on high-severity alerts and exfiltration patterns</li>
+          <li>DLP/Compliance team handles policy tuning and low-severity events</li>
+          <li>Know escalation paths for data breaches involving regulated data</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#dlp" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Data Protection Section</span>
+          </a>
+          <a href="dlp-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Microsoft Purview DLP</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

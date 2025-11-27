@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hunting Queries | SOC Analyst Guide</title>
+  <meta name="description" content="Production-ready threat hunting queries: persistence, lateral movement, credential access, and data exfiltration detection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link active"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Hunting Queries</span>
+        </nav>
+        <h1>Hunting Queries</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 3.10</span>
+          <span class="meta-item">~22 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#persistence">Persistence Hunting</a></li>
+          <li><a href="#execution">Execution Hunting</a></li>
+          <li><a href="#credential">Credential Access</a></li>
+          <li><a href="#lateral">Lateral Movement</a></li>
+          <li><a href="#exfiltration">Data Exfiltration</a></li>
+          <li><a href="#defense-evasion">Defense Evasion</a></li>
+        </ul>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">Using These Queries</div>
+        <p style="margin: 0;">
+          These queries are starting points for threat hunting. Adjust time ranges, 
+          thresholds, and exclusions for your environment. Review results carefully—
+          not all matches are malicious.
+        </p>
+      </div>
+
+      <section id="persistence">
+        <h2>Persistence Hunting</h2>
+        <p>Hunt for mechanisms attackers use to maintain access across reboots.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1547.001 - Registry Run Keys</span>
+          </div>
+          <div class="query-body">
+<code>DeviceRegistryEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"RegistryValueSet"</span>
+| <span class="kw">where</span> RegistryKey <span class="kw">has_any</span> (
+    <span class="st">@"\CurrentVersion\Run"</span>,
+    <span class="st">@"\CurrentVersion\RunOnce"</span>,
+    <span class="st">@"\Explorer\Shell Folders"</span>,
+    <span class="st">@"\Explorer\User Shell Folders"</span>
+)
+| <span class="kw">where</span> RegistryValueData <span class="kw">has_any</span> (
+    <span class="st">".exe"</span>, <span class="st">".dll"</span>, <span class="st">".bat"</span>, <span class="st">".ps1"</span>, <span class="st">".vbs"</span>,
+    <span class="st">"powershell"</span>, <span class="st">"cmd"</span>, <span class="st">"wscript"</span>, <span class="st">"mshta"</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName, RegistryKey,
+    RegistryValueName, RegistryValueData,
+    InitiatingProcessFileName, InitiatingProcessAccountName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1053.005 - Scheduled Tasks Created via Command Line</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> FileName =~ <span class="st">"schtasks.exe"</span>
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has</span> <span class="st">"/create"</span>
+| <span class="kw">extend</span> TaskName = <span class="fn">extract</span>(<span class="st">@'/tn\s+["\']?([^"\'\/]+)'</span>, <span class="nu">1</span>, ProcessCommandLine)
+| <span class="kw">extend</span> TaskAction = <span class="fn">extract</span>(<span class="st">@'/tr\s+["\']?([^"\']+)'</span>, <span class="nu">1</span>, ProcessCommandLine)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    TaskName, TaskAction, ProcessCommandLine,
+    InitiatingProcessFileName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1543.003 - New Services with Suspicious Paths</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventID == <span class="nu">7045</span>
+| <span class="kw">extend</span> ServiceName = <span class="fn">tostring</span>(EventData.ServiceName)
+| <span class="kw">extend</span> ServicePath = <span class="fn">tostring</span>(EventData.ImagePath)
+| <span class="kw">where</span> 
+    ServicePath <span class="kw">has_any</span> (<span class="st">"temp"</span>, <span class="st">"tmp"</span>, <span class="st">"appdata"</span>, <span class="st">"public"</span>, <span class="st">"programdata"</span>)
+    <span class="kw">or</span> ServicePath <span class="kw">has_any</span> (<span class="st">"cmd"</span>, <span class="st">"powershell"</span>, <span class="st">"wscript"</span>, <span class="st">"mshta"</span>)
+    <span class="kw">or</span> ServicePath <span class="kw">matches regex</span> <span class="st">@"^[A-Za-z]:\\[^\\]+\.exe$"</span>  <span class="cm">// Root of drive</span>
+| <span class="kw">project</span> TimeGenerated, Computer, ServiceName, ServicePath, SubjectUserName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1546.003 - WMI Event Subscription</span>
+          </div>
+          <div class="query-body">
+<code>DeviceEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"WmiBindEventFilter"</span>
+    <span class="kw">or</span> ActionType <span class="kw">has</span> <span class="st">"Wmi"</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, ActionType,
+    AdditionalFields, InitiatingProcessFileName,
+    InitiatingProcessAccountName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="execution">
+        <h2>Execution Hunting</h2>
+        <p>Hunt for suspicious code execution patterns.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1059.001 - Encoded PowerShell Commands</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> FileName =~ <span class="st">"powershell.exe"</span> <span class="kw">or</span> FileName =~ <span class="st">"pwsh.exe"</span>
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (<span class="st">"-enc"</span>, <span class="st">"-encodedcommand"</span>, <span class="st">"-e "</span>)
+| <span class="kw">extend</span> EncodedCmd = <span class="fn">extract</span>(<span class="st">@"-e[ncodedcommand]*\s+([A-Za-z0-9+/=]+)"</span>, <span class="nu">1</span>, ProcessCommandLine)
+| <span class="kw">where</span> <span class="fn">strlen</span>(EncodedCmd) > <span class="nu">50</span>  <span class="cm">// Filter short/empty</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    ProcessCommandLine, EncodedCmd,
+    InitiatingProcessFileName, InitiatingProcessCommandLine</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1204.002 - Office Spawning Suspicious Processes</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> OfficeApps = <span class="kw">dynamic</span>([<span class="st">"WINWORD.EXE"</span>, <span class="st">"EXCEL.EXE"</span>, <span class="st">"POWERPNT.EXE"</span>, <span class="st">"OUTLOOK.EXE"</span>, <span class="st">"MSACCESS.EXE"</span>]);
+<span class="kw">let</span> SuspiciousChildren = <span class="kw">dynamic</span>([<span class="st">"cmd.exe"</span>, <span class="st">"powershell.exe"</span>, <span class="st">"pwsh.exe"</span>, <span class="st">"wscript.exe"</span>, <span class="st">"cscript.exe"</span>, <span class="st">"mshta.exe"</span>, <span class="st">"regsvr32.exe"</span>, <span class="st">"rundll32.exe"</span>]);
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> InitiatingProcessFileName <span class="kw">in~</span> (OfficeApps)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (SuspiciousChildren)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    ParentProcess = InitiatingProcessFileName,
+    ChildProcess = FileName, ProcessCommandLine</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1218 - LOLBin Execution with Network Activity</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> LOLBins = <span class="kw">dynamic</span>([<span class="st">"certutil.exe"</span>, <span class="st">"mshta.exe"</span>, <span class="st">"regsvr32.exe"</span>, <span class="st">"rundll32.exe"</span>, <span class="st">"msiexec.exe"</span>, <span class="st">"bitsadmin.exe"</span>]);
+
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> InitiatingProcessFileName <span class="kw">in~</span> (LOLBins)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    RemoteIPs = <span class="fn">make_set</span>(RemoteIP, <span class="nu">10</span>),
+    URLs = <span class="fn">make_set</span>(RemoteUrl, <span class="nu">10</span>)
+    <span class="kw">by</span> DeviceName, InitiatingProcessFileName, 
+    InitiatingProcessCommandLine, AccountName
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="credential">
+        <h2>Credential Access Hunting</h2>
+        <p>Hunt for credential theft and harvesting attempts.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1003.001 - LSASS Access</span>
+          </div>
+          <div class="query-body">
+<code>DeviceEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ProcessAccessed"</span>
+| <span class="kw">where</span> FileName =~ <span class="st">"lsass.exe"</span>
+| <span class="kw">where</span> InitiatingProcessFileName !<span class="kw">in~</span> (
+    <span class="st">"MsMpEng.exe"</span>, <span class="st">"csrss.exe"</span>, <span class="st">"svchost.exe"</span>,
+    <span class="st">"wininit.exe"</span>, <span class="st">"lsass.exe"</span>, <span class="st">"services.exe"</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName,
+    InitiatingProcessFileName, InitiatingProcessCommandLine,
+    InitiatingProcessAccountName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1558.003 - Kerberoasting (RC4 Service Ticket Requests)</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4769</span>
+| <span class="kw">where</span> TicketEncryptionType == <span class="st">"0x17"</span>  <span class="cm">// RC4</span>
+| <span class="kw">where</span> ServiceName !<span class="kw">endswith</span> <span class="st">"$"</span>  <span class="cm">// Exclude machine accounts</span>
+| <span class="kw">where</span> ServiceName != <span class="st">"krbtgt"</span>
+| <span class="kw">summarize</span> 
+    RequestCount = <span class="fn">count</span>(),
+    TargetServices = <span class="fn">make_set</span>(ServiceName, <span class="nu">20</span>),
+    ServiceCount = <span class="fn">dcount</span>(ServiceName)
+    <span class="kw">by</span> IpAddress, TargetUserName, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> ServiceCount > <span class="nu">5</span>  <span class="cm">// Multiple services = suspicious</span>
+| <span class="kw">order by</span> ServiceCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1110.003 - Password Spraying</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50126"</span>  <span class="cm">// Invalid password</span>
+| <span class="kw">summarize</span> 
+    FailedAccounts = <span class="fn">dcount</span>(UserPrincipalName),
+    AccountList = <span class="fn">make_set</span>(UserPrincipalName, <span class="nu">50</span>),
+    FailureCount = <span class="fn">count</span>()
+    <span class="kw">by</span> IPAddress, bin(TimeGenerated, <span class="nu">30m</span>)
+| <span class="kw">where</span> FailedAccounts > <span class="nu">10</span>  <span class="cm">// Many accounts from same IP</span>
+| <span class="kw">order by</span> FailedAccounts <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="lateral">
+        <h2>Lateral Movement Hunting</h2>
+        <p>Hunt for attackers moving through the network.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1021.002 - SMB/Admin Share Access</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventID == <span class="nu">5140</span>  <span class="cm">// Network share accessed</span>
+| <span class="kw">where</span> ShareName <span class="kw">in</span> (<span class="st">"\\\\*\\ADMIN$"</span>, <span class="st">"\\\\*\\C$"</span>, <span class="st">"\\\\*\\IPC$"</span>)
+| <span class="kw">where</span> SubjectUserName !<span class="kw">endswith</span> <span class="st">"$"</span>  <span class="cm">// Exclude machine accounts</span>
+| <span class="kw">summarize</span> 
+    AccessCount = <span class="fn">count</span>(),
+    TargetComputers = <span class="fn">make_set</span>(Computer, <span class="nu">20</span>)
+    <span class="kw">by</span> SubjectUserName, IpAddress, ShareName
+| <span class="kw">where</span> AccessCount > <span class="nu">3</span>
+| <span class="kw">order by</span> AccessCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1021.001 - RDP to Multiple Hosts</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4624</span>
+| <span class="kw">where</span> LogonType == <span class="nu">10</span>  <span class="cm">// RemoteInteractive (RDP)</span>
+| <span class="kw">summarize</span> 
+    RDPCount = <span class="fn">count</span>(),
+    TargetHosts = <span class="fn">make_set</span>(Computer, <span class="nu">20</span>),
+    HostCount = <span class="fn">dcount</span>(Computer)
+    <span class="kw">by</span> TargetUserName, IpAddress, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> HostCount > <span class="nu">3</span>  <span class="cm">// RDP to multiple hosts</span>
+| <span class="kw">order by</span> HostCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1047 - Remote WMI Execution</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> InitiatingProcessFileName =~ <span class="st">"wmiprvse.exe"</span>
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (<span class="st">"cmd.exe"</span>, <span class="st">"powershell.exe"</span>, <span class="st">"pwsh.exe"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    FileName, ProcessCommandLine</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="exfiltration">
+        <h2>Data Exfiltration Hunting</h2>
+        <p>Hunt for data theft indicators.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1567 - Large Uploads to Cloud Storage</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteUrl <span class="kw">has_any</span> (
+    <span class="st">"dropbox.com"</span>, <span class="st">"drive.google.com"</span>, <span class="st">"onedrive.live.com"</span>,
+    <span class="st">"mega.nz"</span>, <span class="st">"wetransfer.com"</span>, <span class="st">"sendspace.com"</span>,
+    <span class="st">"file.io"</span>, <span class="st">"pastebin.com"</span>
+)
+| <span class="kw">summarize</span> 
+    TotalBytesSent = <span class="fn">sum</span>(SentBytes),
+    ConnectionCount = <span class="fn">count</span>()
+    <span class="kw">by</span> DeviceName, AccountName, RemoteUrl, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> TotalBytesSent > <span class="nu">100000000</span>  <span class="cm">// > 100MB</span>
+| <span class="kw">extend</span> TotalMB = <span class="fn">round</span>(TotalBytesSent / <span class="nu">1000000.0</span>, <span class="nu">2</span>)
+| <span class="kw">order by</span> TotalBytesSent <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1048 - DNS Tunneling Indicators</span>
+          </div>
+          <div class="query-body">
+<code>DnsEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">extend</span> SubdomainLength = <span class="fn">strlen</span>(<span class="fn">tostring</span>(<span class="fn">split</span>(Name, <span class="st">"."</span>)[<span class="nu">0</span>]))
+| <span class="kw">extend</span> QueryLength = <span class="fn">strlen</span>(Name)
+| <span class="kw">where</span> SubdomainLength > <span class="nu">30</span> <span class="kw">or</span> QueryLength > <span class="nu">60</span>  <span class="cm">// Long subdomains</span>
+| <span class="kw">summarize</span> 
+    QueryCount = <span class="fn">count</span>(),
+    UniqueQueries = <span class="fn">dcount</span>(Name),
+    SampleQueries = <span class="fn">make_set</span>(Name, <span class="nu">10</span>)
+    <span class="kw">by</span> ClientIP, <span class="fn">tostring</span>(<span class="fn">split</span>(Name, <span class="st">"."</span>)[-<span class="nu">2</span>])  <span class="cm">// Parent domain</span>
+| <span class="kw">where</span> QueryCount > <span class="nu">50</span>
+| <span class="kw">order by</span> QueryCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Unusual Outbound Data Volume by Host</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> TotalSent = <span class="fn">sum</span>(SentBytes) <span class="kw">by</span> DeviceName
+| <span class="kw">join</span> <span class="kw">kind</span>=inner (
+    DeviceNetworkEvents
+    | <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+    | <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+    | <span class="kw">summarize</span> AvgSent = <span class="fn">avg</span>(SentBytes) * <span class="nu">24</span> <span class="kw">by</span> DeviceName  <span class="cm">// Daily avg</span>
+) <span class="kw">on</span> DeviceName
+| <span class="kw">extend</span> Ratio = TotalSent / AvgSent
+| <span class="kw">where</span> Ratio > <span class="nu">5</span>  <span class="cm">// 5x normal</span>
+| <span class="kw">order by</span> Ratio <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="defense-evasion">
+        <h2>Defense Evasion Hunting</h2>
+        <p>Hunt for attackers trying to avoid detection.</p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1562.001 - Security Tools Disabled</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (
+    <span class="st">"Set-MpPreference"</span>, <span class="st">"DisableRealtimeMonitoring"</span>,
+    <span class="st">"sc stop"</span>, <span class="st">"sc delete"</span>, <span class="st">"net stop"</span>,
+    <span class="st">"Disable-WindowsOptionalFeature"</span>
+)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (
+    <span class="st">"defender"</span>, <span class="st">"sense"</span>, <span class="st">"windefend"</span>,
+    <span class="st">"mssense"</span>, <span class="st">"securityhealth"</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    FileName, ProcessCommandLine, InitiatingProcessFileName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1070.001 - Event Log Clearing</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventID == <span class="nu">1102</span>  <span class="cm">// Audit log cleared</span>
+| <span class="kw">project</span> TimeGenerated, Computer, SubjectUserName, SubjectDomainName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">T1036.005 - Process Name Masquerading</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Processes with common names running from wrong locations</span>
+<span class="kw">let</span> SystemProcesses = <span class="kw">datatable</span>(Name:string, ExpectedPath:string) [
+    <span class="st">"svchost.exe"</span>, <span class="st">@"c:\windows\system32\"</span>,
+    <span class="st">"lsass.exe"</span>, <span class="st">@"c:\windows\system32\"</span>,
+    <span class="st">"csrss.exe"</span>, <span class="st">@"c:\windows\system32\"</span>,
+    <span class="st">"services.exe"</span>, <span class="st">@"c:\windows\system32\"</span>
+];
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=inner SystemProcesses <span class="kw">on</span> $left.FileName == $right.Name
+| <span class="kw">where</span> <span class="fn">tolower</span>(FolderPath) !<span class="kw">startswith</span> ExpectedPath
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName, 
+    FolderPath, ExpectedPath, ProcessCommandLine</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>These queries are starting points—tune for your environment</li>
+          <li>Map hunts to MITRE ATT&CK for coverage tracking</li>
+          <li>Review results carefully—not all matches are malicious</li>
+          <li>Document findings and create detections for repeated threats</li>
+          <li>Adjust time ranges based on your retention and hunting goals</li>
+          <li>Combine multiple queries to trace full attack chains</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="threat-hunting.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Threat Hunting</span>
+          </a>
+          <a href="siem-fundamentals.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SIEM Fundamentals</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KQL Advanced Techniques | SOC Analyst Guide</title>
+  <meta name="description" content="Advanced KQL techniques for threat hunting: joins, time series analysis, anomaly detection, and performance optimization.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🔷</span> Sentinel Overview</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link active"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📝</span> Log Sources</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>KQL Advanced</span>
+        </nav>
+        <h1>KQL Advanced Techniques</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 3.4</span>
+          <span class="meta-item">~25 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#joins">Join Operations</a></li>
+          <li><a href="#timeseries">Time Series Analysis</a></li>
+          <li><a href="#anomaly">Anomaly Detection</a></li>
+          <li><a href="#parsing">Advanced Parsing</a></li>
+          <li><a href="#functions">Functions & Variables</a></li>
+          <li><a href="#performance">Performance Optimization</a></li>
+          <li><a href="#hunting">Threat Hunting Patterns</a></li>
+        </ul>
+      </div>
+
+      <section id="joins">
+        <h2>Join Operations</h2>
+        <p>
+          Joins combine data from multiple tables. Understanding join types is critical 
+          for correlating events across data sources.
+        </p>
+
+        <h3>Join Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Returns</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>inner</strong></td>
+                <td>Only matching rows from both tables</td>
+                <td>Find events that exist in both sources</td>
+              </tr>
+              <tr>
+                <td><strong>leftouter</strong></td>
+                <td>All left rows + matching right</td>
+                <td>Enrich events with optional data</td>
+              </tr>
+              <tr>
+                <td><strong>rightouter</strong></td>
+                <td>All right rows + matching left</td>
+                <td>Reverse of leftouter</td>
+              </tr>
+              <tr>
+                <td><strong>fullouter</strong></td>
+                <td>All rows from both tables</td>
+                <td>Complete union with matching</td>
+              </tr>
+              <tr>
+                <td><strong>leftanti</strong></td>
+                <td>Left rows with NO match in right</td>
+                <td>Find events NOT in reference set</td>
+              </tr>
+              <tr>
+                <td><strong>leftsemi</strong></td>
+                <td>Left rows that HAVE match in right</td>
+                <td>Filter by existence in another table</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Inner join: Correlate sign-ins with endpoint events</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find sign-ins followed by suspicious process execution</span>
+<span class="kw">let</span> SuspiciousSignIns = SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> RiskLevelDuringSignIn == <span class="st">"high"</span>
+| <span class="kw">project</span> SignInTime = TimeGenerated, UserPrincipalName, IPAddress;
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=inner SuspiciousSignIns 
+    <span class="kw">on</span> $left.AccountUpn == $right.UserPrincipalName
+| <span class="kw">where</span> TimeGenerated > SignInTime  <span class="cm">// Process after sign-in</span>
+| <span class="kw">where</span> TimeGenerated < SignInTime + <span class="nu">30m</span>  <span class="cm">// Within 30 min</span>
+| <span class="kw">project</span> SignInTime, TimeGenerated, UserPrincipalName,
+    DeviceName, FileName, ProcessCommandLine</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Leftanti join: Find new processes not in baseline</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Baseline: processes seen in last 30 days</span>
+<span class="kw">let</span> Baseline = DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+| <span class="kw">distinct</span> SHA256;
+
+<span class="cm">// Find processes in last 24h NOT in baseline</span>
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1d</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti Baseline <span class="kw">on</span> SHA256
+| <span class="kw">summarize</span> 
+    FirstSeen = <span class="fn">min</span>(TimeGenerated),
+    ExecutionCount = <span class="fn">count</span>(),
+    Devices = <span class="fn">dcount</span>(DeviceName)
+    <span class="kw">by</span> FileName, SHA256, FolderPath
+| <span class="kw">order by</span> ExecutionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Leftouter join: Enrich alerts with threat intelligence</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Assume ThreatIntelligenceIndicator contains known bad IPs</span>
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">join</span> <span class="kw">kind</span>=leftouter (
+    ThreatIntelligenceIndicator
+    | <span class="kw">where</span> <span class="fn">isnotempty</span>(NetworkIP)
+    | <span class="kw">project</span> ThreatIP = NetworkIP, ThreatType, 
+        Description, ConfidenceScore
+) <span class="kw">on</span> $left.RemoteIP == $right.ThreatIP
+| <span class="kw">where</span> <span class="fn">isnotempty</span>(ThreatType)  <span class="cm">// Only show matches</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, RemoteIP, 
+    ThreatType, Description, ConfidenceScore</code>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Join Performance Tips</div>
+          <ul style="margin: 0;">
+            <li>Always filter tables BEFORE joining (reduce data first)</li>
+            <li>Put the smaller table on the right side</li>
+            <li>Use <code>project</code> to include only needed columns</li>
+            <li>Avoid joining on string columns when possible—use hashes</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="timeseries">
+        <h2>Time Series Analysis</h2>
+        <p>
+          Time series functions help identify patterns, trends, and anomalies over time.
+        </p>
+
+        <h3>Key Functions</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Function</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>make-series</strong></td>
+                <td>Create time series array from events</td>
+              </tr>
+              <tr>
+                <td><strong>series_decompose</strong></td>
+                <td>Separate trend, seasonality, residual</td>
+              </tr>
+              <tr>
+                <td><strong>series_decompose_anomalies</strong></td>
+                <td>Detect anomalies in time series</td>
+              </tr>
+              <tr>
+                <td><strong>series_stats</strong></td>
+                <td>Calculate statistics (min, max, avg, stdev)</td>
+              </tr>
+              <tr>
+                <td><strong>series_outliers</strong></td>
+                <td>Find outlier points in series</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Create time series of login failures</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>
+| <span class="fn">make-series</span> FailedLogins = <span class="fn">count</span>() 
+    <span class="kw">on</span> TimeGenerated 
+    <span class="kw">from</span> <span class="fn">ago</span>(<span class="nu">7d</span>) <span class="kw">to</span> <span class="fn">now</span>() <span class="kw">step</span> <span class="nu">1h</span>
+| <span class="kw">render</span> timechart</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect anomalies in outbound traffic volume</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">14d</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> BytesSent = <span class="fn">sum</span>(SentBytes) 
+    <span class="kw">by</span> DeviceName, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="fn">make-series</span> Traffic = <span class="fn">sum</span>(BytesSent) 
+    <span class="kw">on</span> TimeGenerated 
+    <span class="kw">from</span> <span class="fn">ago</span>(<span class="nu">14d</span>) <span class="kw">to</span> <span class="fn">now</span>() <span class="kw">step</span> <span class="nu">1h</span> 
+    <span class="kw">by</span> DeviceName
+| <span class="kw">extend</span> (anomalies, score, baseline) = 
+    <span class="fn">series_decompose_anomalies</span>(Traffic, <span class="nu">1.5</span>)
+| <span class="kw">mv-expand</span> TimeGenerated, Traffic, anomalies, score
+| <span class="kw">where</span> anomalies == <span class="nu">1</span>  <span class="cm">// Positive anomaly (spike)</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, 
+    Traffic = <span class="fn">tolong</span>(Traffic), AnomalyScore = <span class="fn">todouble</span>(score)
+| <span class="kw">order by</span> AnomalyScore <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Baseline comparison: this week vs last week</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> ThisWeek = SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> CurrentCount = <span class="fn">count</span>() <span class="kw">by</span> EventID;
+
+<span class="kw">let</span> LastWeek = SecurityEvent
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">14d</span>) .. <span class="fn">ago</span>(<span class="nu">7d</span>))
+| <span class="kw">summarize</span> BaselineCount = <span class="fn">count</span>() <span class="kw">by</span> EventID;
+
+ThisWeek
+| <span class="kw">join</span> <span class="kw">kind</span>=leftouter LastWeek <span class="kw">on</span> EventID
+| <span class="kw">extend</span> BaselineCount = <span class="fn">coalesce</span>(BaselineCount, <span class="nu">0</span>)
+| <span class="kw">extend</span> PercentChange = <span class="fn">round</span>(
+    (CurrentCount - BaselineCount) * <span class="nu">100.0</span> / BaselineCount, <span class="nu">2</span>)
+| <span class="kw">where</span> <span class="fn">abs</span>(PercentChange) > <span class="nu">50</span>  <span class="cm">// >50% change</span>
+| <span class="kw">order by</span> <span class="fn">abs</span>(PercentChange) <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="anomaly">
+        <h2>Anomaly Detection</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Statistical anomaly: Login times outside normal hours</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Build user login time baseline</span>
+<span class="kw">let</span> UserBaseline = SigninLogs
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">extend</span> HourOfDay = <span class="fn">datetime_part</span>(<span class="st">"hour"</span>, TimeGenerated)
+| <span class="kw">summarize</span> 
+    AvgHour = <span class="fn">avg</span>(HourOfDay),
+    StdevHour = <span class="fn">stdev</span>(HourOfDay),
+    LoginCount = <span class="fn">count</span>()
+    <span class="kw">by</span> UserPrincipalName
+| <span class="kw">where</span> LoginCount > <span class="nu">10</span>;  <span class="cm">// Need enough data</span>
+
+<span class="cm">// Find logins outside 2 standard deviations</span>
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1d</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">extend</span> HourOfDay = <span class="fn">datetime_part</span>(<span class="st">"hour"</span>, TimeGenerated)
+| <span class="kw">join</span> <span class="kw">kind</span>=inner UserBaseline <span class="kw">on</span> UserPrincipalName
+| <span class="kw">extend</span> ZScore = (HourOfDay - AvgHour) / StdevHour
+| <span class="kw">where</span> <span class="fn">abs</span>(ZScore) > <span class="nu">2</span>  <span class="cm">// Outside 2 stdev</span>
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, HourOfDay,
+    AvgHour = <span class="fn">round</span>(AvgHour, <span class="nu">1</span>), ZScore = <span class="fn">round</span>(ZScore, <span class="nu">2</span>),
+    IPAddress, Location</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Peer group anomaly: User accessing unusual resources</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// What resources do users in the same department access?</span>
+<span class="kw">let</span> DepartmentBaseline = OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> Operation == <span class="st">"FileAccessed"</span>
+| <span class="kw">extend</span> Department = <span class="fn">tostring</span>(<span class="fn">split</span>(UserId, <span class="st">"@"</span>)[<span class="nu">0</span>])  <span class="cm">// Simplified</span>
+| <span class="kw">summarize</span> AccessCount = <span class="fn">count</span>() <span class="kw">by</span> Department, OfficeObjectId
+| <span class="kw">where</span> AccessCount > <span class="nu">5</span>;  <span class="cm">// Common resources</span>
+
+<span class="cm">// Find users accessing resources their peers don't</span>
+OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1d</span>)
+| <span class="kw">where</span> Operation == <span class="st">"FileAccessed"</span>
+| <span class="kw">extend</span> Department = <span class="fn">tostring</span>(<span class="fn">split</span>(UserId, <span class="st">"@"</span>)[<span class="nu">0</span>])
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti DepartmentBaseline 
+    <span class="kw">on</span> Department, OfficeObjectId
+| <span class="kw">summarize</span> UnusualAccess = <span class="fn">count</span>() <span class="kw">by</span> UserId, OfficeObjectId
+| <span class="kw">where</span> UnusualAccess > <span class="nu">3</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Beaconing detection with coefficient of variation</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Detect regular interval connections (C2 beaconing)</span>
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> Connections = <span class="fn">make_list</span>(TimeGenerated) 
+    <span class="kw">by</span> DeviceName, RemoteIP
+| <span class="kw">where</span> <span class="fn">array_length</span>(Connections) > <span class="nu">20</span>  <span class="cm">// Enough data points</span>
+| <span class="kw">mv-apply</span> Connections <span class="kw">to</span> <span class="kw">typeof</span>(datetime) <span class="kw">on</span> (
+    <span class="kw">sort by</span> Connections <span class="kw">asc</span>
+    | <span class="kw">extend</span> NextConn = <span class="fn">next</span>(Connections)
+    | <span class="kw">extend</span> Interval = <span class="fn">datetime_diff</span>(<span class="st">'second'</span>, NextConn, Connections)
+    | <span class="kw">where</span> <span class="fn">isnotnull</span>(Interval)
+    | <span class="kw">summarize</span> 
+        AvgInterval = <span class="fn">avg</span>(Interval),
+        StdevInterval = <span class="fn">stdev</span>(Interval),
+        ConnectionCount = <span class="fn">count</span>()
+)
+| <span class="kw">extend</span> CoeffOfVariation = StdevInterval / AvgInterval
+| <span class="kw">where</span> CoeffOfVariation < <span class="nu">0.2</span>  <span class="cm">// Low variation = regular intervals</span>
+| <span class="kw">where</span> AvgInterval <span class="kw">between</span> (<span class="nu">30</span> .. <span class="nu">3600</span>)  <span class="cm">// 30s to 1hr typical C2</span>
+| <span class="kw">project</span> DeviceName, RemoteIP, ConnectionCount,
+    AvgIntervalSec = <span class="fn">round</span>(AvgInterval, <span class="nu">0</span>),
+    CoeffOfVariation = <span class="fn">round</span>(CoeffOfVariation, <span class="nu">3</span>)
+| <span class="kw">order by</span> CoeffOfVariation <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="parsing">
+        <h2>Advanced Parsing</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Parse complex command lines</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> FileName =~ <span class="st">"powershell.exe"</span>
+| <span class="kw">extend</span> CmdLine = ProcessCommandLine
+<span class="cm">// Extract encoded command</span>
+| <span class="kw">extend</span> EncodedCmd = <span class="fn">extract</span>(<span class="st">@"-[eE](?:nc|ncodedcommand)?\s+([A-Za-z0-9+/=]+)"</span>, 
+    <span class="nu">1</span>, CmdLine)
+<span class="cm">// Extract download URLs</span>
+| <span class="kw">extend</span> DownloadURL = <span class="fn">extract</span>(<span class="st">@"https?://[^\s'\"]+"</span>, <span class="nu">0</span>, CmdLine)
+<span class="cm">// Check for bypass flags</span>
+| <span class="kw">extend</span> HasBypass = CmdLine <span class="kw">has_any</span> (<span class="st">"-bypass"</span>, <span class="st">"-ep bypass"</span>, 
+    <span class="st">"executionpolicy bypass"</span>)
+| <span class="kw">extend</span> HasHidden = CmdLine <span class="kw">has_any</span> (<span class="st">"-w hidden"</span>, <span class="st">"-windowstyle hidden"</span>)
+| <span class="kw">where</span> <span class="fn">isnotempty</span>(EncodedCmd) <span class="kw">or</span> <span class="fn">isnotempty</span>(DownloadURL) 
+    <span class="kw">or</span> HasBypass <span class="kw">or</span> HasHidden
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    EncodedCmd, DownloadURL, HasBypass, HasHidden</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Parse JSON from string fields</span>
+          </div>
+          <div class="query-body">
+<code>AuditLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> OperationName == <span class="st">"Update user"</span>
+| <span class="kw">mv-expand</span> TargetResources
+| <span class="kw">mv-expand</span> ModifiedProperties = TargetResources.modifiedProperties
+| <span class="kw">extend</span> PropertyName = <span class="fn">tostring</span>(ModifiedProperties.displayName)
+| <span class="kw">extend</span> OldValue = <span class="fn">tostring</span>(ModifiedProperties.oldValue)
+| <span class="kw">extend</span> NewValue = <span class="fn">tostring</span>(ModifiedProperties.newValue)
+| <span class="kw">where</span> PropertyName <span class="kw">in</span> (<span class="st">"AccountEnabled"</span>, <span class="st">"StrongAuthenticationRequirements"</span>)
+| <span class="kw">project</span> TimeGenerated, InitiatedBy = InitiatedBy.user.userPrincipalName,
+    TargetUser = TargetResources.userPrincipalName,
+    PropertyName, OldValue, NewValue</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Dynamic parsing with parse operator</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Parse syslog message format</span>
+Syslog
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> Facility == <span class="st">"auth"</span>
+| <span class="kw">parse</span> SyslogMessage <span class="kw">with</span> 
+    * <span class="st">"user="</span> Username: <span class="kw">string</span> <span class="st">" "</span> 
+    * <span class="st">"src="</span> SourceIP: <span class="kw">string</span> <span class="st">" "</span>
+    * <span class="st">"action="</span> Action: <span class="kw">string</span>
+| <span class="kw">where</span> <span class="fn">isnotempty</span>(Username)
+| <span class="kw">project</span> TimeGenerated, Computer, Username, SourceIP, Action</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="functions">
+        <h2>Functions & Variables</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Reusable function for process tree</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Define function to get process ancestry</span>
+<span class="kw">let</span> GetProcessTree = (targetDevice: <span class="kw">string</span>, targetPID: <span class="kw">long</span>, 
+    lookbackHours: <span class="kw">int</span>) {
+    DeviceProcessEvents
+    | <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(lookbackHours * <span class="nu">1h</span>)
+    | <span class="kw">where</span> DeviceName =~ targetDevice
+    | <span class="kw">where</span> ProcessId == targetPID <span class="kw">or</span> InitiatingProcessId == targetPID
+    | <span class="kw">project</span> TimeGenerated, ProcessId, FileName, ProcessCommandLine,
+        InitiatingProcessId, InitiatingProcessFileName,
+        InitiatingProcessCommandLine, AccountName
+};
+
+<span class="cm">// Use the function</span>
+GetProcessTree(<span class="st">"WORKSTATION-01"</span>, <span class="nu">1234</span>, <span class="nu">24</span>)
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Dynamic watchlists and IOC matching</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Define IOCs as dynamic arrays</span>
+<span class="kw">let</span> BadIPs = <span class="kw">dynamic</span>([
+    <span class="st">"192.168.1.100"</span>, <span class="st">"10.0.0.50"</span>, <span class="st">"203.0.113.5"</span>
+]);
+<span class="kw">let</span> BadDomains = <span class="kw">dynamic</span>([
+    <span class="st">"evil.com"</span>, <span class="st">"malware.net"</span>, <span class="st">"c2server.org"</span>
+]);
+<span class="kw">let</span> BadHashes = <span class="kw">dynamic</span>([
+    <span class="st">"abc123..."</span>, <span class="st">"def456..."</span>
+]);
+
+<span class="cm">// Check network events against IOCs</span>
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIP <span class="kw">in</span> (BadIPs) 
+    <span class="kw">or</span> RemoteUrl <span class="kw">has_any</span> (BadDomains)
+| <span class="kw">project</span> TimeGenerated, DeviceName, RemoteIP, RemoteUrl,
+    InitiatingProcessFileName, InitiatingProcessCommandLine</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="performance">
+        <h2>Performance Optimization</h2>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-green);">
+            <h4>✓ Do This</h4>
+            <ul>
+              <li>Filter on time first (<code>where TimeGenerated</code>)</li>
+              <li>Use <code>has</code> instead of <code>contains</code></li>
+              <li>Use <code>=~</code> for case-insensitive only when needed</li>
+              <li>Project early to reduce columns</li>
+              <li>Filter before joins</li>
+              <li>Use <code>summarize</code> to reduce rows</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>✗ Avoid This</h4>
+            <ul>
+              <li>Querying without time filter</li>
+              <li>Using <code>*</code> wildcard unnecessarily</li>
+              <li><code>contains</code> on large string columns</li>
+              <li>Regex when simpler operators work</li>
+              <li>Joining large tables without filtering</li>
+              <li>Multiple <code>extend</code> when one works</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Optimized vs unoptimized comparison</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// ❌ SLOW - Unoptimized</span>
+SecurityEvent
+| <span class="kw">where</span> Computer <span class="kw">contains</span> <span class="st">"SERVER"</span>  <span class="cm">// Full string scan</span>
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)  <span class="cm">// Time filter too late</span>
+| <span class="kw">extend</span> LowerAccount = <span class="fn">tolower</span>(Account)  <span class="cm">// Unnecessary transform</span>
+| <span class="kw">extend</span> Hour = <span class="fn">datetime_part</span>(<span class="st">"hour"</span>, TimeGenerated)
+
+<span class="cm">// ✓ FAST - Optimized</span>
+SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)  <span class="cm">// Time first!</span>
+| <span class="kw">where</span> Computer <span class="kw">has</span> <span class="st">"SERVER"</span>  <span class="cm">// has is faster</span>
+| <span class="kw">extend</span> Hour = <span class="fn">datetime_part</span>(<span class="st">"hour"</span>, TimeGenerated)  <span class="cm">// Only what's needed</span></code>
+          </div>
+        </div>
+
+        <h3>Query Execution Order</h3>
+        <p>KQL executes operators in order. Structure queries for efficiency:</p>
+        <ol>
+          <li><strong>Time filter</strong> - Reduces data volume immediately</li>
+          <li><strong>Table filter</strong> - Further reduce before processing</li>
+          <li><strong>Project</strong> - Remove unneeded columns</li>
+          <li><strong>Extend/Parse</strong> - Add calculated fields</li>
+          <li><strong>Summarize</strong> - Aggregate data</li>
+          <li><strong>Join</strong> - Combine with other data</li>
+          <li><strong>Order/Render</strong> - Final presentation</li>
+        </ol>
+      </section>
+
+      <section id="hunting">
+        <h2>Threat Hunting Patterns</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Hunt: Rare parent-child process relationships</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find unusual parent spawning unusual child</span>
+<span class="kw">let</span> ProcessRelationships = DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>() 
+    <span class="kw">by</span> InitiatingProcessFileName, FileName
+| <span class="kw">where</span> Count > <span class="nu">5</span>;  <span class="cm">// At least 5 occurrences</span>
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1d</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti ProcessRelationships 
+    <span class="kw">on</span> InitiatingProcessFileName, FileName
+| <span class="kw">where</span> InitiatingProcessFileName !<span class="kw">in</span> (<span class="st">"explorer.exe"</span>, <span class="st">"svchost.exe"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, 
+    Parent = InitiatingProcessFileName,
+    Child = FileName, ProcessCommandLine
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>(), 
+    Devices = <span class="fn">make_set</span>(DeviceName, <span class="nu">5</span>)
+    <span class="kw">by</span> Parent, Child
+| <span class="kw">order by</span> Count <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Hunt: First-time connections to external IPs</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Historical IPs seen in last 30 days</span>
+<span class="kw">let</span> HistoricalIPs = DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">distinct</span> RemoteIP;
+
+<span class="cm">// New IPs in last 24 hours</span>
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1d</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti HistoricalIPs <span class="kw">on</span> RemoteIP
+| <span class="kw">summarize</span> 
+    FirstSeen = <span class="fn">min</span>(TimeGenerated),
+    ConnectionCount = <span class="fn">count</span>(),
+    Devices = <span class="fn">dcount</span>(DeviceName),
+    Processes = <span class="fn">make_set</span>(InitiatingProcessFileName, <span class="nu">5</span>)
+    <span class="kw">by</span> RemoteIP
+| <span class="kw">where</span> ConnectionCount > <span class="nu">10</span>  <span class="cm">// Focus on active connections</span>
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li><code>leftanti</code> join is powerful for finding anomalies vs baseline</li>
+          <li>Time series analysis detects spikes and beaconing patterns</li>
+          <li>Always filter on time first for performance</li>
+          <li>Use <code>has</code> instead of <code>contains</code> when possible</li>
+          <li>Coefficient of variation < 0.2 indicates regular intervals (C2)</li>
+          <li>Build baselines from historical data, then compare recent activity</li>
+          <li>Save complex queries as functions for reuse</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="sentinel-queries.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Sentinel Queries</span>
+          </a>
+          <a href="log-sources.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Log Sources</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

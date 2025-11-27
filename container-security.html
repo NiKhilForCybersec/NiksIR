@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Container Security | SOC Analyst Guide</title>
+  <meta name="description" content="Container security: Docker and Kubernetes threats, monitoring strategies, and investigation techniques.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="container-security.html" class="nav-link active"><span class="nav-link-icon">📦</span> Container Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Container Security</span>
+        </nav>
+        <h1>Container Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 6.7</span>
+          <span class="meta-item">~18 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Container Overview</a></li>
+          <li><a href="#threats">Container Threats</a></li>
+          <li><a href="#kubernetes">Kubernetes Security</a></li>
+          <li><a href="#monitoring">Monitoring Strategies</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Container Overview</h2>
+        <p>
+          Containers package applications with their dependencies, running as isolated 
+          processes. Understanding container architecture is essential for security monitoring.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Container Concepts</h4>
+            <ul>
+              <li><strong>Image:</strong> Read-only template with app code</li>
+              <li><strong>Container:</strong> Running instance of image</li>
+              <li><strong>Registry:</strong> Store for container images</li>
+              <li><strong>Orchestrator:</strong> Manages containers (K8s)</li>
+              <li><strong>Pod:</strong> Smallest K8s unit (1+ containers)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Security Differences</h4>
+            <ul>
+              <li>Ephemeral—containers come and go</li>
+              <li>Shared kernel with host</li>
+              <li>Immutable infrastructure model</li>
+              <li>Rapid deployment cycles</li>
+              <li>Dynamic networking</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Container Architecture</h3>
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Developer</strong><br>
+                <small>Builds image</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Registry</strong><br>
+                <small>Stores image</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Orchestrator</strong><br>
+                <small>Deploys container</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Runtime</strong><br>
+                <small>Executes container</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>Container Threats</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Vulnerable Images</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Images containing vulnerable packages or malicious code.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Images from untrusted registries</li>
+                <li>Base images with known CVEs</li>
+                <li>Images with embedded secrets</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Image scanning, registry security policies, admission controllers.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Container Escape</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Attacker breaks out of container to access host system.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Privileged container creation</li>
+                <li>Host path mounts</li>
+                <li>Capability escalation</li>
+                <li>Kernel exploit attempts</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Monitor privileged container launches, syscall anomalies, 
+              host filesystem access from containers.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Cryptomining</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Attackers deploy cryptominers in containers for profit.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>High CPU usage containers</li>
+                <li>Connections to mining pools</li>
+                <li>Unknown images deployed</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Resource usage anomalies, network connections to known 
+              mining pools, unexpected container deployments.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Supply Chain Attacks</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Compromised dependencies or base images in build pipeline.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Unexpected changes in image layers</li>
+                <li>Images from unexpected sources</li>
+                <li>Unsigned images deployed</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Image signing verification, SBOM (Software Bill of Materials) 
+              analysis, pipeline security monitoring.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="kubernetes">
+        <h2>Kubernetes Security</h2>
+
+        <h3>K8s Attack Surface</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Risk</th>
+                <th>Monitor For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>API Server</strong></td>
+                <td>Unauthorized access, misconfig</td>
+                <td>Auth failures, sensitive API calls</td>
+              </tr>
+              <tr>
+                <td><strong>etcd</strong></td>
+                <td>Secrets exposure</td>
+                <td>Direct access attempts</td>
+              </tr>
+              <tr>
+                <td><strong>Kubelet</strong></td>
+                <td>Node compromise</td>
+                <td>Anonymous auth, exec into pods</td>
+              </tr>
+              <tr>
+                <td><strong>RBAC</strong></td>
+                <td>Privilege escalation</td>
+                <td>Role/binding changes, excessive perms</td>
+              </tr>
+              <tr>
+                <td><strong>Network</strong></td>
+                <td>Lateral movement</td>
+                <td>Pod-to-pod traffic, egress</td>
+              </tr>
+              <tr>
+                <td><strong>Secrets</strong></td>
+                <td>Credential theft</td>
+                <td>Secret access, secret mounts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>High-Risk K8s Events</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Risk Level</th>
+                <th>Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Privileged pod created</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Can access host, escape container</td>
+              </tr>
+              <tr>
+                <td>hostPath volume mount</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Access to host filesystem</td>
+              </tr>
+              <tr>
+                <td>exec into pod</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Interactive access, potential attack</td>
+              </tr>
+              <tr>
+                <td>ClusterRole binding created</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Privilege escalation</td>
+              </tr>
+              <tr>
+                <td>Secret accessed</td>
+                <td><span style="color: var(--accent-yellow);">Context-dependent</span></td>
+                <td>May indicate credential theft</td>
+              </tr>
+              <tr>
+                <td>Anonymous authentication</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Unauthenticated API access</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>Monitoring Strategies</h2>
+
+        <h3>Log Sources</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>What It Provides</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>K8s Audit Logs</strong></td>
+                <td>API server activity—who did what</td>
+              </tr>
+              <tr>
+                <td><strong>Container Runtime Logs</strong></td>
+                <td>Container lifecycle, exec events</td>
+              </tr>
+              <tr>
+                <td><strong>Application Logs</strong></td>
+                <td>App-level events from containers</td>
+              </tr>
+              <tr>
+                <td><strong>Network Logs</strong></td>
+                <td>Pod traffic, service mesh telemetry</td>
+              </tr>
+              <tr>
+                <td><strong>Node Logs</strong></td>
+                <td>Host-level events, kubelet</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud Provider Logs</strong></td>
+                <td>Managed K8s control plane events</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Key Detection Rules</h3>
+        <ul class="checklist">
+          <li>Privileged container launched</li>
+          <li>Container running as root</li>
+          <li>hostPath or hostNetwork enabled</li>
+          <li>exec/attach to production pods</li>
+          <li>ClusterRole/ClusterRoleBinding changes</li>
+          <li>Secret access by unusual service accounts</li>
+          <li>Container with excessive capabilities</li>
+          <li>Image from unapproved registry</li>
+        </ul>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Techniques</h2>
+
+        <h3>Container Forensics Challenges</h3>
+        <ul>
+          <li><strong>Ephemeral:</strong> Container may be gone before investigation</li>
+          <li><strong>Immutable:</strong> Changes don't persist across restarts</li>
+          <li><strong>Scale:</strong> Thousands of containers to monitor</li>
+          <li><strong>Dynamic:</strong> Network and identity constantly changing</li>
+        </ul>
+
+        <h3>Investigation Commands</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">kubectl investigation</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);"># List all pods across namespaces</span>
+kubectl get pods --all-namespaces
+
+<span style="color: var(--accent-cyan);"># Get pod details</span>
+kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;
+
+<span style="color: var(--accent-cyan);"># Check pod logs</span>
+kubectl logs &lt;pod-name&gt; -n &lt;namespace&gt;
+
+<span style="color: var(--accent-cyan);"># Get events for troubleshooting</span>
+kubectl get events -n &lt;namespace&gt; --sort-by='.lastTimestamp'
+
+<span style="color: var(--accent-cyan);"># Check running processes in container</span>
+kubectl exec &lt;pod-name&gt; -n &lt;namespace&gt; -- ps aux
+
+<span style="color: var(--accent-cyan);"># Check network connections</span>
+kubectl exec &lt;pod-name&gt; -n &lt;namespace&gt; -- netstat -an
+
+<span style="color: var(--accent-cyan);"># List secrets (metadata only)</span>
+kubectl get secrets -n &lt;namespace&gt;
+
+<span style="color: var(--accent-cyan);"># Check RBAC for service account</span>
+kubectl auth can-i --list --as=system:serviceaccount:&lt;ns&gt;:&lt;sa&gt;</pre>
+          </div>
+        </div>
+
+        <h3>Response Actions</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Command/Method</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Isolate pod</strong></td>
+                <td>Apply NetworkPolicy to deny all traffic</td>
+              </tr>
+              <tr>
+                <td><strong>Delete pod</strong></td>
+                <td><code>kubectl delete pod &lt;name&gt;</code></td>
+              </tr>
+              <tr>
+                <td><strong>Scale down deployment</strong></td>
+                <td><code>kubectl scale deployment &lt;name&gt; --replicas=0</code></td>
+              </tr>
+              <tr>
+                <td><strong>Revoke service account</strong></td>
+                <td>Delete or modify RoleBindings</td>
+              </tr>
+              <tr>
+                <td><strong>Capture for forensics</strong></td>
+                <td>Checkpoint container before deletion</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Containers are ephemeral—capture evidence quickly</li>
+          <li>Privileged containers and hostPath mounts are high-risk</li>
+          <li>K8s audit logs are essential for API activity visibility</li>
+          <li>Monitor for exec into pods—common attack technique</li>
+          <li>Image security starts in the build pipeline</li>
+          <li>RBAC misconfigurations are common privilege escalation vectors</li>
+          <li>Cryptomining is the most common container attack</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="azure-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Azure Security</span>
+          </a>
+          <a href="cloud-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Cloud Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

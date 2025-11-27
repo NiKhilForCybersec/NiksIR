@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escalation Management | SOC Analyst Guide</title>
+  <meta name="description" content="SOC escalation matrix, priority definitions, SLA targets, escalation paths, and communication templates for security incidents.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> ITSM Overview</a>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🔄</span> Ticket Lifecycle</a>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">⚙️</span> ServiceNow for SOC</a>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">📋</span> Jira for SOC</a>
+          <a href="escalation-management.html" class="nav-link active"><span class="nav-link-icon">📈</span> Escalation Management</a>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🔗</span> SOC-ITSM Integration</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#itsm">Ticketing & ITSM</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Escalation Management</span>
+        </nav>
+        <h1>Escalation Management</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 2.5</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#priority">Priority Definitions</a></li>
+          <li><a href="#sla">SLA Targets</a></li>
+          <li><a href="#paths">Escalation Paths</a></li>
+          <li><a href="#external">External Escalation</a></li>
+          <li><a href="#afterhours">After-Hours Procedures</a></li>
+          <li><a href="#templates">Communication Templates</a></li>
+        </ul>
+      </div>
+
+      <section id="priority">
+        <h2>Priority/Severity Definitions</h2>
+        <p>Consistent priority classification ensures incidents receive appropriate attention and resources.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Name</th>
+                <th>Criteria</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">P1</span></td>
+                <td><strong>Critical</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Active breach in progress</li>
+                    <li>Confirmed ransomware</li>
+                    <li>Data exfiltration occurring</li>
+                    <li>Critical systems compromised</li>
+                    <li>Multiple systems affected</li>
+                  </ul>
+                </td>
+                <td>
+                  Active ransomware encryption, DC compromise, confirmed APT activity, 
+                  data breach with PII exposure
+                </td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">P2</span></td>
+                <td><strong>High</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Confirmed malware/compromise</li>
+                    <li>Active C2 communication</li>
+                    <li>Privileged account compromise</li>
+                    <li>Single critical system affected</li>
+                  </ul>
+                </td>
+                <td>
+                  Confirmed malware execution, successful phishing with credential theft, 
+                  lateral movement detected, admin account takeover
+                </td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">P3</span></td>
+                <td><strong>Medium</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Suspicious activity detected</li>
+                    <li>Potential threat (unconfirmed)</li>
+                    <li>Policy violations</li>
+                    <li>Single non-critical system</li>
+                  </ul>
+                </td>
+                <td>
+                  Suspicious login patterns, blocked malware, phishing email received (no click), 
+                  DLP policy violation, unauthorized software
+                </td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">P4</span></td>
+                <td><strong>Low</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Informational alerts</li>
+                    <li>Minor policy violations</li>
+                    <li>Low-risk activity</li>
+                    <li>Routine security events</li>
+                  </ul>
+                </td>
+                <td>
+                  Single failed login, PUA detected and blocked, minor configuration drift, 
+                  informational security advisory
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Priority Escalation Triggers</div>
+          <p style="margin: 0;">Increase priority when:</p>
+          <ul style="margin: 0.5rem 0 0 0;">
+            <li>Scope expands (more hosts/users affected)</li>
+            <li>High-value target involved (executive, admin, sensitive system)</li>
+            <li>Data exposure confirmed</li>
+            <li>Attack progresses to later kill chain stage</li>
+            <li>Media/regulatory attention possible</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="sla">
+        <h2>SLA Targets</h2>
+        <p>Service Level Agreements define expected response and resolution timeframes.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Initial Response</th>
+                <th>Update Frequency</th>
+                <th>Resolution Target</th>
+                <th>Escalation if Unresolved</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">P1 Critical</span></td>
+                <td>15 minutes</td>
+                <td>Every 30 minutes</td>
+                <td>4 hours</td>
+                <td>Immediate to IR Lead + Management</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">P2 High</span></td>
+                <td>30 minutes</td>
+                <td>Every 2 hours</td>
+                <td>8 hours</td>
+                <td>1 hour → L2, 4 hours → IR Lead</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">P3 Medium</span></td>
+                <td>2 hours</td>
+                <td>Every 8 hours</td>
+                <td>24 hours</td>
+                <td>4 hours → L2, 12 hours → SOC Lead</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">P4 Low</span></td>
+                <td>8 hours</td>
+                <td>Daily</td>
+                <td>72 hours</td>
+                <td>24 hours → L2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">15min</div>
+            <div class="stat-label">P1 Response SLA</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">4hrs</div>
+            <div class="stat-label">P1 Resolution Target</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">30min</div>
+            <div class="stat-label">P1 Update Frequency</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="paths">
+        <h2>Escalation Paths</h2>
+        
+        <div class="card">
+          <h3>Technical Escalation Ladder</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node" style="background: rgba(0, 255, 136, 0.2); border-color: var(--tier-l1);">
+                <strong>L1 Alert Analyst</strong><br>
+                <small>Initial triage, basic investigation</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="background: rgba(0, 212, 255, 0.2); border-color: var(--tier-l2);">
+                <strong>L2 Incident Responder</strong><br>
+                <small>Deep investigation, containment</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="background: rgba(168, 85, 247, 0.2); border-color: var(--tier-l3);">
+                <strong>L3 / IR Team</strong><br>
+                <small>Complex incidents, forensics</small>
+              </div>
+            </div>
+            <div class="flow-step" style="margin-top: 1rem; justify-content: center;">
+              <div class="flow-arrow" style="transform: rotate(90deg);">↓</div>
+            </div>
+            <div class="flow-step" style="justify-content: center;">
+              <div class="flow-node" style="background: rgba(251, 191, 36, 0.2); border-color: var(--tier-lead);">
+                <strong>SOC Manager / CISO</strong><br>
+                <small>Major incidents, executive decisions</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Escalation Criteria by Tier</h3>
+        
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">L1 → L2 Escalation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Escalate when:</strong></p>
+              <ul>
+                <li>Alert requires investigation beyond documented runbooks</li>
+                <li>Unable to make determination within 30 minutes</li>
+                <li>Confirmed true positive requiring response actions</li>
+                <li>Multiple related alerts indicating potential incident</li>
+                <li>High-value target involved (VIP, admin, critical server)</li>
+                <li>Containment actions needed (isolation, blocking)</li>
+              </ul>
+              <p><strong>Include in escalation:</strong></p>
+              <ul>
+                <li>Alert details and timestamp</li>
+                <li>Investigation steps already taken</li>
+                <li>Current findings and assessment</li>
+                <li>Specific question or action needed from L2</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">L2 → L3/IR Escalation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Escalate when:</strong></p>
+              <ul>
+                <li>Confirmed significant security incident</li>
+                <li>Evidence of advanced threat actor / APT</li>
+                <li>Malware analysis or forensics required</li>
+                <li>Multiple systems compromised</li>
+                <li>Data breach suspected or confirmed</li>
+                <li>Novel attack technique not covered by procedures</li>
+                <li>Executive or board-level visibility needed</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">→ Management Escalation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Escalate to SOC Manager/CISO when:</strong></p>
+              <ul>
+                <li>P1 Critical incident declared</li>
+                <li>Data breach with notification requirements</li>
+                <li>Ransomware with business impact</li>
+                <li>Media attention likely or occurring</li>
+                <li>Resource needs exceed normal capacity</li>
+                <li>Third-party notification required</li>
+                <li>Law enforcement engagement considered</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="external">
+        <h2>External Stakeholder Escalation</h2>
+        <p>Some incidents require engagement with teams outside the SOC.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Stakeholder</th>
+                <th>When to Engage</th>
+                <th>Contact Method</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Legal / General Counsel</strong></td>
+                <td>Data breach, regulatory notification, law enforcement, litigation hold</td>
+                <td>Phone call for urgent, email for planning</td>
+              </tr>
+              <tr>
+                <td><strong>Human Resources</strong></td>
+                <td>Insider threat, employee policy violation, termination-related</td>
+                <td>Phone/meeting with confidentiality</td>
+              </tr>
+              <tr>
+                <td><strong>Communications / PR</strong></td>
+                <td>Public-facing incident, media inquiries, customer notification</td>
+                <td>Coordinate through management</td>
+              </tr>
+              <tr>
+                <td><strong>IT Operations</strong></td>
+                <td>System restoration, network changes, emergency patching</td>
+                <td>Direct contact, change management for non-emergency</td>
+              </tr>
+              <tr>
+                <td><strong>Business Unit Leaders</strong></td>
+                <td>Impact to their systems, approval for containment actions</td>
+                <td>Through management or direct as authorized</td>
+              </tr>
+              <tr>
+                <td><strong>Third-Party IR Firm</strong></td>
+                <td>Overwhelming incident, specialized expertise needed</td>
+                <td>Pre-negotiated retainer, management approval</td>
+              </tr>
+              <tr>
+                <td><strong>Law Enforcement</strong></td>
+                <td>Criminal activity, when required by law, management decision</td>
+                <td>Through Legal, management approval required</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Contact List Maintenance</div>
+          <p style="margin: 0;">
+            Maintain an up-to-date contact list with primary and backup contacts for each stakeholder group. 
+            Include phone numbers for after-hours escalation. Review quarterly.
+          </p>
+        </div>
+      </section>
+
+      <section id="afterhours">
+        <h2>After-Hours Escalation</h2>
+        
+        <div class="card">
+          <h3>On-Call Procedures</h3>
+          <ol>
+            <li><strong>Initial Triage:</strong> On-call analyst performs initial assessment</li>
+            <li><strong>Severity Determination:</strong> Classify priority based on standard criteria</li>
+            <li><strong>P1/P2 Response:</strong> Immediate action and escalation as needed</li>
+            <li><strong>P3/P4 Response:</strong> Document and queue for next business day unless criteria escalates</li>
+            <li><strong>Management Notification:</strong> P1 incidents always notify on-call manager</li>
+          </ol>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Wake Management For:</h4>
+            <ul>
+              <li>Active ransomware</li>
+              <li>Confirmed data breach</li>
+              <li>Critical system compromise</li>
+              <li>Widespread attack</li>
+              <li>Media/regulatory impact</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Can Wait Until Morning:</h4>
+            <ul>
+              <li>Contained single-host malware</li>
+              <li>Blocked phishing (no clicks)</li>
+              <li>Policy violations (no immediate risk)</li>
+              <li>Informational alerts</li>
+              <li>Known FP patterns</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="templates">
+        <h2>Communication Templates</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">L1 → L2 Escalation Template</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                </div>
+                <div class="terminal-body">
+<span class="terminal-output">**ESCALATION: [Brief description]**
+
+**Alert Details:**
+- Alert Name: [Name]
+- Time: [Timestamp]
+- Source: [SIEM/EDR/etc]
+- Severity: [Original severity]
+
+**Affected Entities:**
+- User: [username]
+- Host: [hostname]
+- IP: [if relevant]
+
+**Investigation Completed:**
+1. [Step taken and finding]
+2. [Step taken and finding]
+3. [Step taken and finding]
+
+**Current Assessment:**
+[Your analysis of the situation]
+
+**Reason for Escalation:**
+[Why this needs L2 attention]
+
+**Requested Action:**
+[What do you need L2 to do?]
+
+**Ticket:** [Link]
+**Analyst:** [Your name]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">P1 Management Notification</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                </div>
+                <div class="terminal-body">
+<span class="terminal-output">**🚨 P1 SECURITY INCIDENT NOTIFICATION 🚨**
+
+**Incident Type:** [Ransomware/Breach/etc]
+**Status:** [Active/Contained/Under Investigation]
+**Time Detected:** [Timestamp]
+
+**Impact:**
+- Systems Affected: [Count/list]
+- Users Affected: [Count/scope]
+- Data at Risk: [Type/sensitivity]
+- Business Impact: [Operations affected]
+
+**Current Actions:**
+- [Action being taken]
+- [Action being taken]
+
+**Containment Status:**
+[Contained/Partially Contained/Not Contained]
+
+**Next Steps:**
+1. [Planned action]
+2. [Planned action]
+
+**Next Update:** [Time]
+
+**Incident Lead:** [Name]
+**Contact:** [Phone/Teams]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Status Update Template</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                </div>
+                <div class="terminal-body">
+<span class="terminal-output">**INCIDENT UPDATE - [Incident ID]**
+**Time:** [Timestamp]
+**Update #:** [Number]
+
+**Current Status:** [Active/Contained/Resolved]
+
+**Progress Since Last Update:**
+- [What was done]
+- [What was discovered]
+- [Current state]
+
+**Outstanding Items:**
+- [What still needs to be done]
+- [Blockers if any]
+
+**Revised Impact Assessment:**
+[Any changes to scope or impact]
+
+**Next Actions:**
+- [Planned action and ETA]
+
+**Next Update:** [Time]
+**Analyst:** [Name]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Use consistent priority definitions across all incidents</li>
+          <li>Know the SLA targets and escalation timeframes</li>
+          <li>Escalate early rather than late when in doubt</li>
+          <li>Include complete context in escalation communications</li>
+          <li>After-hours escalation should err on the side of caution for P1/P2</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ticket-management.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Jira for SOC</span>
+          </a>
+          <a href="ticket-management.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SOC-ITSM Integration</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

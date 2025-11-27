@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Correlation | SOC Analyst Guide</title>
+  <meta name="description" content="Advanced log correlation techniques: multi-source analysis, timeline reconstruction, and attack chain identification.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🔷</span> Sentinel Overview</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="log-correlation.html" class="nav-link active"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📝</span> Log Sources</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Log Correlation</span>
+        </nav>
+        <h1>Log Correlation</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 3.5</span>
+          <span class="meta-item">~22 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#fundamentals">Correlation Fundamentals</a></li>
+          <li><a href="#pivots">Pivot Points</a></li>
+          <li><a href="#timeline">Timeline Reconstruction</a></li>
+          <li><a href="#attack-chain">Attack Chain Analysis</a></li>
+          <li><a href="#queries">Correlation Queries</a></li>
+          <li><a href="#scenarios">Real-World Scenarios</a></li>
+        </ul>
+      </div>
+
+      <section id="fundamentals">
+        <h2>Correlation Fundamentals</h2>
+        <p>
+          Log correlation combines events from multiple sources to reveal attack patterns 
+          that single-source analysis would miss. It's the difference between seeing 
+          individual puzzle pieces and the complete picture.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Why Correlate?</h4>
+            <ul>
+              <li>Single alerts often lack context</li>
+              <li>Attackers touch multiple systems</li>
+              <li>Full attack chain reveals intent</li>
+              <li>Reduces false positives</li>
+              <li>Identifies scope of compromise</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Correlation Challenges</h4>
+            <ul>
+              <li>Time synchronization across sources</li>
+              <li>Different identifiers (username vs UPN vs SID)</li>
+              <li>Log retention differences</li>
+              <li>Missing or incomplete logs</li>
+              <li>Volume of data to search</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>The Correlation Mindset</h3>
+        <div class="callout callout-info">
+          <div class="callout-title">Key Questions</div>
+          <ul style="margin: 0;">
+            <li>What happened <strong>before</strong> this alert?</li>
+            <li>What happened <strong>after</strong> this alert?</li>
+            <li>What else did this <strong>user</strong> do?</li>
+            <li>What else happened on this <strong>system</strong>?</li>
+            <li>Did this <strong>IP/hash/domain</strong> appear elsewhere?</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="pivots">
+        <h2>Pivot Points</h2>
+        <p>
+          Pivot points are identifiers that link events across different log sources. 
+          Effective correlation requires knowing which fields to pivot on.
+        </p>
+
+        <h3>Common Pivot Points</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pivot Point</th>
+                <th>Found In</th>
+                <th>Correlation Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Username/UPN</strong></td>
+                <td>Auth logs, EDR, email, cloud</td>
+                <td>Track user activity across systems</td>
+              </tr>
+              <tr>
+                <td><strong>IP Address</strong></td>
+                <td>Firewall, proxy, auth, VPN</td>
+                <td>Track attacker movement, identify C2</td>
+              </tr>
+              <tr>
+                <td><strong>Hostname</strong></td>
+                <td>EDR, Windows events, DNS, DHCP</td>
+                <td>Pivot from user to endpoint</td>
+              </tr>
+              <tr>
+                <td><strong>File Hash</strong></td>
+                <td>EDR, email gateway, proxy</td>
+                <td>Track malware across environment</td>
+              </tr>
+              <tr>
+                <td><strong>Domain/URL</strong></td>
+                <td>DNS, proxy, email, EDR</td>
+                <td>Identify phishing, C2 infrastructure</td>
+              </tr>
+              <tr>
+                <td><strong>Process ID</strong></td>
+                <td>EDR, Windows events</td>
+                <td>Build process tree, track execution</td>
+              </tr>
+              <tr>
+                <td><strong>Timestamp</strong></td>
+                <td>All sources</td>
+                <td>Build timeline, sequence events</td>
+              </tr>
+              <tr>
+                <td><strong>Email Message ID</strong></td>
+                <td>Email gateway, Exchange</td>
+                <td>Track phishing campaign spread</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Identity Correlation Challenges</h3>
+        <p>
+          The same user may appear differently across systems. Build a mental map 
+          of how identities translate:
+        </p>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">User Identity Formats</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);">Azure AD:</span>     john.smith@company.com (UPN)
+<span style="color: var(--accent-cyan);">On-prem AD:</span>   DOMAIN\jsmith (SAMAccountName)
+<span style="color: var(--accent-cyan);">Linux:</span>        jsmith (local username)
+<span style="color: var(--accent-cyan);">Database:</span>     john_smith (app-specific)
+<span style="color: var(--accent-cyan);">VPN:</span>          jsmith@company.com (email format)
+<span style="color: var(--accent-cyan);">SID:</span>          S-1-5-21-...-1234 (Security Identifier)</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="timeline">
+        <h2>Timeline Reconstruction</h2>
+        <p>
+          Building a chronological timeline is essential for understanding attack 
+          progression and identifying the full scope.
+        </p>
+
+        <h3>Timeline Building Process</h3>
+        <ol>
+          <li><strong>Identify anchor event</strong> - The alert that started the investigation</li>
+          <li><strong>Extract pivot points</strong> - User, host, IP, hash from anchor</li>
+          <li><strong>Expand time window</strong> - Search 24h before and after</li>
+          <li><strong>Query all relevant sources</strong> - EDR, auth, network, email</li>
+          <li><strong>Normalize timestamps</strong> - Ensure all are in same timezone</li>
+          <li><strong>Sort chronologically</strong> - Order events by time</li>
+          <li><strong>Identify gaps</strong> - What's missing? What should have logged?</li>
+        </ol>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Multi-source timeline for user</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> TargetUser = <span class="st">"john.smith@company.com"</span>;
+<span class="kw">let</span> TimeWindow = <span class="fn">ago</span>(<span class="nu">24h</span>);
+
+<span class="cm">// Authentication events</span>
+<span class="kw">let</span> AuthEvents = SigninLogs
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> UserPrincipalName =~ TargetUser
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"SignIn"</span>, 
+    Activity = <span class="fn">strcat</span>(<span class="st">"Login: "</span>, AppDisplayName),
+    Details = <span class="fn">strcat</span>(IPAddress, <span class="st">" - "</span>, Location),
+    Result = <span class="fn">iff</span>(ResultType == <span class="st">"0"</span>, <span class="st">"Success"</span>, <span class="st">"Failed"</span>);
+
+<span class="cm">// Endpoint events</span>
+<span class="kw">let</span> EndpointEvents = DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> AccountUpn =~ TargetUser
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"Endpoint"</span>,
+    Activity = <span class="fn">strcat</span>(<span class="st">"Process: "</span>, FileName),
+    Details = <span class="fn">substring</span>(ProcessCommandLine, <span class="nu">0</span>, <span class="nu">100</span>),
+    Result = DeviceName;
+
+<span class="cm">// Email events</span>
+<span class="kw">let</span> EmailEvents = EmailEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> RecipientEmailAddress =~ TargetUser 
+    <span class="kw">or</span> SenderFromAddress =~ TargetUser
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"Email"</span>,
+    Activity = <span class="fn">strcat</span>(DeliveryAction, <span class="st">": "</span>, Subject),
+    Details = SenderFromAddress,
+    Result = ThreatTypes;
+
+<span class="cm">// Office activity</span>
+<span class="kw">let</span> OfficeEvents = OfficeActivity
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> UserId =~ TargetUser
+| <span class="kw">project</span> TimeGenerated, Source = <span class="st">"Office365"</span>,
+    Activity = Operation,
+    Details = OfficeObjectId,
+    Result = ResultStatus;
+
+<span class="cm">// Combine and sort</span>
+<span class="kw">union</span> AuthEvents, EndpointEvents, EmailEvents, OfficeEvents
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <h3>Timeline Visualization</h3>
+        <div class="card">
+          <h4>Example Attack Timeline</h4>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-yellow);"></div>
+              <div class="timeline-content">
+                <strong>09:15:23</strong> - Email received with malicious attachment
+                <small>Source: Email Gateway</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-orange);"></div>
+              <div class="timeline-content">
+                <strong>09:18:45</strong> - User opens attachment, macro executes
+                <small>Source: EDR - Word spawns PowerShell</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-orange);"></div>
+              <div class="timeline-content">
+                <strong>09:18:52</strong> - PowerShell downloads payload
+                <small>Source: Proxy - Connection to malicious domain</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-red);"></div>
+              <div class="timeline-content">
+                <strong>09:19:15</strong> - Persistence established
+                <small>Source: EDR - Registry Run key modified</small>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker" style="background: var(--accent-red);"></div>
+              <div class="timeline-content">
+                <strong>09:25:00</strong> - Credential harvesting attempt
+                <small>Source: EDR - LSASS access detected</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="attack-chain">
+        <h2>Attack Chain Analysis</h2>
+        <p>
+          Map events to the kill chain to understand attack progression and 
+          identify which phase you're dealing with.
+        </p>
+
+        <h3>Cyber Kill Chain Correlation</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Log Sources</th>
+                <th>What to Look For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Reconnaissance</strong></td>
+                <td>Firewall, web logs, DNS</td>
+                <td>Port scans, directory brute force, DNS enumeration</td>
+              </tr>
+              <tr>
+                <td><strong>Weaponization</strong></td>
+                <td>N/A (happens externally)</td>
+                <td>Usually not visible—attacker builds payload</td>
+              </tr>
+              <tr>
+                <td><strong>Delivery</strong></td>
+                <td>Email gateway, proxy, firewall</td>
+                <td>Phishing emails, malicious downloads, drive-by</td>
+              </tr>
+              <tr>
+                <td><strong>Exploitation</strong></td>
+                <td>EDR, Windows events, app logs</td>
+                <td>Process crashes, unusual child processes, exploit patterns</td>
+              </tr>
+              <tr>
+                <td><strong>Installation</strong></td>
+                <td>EDR, registry, file events</td>
+                <td>File drops, persistence mechanisms, service creation</td>
+              </tr>
+              <tr>
+                <td><strong>Command & Control</strong></td>
+                <td>Proxy, firewall, DNS, EDR</td>
+                <td>Beaconing, unusual protocols, encoded traffic</td>
+              </tr>
+              <tr>
+                <td><strong>Actions on Objectives</strong></td>
+                <td>All sources</td>
+                <td>Data access, lateral movement, exfiltration</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="queries">
+        <h2>Correlation Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Correlate failed logins followed by success (password spray success)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find accounts with failed logins then success from same IP</span>
+<span class="kw">let</span> FailedLogins = SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>
+| <span class="kw">summarize</span> FailCount = <span class="fn">count</span>(), 
+    FirstFail = <span class="fn">min</span>(TimeGenerated)
+    <span class="kw">by</span> UserPrincipalName, IPAddress;
+
+<span class="kw">let</span> SuccessLogins = SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">project</span> UserPrincipalName, IPAddress, 
+    SuccessTime = TimeGenerated, AppDisplayName;
+
+FailedLogins
+| <span class="kw">join</span> <span class="kw">kind</span>=inner SuccessLogins 
+    <span class="kw">on</span> UserPrincipalName, IPAddress
+| <span class="kw">where</span> SuccessTime > FirstFail  <span class="cm">// Success after failures</span>
+| <span class="kw">where</span> FailCount > <span class="nu">3</span>  <span class="cm">// Multiple failures first</span>
+| <span class="kw">project</span> UserPrincipalName, IPAddress, FailCount, 
+    FirstFail, SuccessTime, AppDisplayName
+| <span class="kw">order by</span> FailCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Correlate email delivery with endpoint execution</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find emails with attachments followed by process execution</span>
+<span class="kw">let</span> EmailWithAttachments = EmailAttachmentInfo
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> FileType <span class="kw">in</span> (<span class="st">"docx"</span>, <span class="st">"xlsx"</span>, <span class="st">"pdf"</span>, <span class="st">"zip"</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=inner (
+    EmailEvents 
+    | <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+    | <span class="kw">where</span> DeliveryAction == <span class="st">"Delivered"</span>
+) <span class="kw">on</span> NetworkMessageId
+| <span class="kw">project</span> EmailTime = TimeGenerated, RecipientEmailAddress,
+    FileName, SHA256, Subject;
+
+<span class="cm">// Join with process events</span>
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> InitiatingProcessFileName <span class="kw">in~</span> 
+    (<span class="st">"winword.exe"</span>, <span class="st">"excel.exe"</span>, <span class="st">"outlook.exe"</span>, <span class="st">"acrord32.exe"</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=inner (
+    EmailWithAttachments
+    | <span class="kw">extend</span> AccountUpn = RecipientEmailAddress
+) <span class="kw">on</span> AccountUpn
+| <span class="kw">where</span> TimeGenerated > EmailTime  <span class="cm">// Process after email</span>
+| <span class="kw">where</span> TimeGenerated < EmailTime + <span class="nu">2h</span>  <span class="cm">// Within 2 hours</span>
+| <span class="kw">project</span> EmailTime, ProcessTime = TimeGenerated,
+    RecipientEmailAddress, Subject, DeviceName,
+    InitiatingProcessFileName, FileName, ProcessCommandLine</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Correlate network IOC with endpoint activity</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Start with known bad IP/domain</span>
+<span class="kw">let</span> BadIndicator = <span class="st">"evil-domain.com"</span>;
+
+<span class="cm">// Find network connections to indicator</span>
+<span class="kw">let</span> NetworkHits = DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteUrl <span class="kw">has</span> BadIndicator <span class="kw">or</span> RemoteIP == BadIndicator
+| <span class="kw">project</span> ConnectionTime = TimeGenerated, DeviceName,
+    RemoteIP, RemoteUrl, InitiatingProcessFileName,
+    InitiatingProcessId;
+
+<span class="cm">// Get full process tree for those connections</span>
+NetworkHits
+| <span class="kw">join</span> <span class="kw">kind</span>=inner (
+    DeviceProcessEvents
+    | <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+) <span class="kw">on</span> DeviceName
+| <span class="kw">where</span> ProcessId == InitiatingProcessId 
+    <span class="kw">or</span> InitiatingProcessId == InitiatingProcessId1
+| <span class="kw">project</span> ConnectionTime, DeviceName, RemoteUrl,
+    FileName, ProcessCommandLine, 
+    ParentProcess = InitiatingProcessFileName1
+| <span class="kw">order by</span> ConnectionTime <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Lateral movement correlation: Auth + remote execution</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find network logons followed by process execution</span>
+<span class="kw">let</span> NetworkLogons = SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4624</span>
+| <span class="kw">where</span> LogonType == <span class="nu">3</span>  <span class="cm">// Network logon</span>
+| <span class="kw">where</span> IpAddress != <span class="st">"-"</span> <span class="kw">and</span> IpAddress != <span class="st">"127.0.0.1"</span>
+| <span class="kw">project</span> LogonTime = TimeGenerated, TargetComputer = Computer,
+    Account = TargetUserName, SourceIP = IpAddress;
+
+<span class="cm">// Correlate with suspicious process creation</span>
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (<span class="st">"cmd.exe"</span>, <span class="st">"powershell.exe"</span>, <span class="st">"wmic.exe"</span>)
+| <span class="kw">join</span> <span class="kw">kind</span>=inner NetworkLogons 
+    <span class="kw">on</span> $left.DeviceName == $right.TargetComputer,
+    $left.AccountName == $right.Account
+| <span class="kw">where</span> TimeGenerated > LogonTime
+| <span class="kw">where</span> TimeGenerated < LogonTime + <span class="nu">5m</span>  <span class="cm">// Within 5 min of logon</span>
+| <span class="kw">project</span> LogonTime, ProcessTime = TimeGenerated,
+    TargetComputer, Account, SourceIP,
+    FileName, ProcessCommandLine</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="scenarios">
+        <h2>Real-World Scenarios</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Scenario: Phishing to Credential Theft</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Initial Alert:</h4>
+              <p>EDR alert: PowerShell encoded command execution</p>
+              
+              <h4>Correlation Steps:</h4>
+              <ol>
+                <li><strong>Get user and device</strong> from EDR alert</li>
+                <li><strong>Check email</strong> - Did user receive suspicious email in last 24h?</li>
+                <li><strong>Check proxy</strong> - Did device connect to unusual URLs?</li>
+                <li><strong>Check auth logs</strong> - Any logins from unusual locations after?</li>
+                <li><strong>Check other endpoints</strong> - Did malware spread?</li>
+              </ol>
+              
+              <h4>Sources to Query:</h4>
+              <ul>
+                <li>EmailEvents / EmailAttachmentInfo</li>
+                <li>DeviceProcessEvents</li>
+                <li>DeviceNetworkEvents</li>
+                <li>SigninLogs</li>
+                <li>OfficeActivity (for inbox rules)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Scenario: Compromised Account Investigation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Initial Alert:</h4>
+              <p>Impossible travel - User logged in from two countries within 1 hour</p>
+              
+              <h4>Correlation Steps:</h4>
+              <ol>
+                <li><strong>Confirm impossible travel</strong> - Check both IP geolocations</li>
+                <li><strong>Identify legitimate login</strong> - Which matches user's normal pattern?</li>
+                <li><strong>Investigate suspicious login</strong> - What apps were accessed?</li>
+                <li><strong>Check for persistence</strong> - Inbox rules? OAuth apps?</li>
+                <li><strong>Assess data access</strong> - What files/emails were accessed?</li>
+              </ol>
+              
+              <h4>Sources to Query:</h4>
+              <ul>
+                <li>SigninLogs (full history for user)</li>
+                <li>AuditLogs (Azure AD changes)</li>
+                <li>OfficeActivity (file/email access)</li>
+                <li>CloudAppEvents (if using MCAS)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Scenario: Ransomware Investigation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Initial Alert:</h4>
+              <p>Multiple file rename events with suspicious extensions</p>
+              
+              <h4>Correlation Steps:</h4>
+              <ol>
+                <li><strong>Identify patient zero</strong> - Which device first showed encryption?</li>
+                <li><strong>Find initial access</strong> - Phishing? RDP? Vulnerability?</li>
+                <li><strong>Track lateral movement</strong> - How did it spread?</li>
+                <li><strong>Identify C2</strong> - What external IPs were contacted?</li>
+                <li><strong>Assess scope</strong> - Which systems are affected?</li>
+              </ol>
+              
+              <h4>Sources to Query:</h4>
+              <ul>
+                <li>DeviceFileEvents (encryption activity)</li>
+                <li>DeviceProcessEvents (ransomware execution)</li>
+                <li>DeviceNetworkEvents (C2, lateral movement)</li>
+                <li>SecurityEvent 4624/4625 (authentication)</li>
+                <li>EmailEvents (initial phishing)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Single alerts rarely tell the full story—always correlate</li>
+          <li>Master pivot points: user, IP, hostname, hash, timestamp</li>
+          <li>Build timelines to understand attack progression</li>
+          <li>Map events to kill chain phases to identify scope</li>
+          <li>Ask: What happened before? After? What else did this entity do?</li>
+          <li>Different log sources use different identity formats—know the mappings</li>
+          <li>Consider what logs might be missing or incomplete</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="kql-advanced.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">KQL Advanced</span>
+          </a>
+          <a href="log-sources.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Log Sources</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

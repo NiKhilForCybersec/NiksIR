@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft Sentinel Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Microsoft Sentinel SIEM overview for SOC analysts: architecture, workspaces, data connectors, and daily operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link active"><span class="nav-link-icon">🛡️</span> Sentinel Overview</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> Incidents & Alerts</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Hunting</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbooks</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Sentinel Overview</span>
+        </nav>
+        <h1>Microsoft Sentinel Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 3.2</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">What is Sentinel?</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#portal">Portal Navigation</a></li>
+          <li><a href="#connectors">Data Connectors</a></li>
+          <li><a href="#tables">Key Tables</a></li>
+          <li><a href="#workflow">Daily Workflow</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>What is Microsoft Sentinel?</h2>
+        <p>
+          Microsoft Sentinel is a cloud-native Security Information and Event Management (SIEM) and 
+          Security Orchestration, Automation, and Response (SOAR) solution. It provides intelligent 
+          security analytics across your enterprise.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">SIEM</div>
+            <div class="stat-label">Security Information & Event Management</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">SOAR</div>
+            <div class="stat-label">Security Orchestration & Automation</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">UEBA</div>
+            <div class="stat-label">User & Entity Behavior Analytics</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">TI</div>
+            <div class="stat-label">Threat Intelligence Integration</div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>Key Capabilities</h3>
+          <ul>
+            <li><strong>Collect</strong> - Ingest data from any source at cloud scale</li>
+            <li><strong>Detect</strong> - Analytics rules, ML, and threat intelligence for detection</li>
+            <li><strong>Investigate</strong> - KQL hunting, investigation graphs, notebooks</li>
+            <li><strong>Respond</strong> - Automation playbooks with Logic Apps</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>Sentinel Architecture</h2>
+
+        <div class="card">
+          <h3>Core Components</h3>
+          <div class="flowchart">
+            <div class="flow-step" style="flex-wrap: wrap; justify-content: center; gap: 1rem;">
+              <div class="flow-node action" style="min-width: 120px;">
+                <strong>Data Sources</strong><br>
+                <small>Logs & Events</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node action" style="min-width: 120px;">
+                <strong>Connectors</strong><br>
+                <small>Ingest Data</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node decision" style="min-width: 120px;">
+                <strong>Log Analytics</strong><br>
+                <small>Store & Query</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node action" style="min-width: 120px;">
+                <strong>Analytics</strong><br>
+                <small>Detect Threats</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node endpoint" style="min-width: 120px;">
+                <strong>Incidents</strong><br>
+                <small>Alert & Respond</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Log Analytics Workspace</h3>
+        <p>
+          Sentinel is built on top of Azure Log Analytics. The workspace is where all your security 
+          data is stored and queried using Kusto Query Language (KQL).
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Workspace Basics</div>
+          <ul style="margin: 0;">
+            <li>Data stored in tables (e.g., SecurityEvent, SigninLogs)</li>
+            <li>Retention configurable (default 90 days, up to 2 years)</li>
+            <li>Query using KQL in Logs blade</li>
+            <li>Cost based on data ingestion volume (GB/day)</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="portal">
+        <h2>Portal Navigation</h2>
+        <p>Sentinel is accessed through the Azure Portal at <a href="https://portal.azure.com" target="_blank">portal.azure.com</a> → Microsoft Sentinel.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Purpose</th>
+                <th>Daily Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Overview</strong></td>
+                <td>Dashboard with incidents, data health, threat intel</td>
+                <td>Morning check, health monitoring</td>
+              </tr>
+              <tr>
+                <td><strong>Incidents</strong></td>
+                <td>View, triage, and manage security incidents</td>
+                <td>⭐ Primary workspace</td>
+              </tr>
+              <tr>
+                <td><strong>Workbooks</strong></td>
+                <td>Interactive dashboards and reports</td>
+                <td>Visualization, reporting</td>
+              </tr>
+              <tr>
+                <td><strong>Hunting</strong></td>
+                <td>Proactive threat hunting with KQL queries</td>
+                <td>⭐ Investigation & hunting</td>
+              </tr>
+              <tr>
+                <td><strong>Notebooks</strong></td>
+                <td>Jupyter notebooks for advanced analysis</td>
+                <td>L3/Advanced analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Entity Behavior</strong></td>
+                <td>UEBA - user and entity analytics</td>
+                <td>Anomaly investigation</td>
+              </tr>
+              <tr>
+                <td><strong>Threat Intelligence</strong></td>
+                <td>IOC management and TI feeds</td>
+                <td>IOC lookup, feed management</td>
+              </tr>
+              <tr>
+                <td><strong>Content Hub</strong></td>
+                <td>Solutions, connectors, rules, workbooks</td>
+                <td>Deploying new content</td>
+              </tr>
+              <tr>
+                <td><strong>Analytics</strong></td>
+                <td>Detection rules configuration</td>
+                <td>Rule management, tuning</td>
+              </tr>
+              <tr>
+                <td><strong>Automation</strong></td>
+                <td>Playbooks and automation rules</td>
+                <td>Response automation</td>
+              </tr>
+              <tr>
+                <td><strong>Logs</strong></td>
+                <td>Direct KQL query interface</td>
+                <td>⭐ Ad-hoc queries</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="connectors">
+        <h2>Data Connectors</h2>
+        <p>Data connectors bring security data into Sentinel from various sources.</p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Microsoft 365 & Azure</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Connector</th><th>Data</th><th>Key Tables</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Microsoft 365 Defender</td>
+                      <td>MDE, MDI, MDO, MCAS alerts</td>
+                      <td>SecurityAlert, SecurityIncident</td>
+                    </tr>
+                    <tr>
+                      <td>Azure Active Directory</td>
+                      <td>Sign-ins, audit logs, identity protection</td>
+                      <td>SigninLogs, AuditLogs, AADRiskyUsers</td>
+                    </tr>
+                    <tr>
+                      <td>Microsoft Defender for Endpoint</td>
+                      <td>Endpoint telemetry</td>
+                      <td>DeviceProcessEvents, DeviceNetworkEvents</td>
+                    </tr>
+                    <tr>
+                      <td>Office 365</td>
+                      <td>Exchange, SharePoint, Teams activity</td>
+                      <td>OfficeActivity</td>
+                    </tr>
+                    <tr>
+                      <td>Azure Activity</td>
+                      <td>Azure resource operations</td>
+                      <td>AzureActivity</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Infrastructure & Network</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Connector</th><th>Data</th><th>Key Tables</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Windows Security Events</td>
+                      <td>Windows event logs via AMA</td>
+                      <td>SecurityEvent</td>
+                    </tr>
+                    <tr>
+                      <td>Syslog</td>
+                      <td>Linux/network device logs</td>
+                      <td>Syslog</td>
+                    </tr>
+                    <tr>
+                      <td>Common Event Format (CEF)</td>
+                      <td>Firewalls, IDS/IPS, proxies</td>
+                      <td>CommonSecurityLog</td>
+                    </tr>
+                    <tr>
+                      <td>DNS</td>
+                      <td>DNS query logs</td>
+                      <td>DnsEvents</td>
+                    </tr>
+                    <tr>
+                      <td>Azure Firewall</td>
+                      <td>Firewall logs</td>
+                      <td>AzureDiagnostics</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Third-Party & Custom</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Connector</th><th>Data</th><th>Method</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>AWS</td>
+                      <td>CloudTrail, GuardDuty, VPC Flow</td>
+                      <td>S3 bucket or API</td>
+                    </tr>
+                    <tr>
+                      <td>Palo Alto</td>
+                      <td>Firewall logs</td>
+                      <td>CEF or API</td>
+                    </tr>
+                    <tr>
+                      <td>CrowdStrike</td>
+                      <td>Falcon alerts and events</td>
+                      <td>API connector</td>
+                    </tr>
+                    <tr>
+                      <td>Custom Logs</td>
+                      <td>Any structured data</td>
+                      <td>Log Analytics API, AMA</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tables">
+        <h2>Key Data Tables</h2>
+        <p>Most commonly queried tables in Sentinel investigations:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Table</th>
+                <th>Contains</th>
+                <th>Common Use Cases</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>SecurityEvent</code></td>
+                <td>Windows security logs</td>
+                <td>Logon events, process creation, privilege use</td>
+              </tr>
+              <tr>
+                <td><code>SigninLogs</code></td>
+                <td>Azure AD sign-ins</td>
+                <td>Authentication analysis, impossible travel</td>
+              </tr>
+              <tr>
+                <td><code>AuditLogs</code></td>
+                <td>Azure AD changes</td>
+                <td>User/group changes, app consents</td>
+              </tr>
+              <tr>
+                <td><code>OfficeActivity</code></td>
+                <td>M365 user activity</td>
+                <td>Email, SharePoint, Teams investigation</td>
+              </tr>
+              <tr>
+                <td><code>SecurityAlert</code></td>
+                <td>Alerts from all sources</td>
+                <td>Alert correlation, triage</td>
+              </tr>
+              <tr>
+                <td><code>SecurityIncident</code></td>
+                <td>Sentinel incidents</td>
+                <td>Incident tracking, metrics</td>
+              </tr>
+              <tr>
+                <td><code>CommonSecurityLog</code></td>
+                <td>CEF-formatted logs</td>
+                <td>Firewall, proxy, IDS analysis</td>
+              </tr>
+              <tr>
+                <td><code>Syslog</code></td>
+                <td>Linux/network syslog</td>
+                <td>Linux server investigation</td>
+              </tr>
+              <tr>
+                <td><code>AzureActivity</code></td>
+                <td>Azure control plane</td>
+                <td>Cloud resource changes</td>
+              </tr>
+              <tr>
+                <td><code>ThreatIntelligenceIndicator</code></td>
+                <td>IOCs from TI feeds</td>
+                <td>IOC matching, enrichment</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check available tables and their sizes</span>
+          </div>
+          <div class="query-body">
+<code>Usage
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">summarize</span> DataGB = <span class="fn">sum</span>(Quantity) / <span class="nu">1024</span> <span class="kw">by</span> DataType
+| <span class="kw">order by</span> DataGB <span class="kw">desc</span>
+| <span class="kw">take</span> <span class="nu">20</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <h2>Daily SOC Workflow</h2>
+
+        <div class="card">
+          <h3>Typical Analyst Day with Sentinel</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">Start</div>
+              <div class="timeline-title">Check Overview Dashboard</div>
+              <div class="timeline-desc">Review incident count, data health, any anomalies</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Triage</div>
+              <div class="timeline-title">Work Incident Queue</div>
+              <div class="timeline-desc">Prioritize by severity, investigate new incidents</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Investigate</div>
+              <div class="timeline-title">Deep Dive with KQL</div>
+              <div class="timeline-desc">Query logs for context, build timeline</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Hunt</div>
+              <div class="timeline-title">Proactive Hunting</div>
+              <div class="timeline-desc">Run hunting queries, check for threats</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Document</div>
+              <div class="timeline-title">Update & Close</div>
+              <div class="timeline-desc">Document findings, close or escalate</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Incident Investigation Checklist</h3>
+        <ul class="checklist">
+          <li>Read incident title, description, and severity</li>
+          <li>Review all related alerts and their details</li>
+          <li>Check entities involved (users, hosts, IPs)</li>
+          <li>Use investigation graph for visual analysis</li>
+          <li>Query relevant tables for additional context</li>
+          <li>Check entity pages for historical behavior</li>
+          <li>Determine if True Positive or False Positive</li>
+          <li>Document findings and take appropriate action</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Sentinel = SIEM + SOAR built on Azure Log Analytics</li>
+          <li>Data flows: Sources → Connectors → Workspace → Analytics → Incidents</li>
+          <li>Master the Incidents and Logs blades for daily work</li>
+          <li>KQL is your primary investigation language</li>
+          <li>Use Content Hub for pre-built solutions and rules</li>
+          <li>Integrates natively with M365 Defender for XDR capabilities</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="siem-fundamentals.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SIEM Fundamentals</span>
+          </a>
+          <a href="sentinel-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Incidents & Alerts</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

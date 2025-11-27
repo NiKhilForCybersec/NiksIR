@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lateral Movement Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Response playbook for lateral movement detection: techniques, detection methods, and containment strategies.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-lateral-movement.html" class="nav-link active"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Lateral Movement</span>
+        </nav>
+        <h1>↔️ Lateral Movement Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">PB-09</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-red);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">Unusual authentication, remote execution, internal scanning</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p2">P2 High</span></p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Response SLA</strong>
+            <p style="margin: 0;">Response: 30 min | Containment: 2 hours</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation</strong>
+            <p style="margin: 0;">Escalate if multiple hosts affected</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-danger">
+        <div class="callout-title">⚠️ Active Intrusion Indicator</div>
+        <p style="margin: 0;">
+          Lateral movement indicates an attacker is already inside your network and actively expanding 
+          access. This is a late-stage attack indicator—act quickly to contain spread.
+        </p>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#techniques">Common Techniques</a></li>
+          <li><a href="#indicators">Detection Indicators</a></li>
+          <li><a href="#investigation">Investigation Steps</a></li>
+          <li><a href="#containment">Containment Actions</a></li>
+          <li><a href="#hunting">Hunting Queries</a></li>
+        </ul>
+      </div>
+
+      <section id="techniques">
+        <h2>Common Lateral Movement Techniques</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Technique</th>
+                <th>How It Works</th>
+                <th>MITRE ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>PsExec</strong></td>
+                <td>Remote command execution via SMB/admin shares</td>
+                <td>T1570, T1021.002</td>
+              </tr>
+              <tr>
+                <td><strong>WMI</strong></td>
+                <td>Remote execution via Windows Management Instrumentation</td>
+                <td>T1047</td>
+              </tr>
+              <tr>
+                <td><strong>WinRM/PowerShell Remoting</strong></td>
+                <td>Remote PowerShell sessions</td>
+                <td>T1021.006</td>
+              </tr>
+              <tr>
+                <td><strong>RDP</strong></td>
+                <td>Remote Desktop Protocol access</td>
+                <td>T1021.001</td>
+              </tr>
+              <tr>
+                <td><strong>SMB/Admin Shares</strong></td>
+                <td>Access via C$, ADMIN$, IPC$ shares</td>
+                <td>T1021.002</td>
+              </tr>
+              <tr>
+                <td><strong>Pass-the-Hash</strong></td>
+                <td>Authenticate using NTLM hash instead of password</td>
+                <td>T1550.002</td>
+              </tr>
+              <tr>
+                <td><strong>Pass-the-Ticket</strong></td>
+                <td>Use stolen Kerberos ticket for authentication</td>
+                <td>T1550.003</td>
+              </tr>
+              <tr>
+                <td><strong>SSH</strong></td>
+                <td>SSH connections to Linux/Unix systems</td>
+                <td>T1021.004</td>
+              </tr>
+              <tr>
+                <td><strong>Scheduled Tasks</strong></td>
+                <td>Create remote scheduled tasks</td>
+                <td>T1053.005</td>
+              </tr>
+              <tr>
+                <td><strong>Remote Services</strong></td>
+                <td>Create remote services for execution</td>
+                <td>T1021.002</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="indicators">
+        <h2>Detection Indicators</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Authentication Anomalies</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Account accessing systems it never accessed before</li>
+                <li>Workstation-to-workstation authentication (unusual)</li>
+                <li>High-privilege account from unexpected source</li>
+                <li>Type 3 (network) logons from non-server sources</li>
+                <li>Authentication outside normal business hours</li>
+              </ul>
+              <p class="text-muted">Key Event IDs: 4624, 4625, 4648</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Remote Execution</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>PsExec: PSEXESVC.exe service creation (Event ID 7045)</li>
+                <li>WMI: wmiprvse.exe spawning unexpected processes</li>
+                <li>WinRM: wsmprovhost.exe process creation</li>
+                <li>Scheduled Task: schtasks.exe /create remotely</li>
+                <li>Service Creation: sc.exe \\remote create</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network Indicators</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>SMB connections (port 445) from workstations</li>
+                <li>RDP (port 3389) internal lateral connections</li>
+                <li>WinRM (port 5985/5986) connections</li>
+                <li>Internal port scanning activity</li>
+                <li>Unusual east-west traffic patterns</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Credential Access Precursors</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Mimikatz execution indicators</li>
+                <li>LSASS access (Event ID 4656, 4663)</li>
+                <li>DCSync activity (Directory replication)</li>
+                <li>Kerberoasting (many TGS requests)</li>
+                <li>SAM database access</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Identify Patient Zero</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Find the first compromised host:</p>
+              <ul>
+                <li>What host initiated the lateral movement?</li>
+                <li>What account was used?</li>
+                <li>When did activity first begin?</li>
+                <li>How was the source host compromised?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Map the Spread</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Determine which systems were accessed:</p>
+              <ul>
+                <li>Query for all authentication from source host/account</li>
+                <li>Identify all destination systems</li>
+                <li>Check for successful vs failed attempts</li>
+                <li>Build a timeline of movement</li>
+              </ul>
+              
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Map lateral movement from source</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> sourceHost = <span class="st">"COMPROMISED-PC"</span>;
+SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4624</span>
+| <span class="kw">where</span> LogonType <span class="kw">in</span> (<span class="nu">3</span>, <span class="nu">10</span>)  <span class="cm">// Network, RemoteInteractive</span>
+| <span class="kw">where</span> WorkstationName =~ sourceHost
+| <span class="kw">summarize</span> FirstSeen = <span class="fn">min</span>(TimeGenerated), 
+    LastSeen = <span class="fn">max</span>(TimeGenerated),
+    Count = <span class="fn">count</span>() 
+    <span class="kw">by</span> Computer, TargetUserName, LogonType
+| <span class="kw">order by</span> FirstSeen <span class="kw">asc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Identify Accounts Used</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What accounts were used for lateral movement?</li>
+                <li>Were credentials stolen or were they legitimate access?</li>
+                <li>Are privileged accounts (admin, service) involved?</li>
+                <li>Was the same account used across all targets?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Check for Persistence</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>On each affected system, check for:</p>
+              <ul>
+                <li>New scheduled tasks</li>
+                <li>New services</li>
+                <li>Registry run keys</li>
+                <li>Startup folder items</li>
+                <li>WMI subscriptions</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 5: Assess Impact</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What systems were successfully accessed?</li>
+                <li>Were any domain controllers reached?</li>
+                <li>Was sensitive data accessed?</li>
+                <li>Is attack still active?</li>
+                <li>What is the attacker's apparent objective?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="containment">
+        <h2>Containment Actions</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Immediate</h4>
+            <ul>
+              <li>Isolate compromised hosts (EDR isolation)</li>
+              <li>Disable compromised accounts</li>
+              <li>Block attacker IPs at firewall</li>
+              <li>Reset credentials for affected accounts</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Short-term</h4>
+            <ul>
+              <li>Reset all accounts that touched compromised systems</li>
+              <li>Revoke Kerberos tickets (if Pass-the-Ticket suspected)</li>
+              <li>Block SMB/RDP between workstations if possible</li>
+              <li>Increase monitoring on unaffected systems</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">If DC Compromised</h4>
+            <ul>
+              <li>Reset KRBTGT password (twice, 10+ hours apart)</li>
+              <li>Reset all privileged account passwords</li>
+              <li>Full AD assessment may be required</li>
+              <li>Consider engaging IR retainer</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Don't Alert the Attacker</div>
+          <p style="margin: 0;">
+            If attack is ongoing, coordinate containment actions to execute simultaneously. 
+            Isolating one system may cause attacker to accelerate on others.
+          </p>
+        </div>
+      </section>
+
+      <section id="hunting">
+        <h2>Hunting Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect PsExec usage</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventID == <span class="nu">7045</span>  <span class="cm">// Service installed</span>
+| <span class="kw">where</span> ServiceName <span class="kw">contains</span> <span class="st">"PSEXE"</span>
+    <span class="kw">or</span> ServiceFileName <span class="kw">contains</span> <span class="st">"PSEXE"</span>
+| <span class="kw">project</span> TimeGenerated, Computer, ServiceName, ServiceFileName, Account</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect WMI remote execution</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> InitiatingProcessFileName =~ <span class="st">"wmiprvse.exe"</span>
+| <span class="kw">where</span> FileName !<span class="kw">in</span> (<span class="st">"conhost.exe"</span>, <span class="st">"mofcomp.exe"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName, 
+    ProcessCommandLine, InitiatingProcessCommandLine</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect workstation-to-workstation RDP</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4624</span>
+| <span class="kw">where</span> LogonType == <span class="nu">10</span>  <span class="cm">// RemoteInteractive (RDP)</span>
+| <span class="kw">where</span> Computer !<span class="kw">startswith</span> <span class="st">"SRV"</span>  <span class="cm">// Target is not a server</span>
+| <span class="kw">where</span> WorkstationName !<span class="kw">startswith</span> <span class="st">"SRV"</span>  <span class="cm">// Source is not a server</span>
+| <span class="kw">project</span> TimeGenerated, Computer, TargetUserName, 
+    WorkstationName, IpAddress</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect internal port scanning</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Private"</span>
+| <span class="kw">where</span> ActionType == <span class="st">"ConnectionFailed"</span>
+| <span class="kw">summarize</span> TargetCount = <span class="fn">dcount</span>(RemoteIP), 
+    PortCount = <span class="fn">dcount</span>(RemotePort) 
+    <span class="kw">by</span> DeviceName, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> TargetCount > <span class="nu">20</span> <span class="kw">or</span> PortCount > <span class="nu">50</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Recognize:</strong> Lateral movement = active intrusion</li>
+          <li><strong>Identify source:</strong> Find patient zero</li>
+          <li><strong>Map spread:</strong> All systems and accounts affected</li>
+          <li><strong>Contain fast:</strong> Isolate hosts, disable accounts</li>
+          <li><strong>Check persistence:</strong> Look for backdoors on each system</li>
+          <li><strong>Reset credentials:</strong> All affected accounts</li>
+          <li><strong>Hunt broader:</strong> Attacker may have more access than detected</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-account-compromise.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Account Compromise</span>
+          </a>
+          <a href="pb-c2.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">C2 Detection</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

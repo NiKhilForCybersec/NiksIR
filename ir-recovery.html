@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recovery | SOC Analyst Guide</title>
+  <meta name="description" content="Incident response recovery phase: restoring systems, validating operations, and returning to normal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link active"><span class="nav-link-icon">🔄</span> Recovery</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Recovery</span>
+        </nav>
+        <h1>Recovery</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 10.5</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#planning">Recovery Planning</a></li>
+          <li><a href="#execution">Execution Steps</a></li>
+          <li><a href="#monitoring">Post-Recovery Monitoring</a></li>
+          <li><a href="#closure">Incident Closure</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Recovery Overview</h2>
+        <p>
+          Recovery is the process of restoring affected systems to normal operations. This phase 
+          focuses on bringing systems back online safely while preventing reinfection.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Recovery Goals</h4>
+            <ul>
+              <li>Restore system functionality</li>
+              <li>Return to normal operations</li>
+              <li>Validate security controls</li>
+              <li>Confirm threat elimination</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Key Principles</h4>
+            <ul>
+              <li>Phased approach (critical first)</li>
+              <li>Verify before reconnecting</li>
+              <li>Enhanced monitoring</li>
+              <li>Document everything</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="planning">
+        <h2>Recovery Planning</h2>
+
+        <h3>Pre-Recovery Checklist</h3>
+        <ul class="checklist">
+          <li><strong>Eradication complete</strong> - Verified threat removed from all systems</li>
+          <li><strong>Credentials reset</strong> - All compromised credentials changed</li>
+          <li><strong>IOCs blocked</strong> - All indicators blocked at perimeter</li>
+          <li><strong>Patches applied</strong> - Initial access vector closed</li>
+          <li><strong>Backups validated</strong> - Clean backups identified (if needed)</li>
+          <li><strong>Stakeholders notified</strong> - Business aware of recovery timeline</li>
+        </ul>
+
+        <h3>Recovery Priority Order</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>System Type</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-red);"><strong>1. Critical</strong></span></td>
+                <td>Core infrastructure</td>
+                <td>Domain controllers, DNS, DHCP, authentication</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);"><strong>2. High</strong></span></td>
+                <td>Business critical</td>
+                <td>Email, file servers, key applications</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);"><strong>3. Medium</strong></span></td>
+                <td>Operational</td>
+                <td>User workstations, printers, secondary apps</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--text-muted);"><strong>4. Low</strong></span></td>
+                <td>Non-critical</td>
+                <td>Test systems, development environments</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="execution">
+        <h2>Execution Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">1. System Restoration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>For Reimaged Systems:</h4>
+              <ul>
+                <li>Deploy fresh OS image from known-good source</li>
+                <li>Apply all current patches before connecting to network</li>
+                <li>Install required applications</li>
+                <li>Restore user data from clean backups</li>
+                <li>Configure security agents (EDR, AV)</li>
+              </ul>
+              <h4>For Cleaned Systems:</h4>
+              <ul>
+                <li>Final verification scan before reconnection</li>
+                <li>Apply any pending patches</li>
+                <li>Verify security agents operational</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">2. Network Reconnection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Process:</h4>
+              <ul>
+                <li>Remove from isolation (EDR, VLAN)</li>
+                <li>Reconnect in phases, not all at once</li>
+                <li>Validate network connectivity</li>
+                <li>Confirm authentication working</li>
+                <li>Test application access</li>
+              </ul>
+              <div class="callout callout-tip" style="margin-top: 1rem;">
+                <div class="callout-title">Staged Reconnection</div>
+                <p style="margin: 0;">Reconnect a few systems first and monitor for 24-48 hours before proceeding with the rest.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">3. Service Validation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Verify:</h4>
+              <ul>
+                <li>Critical services running</li>
+                <li>Application functionality</li>
+                <li>User authentication</li>
+                <li>Data integrity</li>
+                <li>Integrations working</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">4. User Access Restoration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Notify users of password resets</li>
+                <li>Re-enable disabled accounts (if applicable)</li>
+                <li>Verify MFA functioning</li>
+                <li>Communicate any workflow changes</li>
+                <li>Provide support for access issues</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>Post-Recovery Monitoring</h2>
+        <p>
+          Enhanced monitoring is critical for 2-4 weeks after recovery to detect any missed 
+          persistence or reinfection.
+        </p>
+
+        <h3>Monitor For:</h3>
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>Reinfection Signs</h4>
+            <ul>
+              <li>Same or similar malware detected</li>
+              <li>Connections to blocked IOCs</li>
+              <li>Beaconing patterns resume</li>
+              <li>Credential abuse attempts</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-yellow);">
+            <h4>Operational Issues</h4>
+            <ul>
+              <li>Service failures</li>
+              <li>Authentication problems</li>
+              <li>Application errors</li>
+              <li>User access issues</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Monitor recovered systems for 30 days</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> RecoveredDevices = <span class="kw">dynamic</span>([<span class="st">"WORKSTATION-01"</span>, <span class="st">"SERVER-01"</span>]);
+<span class="kw">union</span> DeviceProcessEvents, DeviceNetworkEvents, DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
+| <span class="kw">where</span> DeviceName <span class="kw">in~</span> (RecoveredDevices)
+| <span class="kw">where</span> 
+    <span class="cm">// Suspicious process indicators</span>
+    FileName <span class="kw">has_any</span> (<span class="st">"powershell"</span>, <span class="st">"cmd"</span>, <span class="st">"wscript"</span>)
+    <span class="kw">or</span> RemoteIPType == <span class="st">"Public"</span>
+    <span class="kw">or</span> ActionType == <span class="st">"FileCreated"</span>
+| <span class="kw">summarize</span> EventCount = <span class="fn">count</span>() <span class="kw">by</span> DeviceName, bin(TimeGenerated, <span class="nu">1d</span>)
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <h3>Monitoring Duration</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Incident Severity</th>
+                <th>Enhanced Monitoring Period</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Commodity malware</td>
+                <td>1-2 weeks</td>
+              </tr>
+              <tr>
+                <td>Ransomware</td>
+                <td>2-4 weeks</td>
+              </tr>
+              <tr>
+                <td>Advanced threat/APT</td>
+                <td>4-8 weeks</td>
+              </tr>
+              <tr>
+                <td>Domain compromise</td>
+                <td>8+ weeks</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="closure">
+        <h2>Incident Closure</h2>
+        <p>
+          Once systems are stable and no reinfection is detected, the incident can be closed.
+        </p>
+
+        <h3>Closure Criteria</h3>
+        <ul class="checklist">
+          <li>All affected systems restored</li>
+          <li>Enhanced monitoring period complete with no reinfection</li>
+          <li>Business operations returned to normal</li>
+          <li>All containment measures removed</li>
+          <li>Documentation complete</li>
+          <li>Lessons learned conducted</li>
+        </ul>
+
+        <h3>Post-Incident Activities</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Documentation</h4>
+            <ul>
+              <li>Complete incident timeline</li>
+              <li>Actions taken at each phase</li>
+              <li>IOCs and detection signatures</li>
+              <li>Costs and impact assessment</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Lessons Learned</h4>
+            <ul>
+              <li>What worked well?</li>
+              <li>What could be improved?</li>
+              <li>Detection gaps identified</li>
+              <li>Process improvements needed</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Complete eradication before starting recovery</li>
+          <li>Recover in priority order (critical infrastructure first)</li>
+          <li>Phased reconnection with monitoring between phases</li>
+          <li>Enhanced monitoring for 2-4+ weeks post-recovery</li>
+          <li>Validate functionality before declaring systems operational</li>
+          <li>Document everything for lessons learned</li>
+          <li>Conduct lessons learned while details are fresh</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ir-eradication.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Eradication</span>
+          </a>
+          <a href="ir-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">IR Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

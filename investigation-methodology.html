@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investigation Methodology | SOC Analyst Guide</title>
+  <meta name="description" content="Structured investigation framework for SOC analysts: hypothesis-driven analysis, evidence collection, and timeline reconstruction.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link active"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Quick Links</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Event ID Reference</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Investigation Methodology</span>
+        </nav>
+        <h1>Investigation Methodology</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 1.7</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#framework">Investigation Framework</a></li>
+          <li><a href="#hypothesis">Hypothesis-Driven Analysis</a></li>
+          <li><a href="#questions">Key Questions</a></li>
+          <li><a href="#pivoting">Pivoting Techniques</a></li>
+          <li><a href="#timeline">Timeline Reconstruction</a></li>
+          <li><a href="#evidence">Evidence Collection</a></li>
+          <li><a href="#common-mistakes">Common Mistakes</a></li>
+        </ul>
+      </div>
+
+      <section id="framework">
+        <h2>Investigation Framework</h2>
+        <p>
+          A structured investigation methodology ensures thorough analysis, prevents missed evidence, 
+          and produces consistent, defensible conclusions. Whether investigating a simple alert or a 
+          complex incident, follow this framework.
+        </p>
+
+        <div class="card">
+          <h3>The Investigation Cycle</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node action">
+                <strong>1. Understand</strong><br>
+                <small>What triggered this?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node action">
+                <strong>2. Hypothesize</strong><br>
+                <small>What could this be?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node decision">
+                <strong>3. Collect</strong><br>
+                <small>Gather evidence</small>
+              </div>
+            </div>
+            <div class="flow-step" style="margin-top: 1rem; justify-content: flex-end;">
+              <div class="flow-node endpoint">
+                <strong>6. Conclude</strong><br>
+                <small>Determine outcome</small>
+              </div>
+              <div class="flow-arrow">←</div>
+              <div class="flow-node action">
+                <strong>5. Refine</strong><br>
+                <small>Adjust hypothesis</small>
+              </div>
+              <div class="flow-arrow">←</div>
+              <div class="flow-node action">
+                <strong>4. Analyze</strong><br>
+                <small>Test hypothesis</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">80%</div>
+            <div class="stat-label">Investigation is asking the right questions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">20%</div>
+            <div class="stat-label">Investigation is using the tools</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="hypothesis">
+        <h2>Hypothesis-Driven Analysis</h2>
+        <p>
+          Don't investigate aimlessly. Form hypotheses about what might have happened, then systematically 
+          test them with evidence. This focuses your investigation and prevents rabbit holes.
+        </p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>Hypothesis Development Process</h3>
+          <ol>
+            <li><strong>Initial Hypothesis:</strong> Based on the alert, what's the most likely explanation?</li>
+            <li><strong>Alternative Hypotheses:</strong> What else could explain this activity?</li>
+            <li><strong>Evidence Needed:</strong> What would prove or disprove each hypothesis?</li>
+            <li><strong>Test:</strong> Gather and analyze evidence</li>
+            <li><strong>Refine:</strong> Adjust hypotheses based on findings</li>
+            <li><strong>Conclude:</strong> Which hypothesis best fits all evidence?</li>
+          </ol>
+        </div>
+
+        <h3>Example: Suspicious PowerShell Alert</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Alert: Encoded PowerShell Execution</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Initial Hypotheses:</strong></p>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Hypothesis</th>
+                      <th>Evidence That Would Support</th>
+                      <th>Evidence That Would Refute</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>H1: Malicious payload</strong></td>
+                      <td>Unknown parent process, network connection to suspicious IP, persistence created</td>
+                      <td>Known management tool as parent, no network activity, recognized script</td>
+                    </tr>
+                    <tr>
+                      <td><strong>H2: IT admin script</strong></td>
+                      <td>SCCM/Intune as parent, scheduled task, IT admin user context</td>
+                      <td>User-initiated, unusual parent process, non-IT user</td>
+                    </tr>
+                    <tr>
+                      <td><strong>H3: Legitimate software</strong></td>
+                      <td>Signed parent process, known software behavior, consistent pattern</td>
+                      <td>Unsigned, first-time execution, user downloads folder</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p><strong>Investigation Path:</strong> Check parent process → Decode the command → Look for network connections → Verify user context</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Think Like an Attacker</div>
+          <p style="margin: 0;">
+            Understanding attacker techniques helps you form better hypotheses. Ask yourself: "If I were an attacker, 
+            what would I do next?" This helps you know what evidence to look for.
+          </p>
+        </div>
+      </section>
+
+      <section id="questions">
+        <h2>Key Investigation Questions</h2>
+        <p>Every investigation should answer these fundamental questions:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">What Happened?</h4>
+            <ul>
+              <li>What activity triggered the alert?</li>
+              <li>What actions were performed?</li>
+              <li>What was the sequence of events?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">When?</h4>
+            <ul>
+              <li>When did it start?</li>
+              <li>How long did it last?</li>
+              <li>Is it ongoing?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Where?</h4>
+            <ul>
+              <li>Which systems are affected?</li>
+              <li>Is it isolated or widespread?</li>
+              <li>Network location (internal/external)?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Who?</h4>
+            <ul>
+              <li>Which user account was involved?</li>
+              <li>Was it a legitimate user or compromised?</li>
+              <li>Is there an external threat actor?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-red);">How?</h4>
+            <ul>
+              <li>How did the attacker gain access?</li>
+              <li>What tools/techniques were used?</li>
+              <li>How did they move/persist?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Why? (Impact)</h4>
+            <ul>
+              <li>What was the objective?</li>
+              <li>Was data accessed or stolen?</li>
+              <li>What's the business impact?</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="pivoting">
+        <h2>Pivoting Techniques</h2>
+        <p>
+          Pivoting is the art of using one piece of evidence to find related evidence. 
+          Master pivoting to expand your investigation scope efficiently.
+        </p>
+
+        <div class="card">
+          <h3>Common Pivot Points</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Start With</th>
+                  <th>Pivot To</th>
+                  <th>What You Learn</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>IP Address</strong></td>
+                  <td>→ Other hosts connecting to it<br>→ DNS queries for related domains<br>→ GeoIP location<br>→ Threat intel reputation</td>
+                  <td>Scope of C2, campaign indicators</td>
+                </tr>
+                <tr>
+                  <td><strong>User Account</strong></td>
+                  <td>→ All authentication events<br>→ All hosts accessed<br>→ File/email activity<br>→ Privilege usage</td>
+                  <td>Lateral movement, data access</td>
+                </tr>
+                <tr>
+                  <td><strong>Hostname</strong></td>
+                  <td>→ All processes executed<br>→ Network connections<br>→ File modifications<br>→ User sessions</td>
+                  <td>Full compromise timeline</td>
+                </tr>
+                <tr>
+                  <td><strong>File Hash</strong></td>
+                  <td>→ Other hosts with same file<br>→ Execution history<br>→ Parent/child processes<br>→ VT/sandbox analysis</td>
+                  <td>Malware spread, capabilities</td>
+                </tr>
+                <tr>
+                  <td><strong>Process</strong></td>
+                  <td>→ Parent process chain<br>→ Child processes spawned<br>→ Network connections made<br>→ Files created/modified</td>
+                  <td>Execution context, behavior</td>
+                </tr>
+                <tr>
+                  <td><strong>Domain/URL</strong></td>
+                  <td>→ IP resolution history<br>→ Hosts that queried it<br>→ Registration info<br>→ Related domains</td>
+                  <td>Infrastructure, affected users</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3>Pivot Query Examples</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Pivot from suspicious IP to all affected hosts</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> suspiciousIP = <span class="st">"203.0.113.50"</span>;
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteIP == suspiciousIP
+| <span class="kw">summarize</span> 
+    FirstSeen = <span class="fn">min</span>(TimeGenerated),
+    LastSeen = <span class="fn">max</span>(TimeGenerated),
+    ConnectionCount = <span class="fn">count</span>(),
+    Processes = <span class="fn">make_set</span>(InitiatingProcessFileName)
+    <span class="kw">by</span> DeviceName, InitiatingProcessAccountName
+| <span class="kw">order by</span> FirstSeen <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Pivot from user to all systems accessed</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetUser = <span class="st">"jsmith@contoso.com"</span>;
+<span class="kw">let</span> timeRange = <span class="nu">24h</span>;
+<span class="cm">// Authentication events</span>
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(timeRange)
+| <span class="kw">where</span> UserPrincipalName =~ targetUser
+| <span class="kw">summarize</span> Logins = <span class="fn">count</span>() <span class="kw">by</span> AppDisplayName, IPAddress, ResultType
+| <span class="kw">union</span> (
+    <span class="cm">// Device logons</span>
+    DeviceLogonEvents
+    | <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(timeRange)
+    | <span class="kw">where</span> AccountUpn =~ targetUser
+    | <span class="kw">summarize</span> Logins = <span class="fn">count</span>() <span class="kw">by</span> DeviceName, LogonType, RemoteIP
+)</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="timeline">
+        <h2>Timeline Reconstruction</h2>
+        <p>
+          Building a chronological timeline of events is essential for understanding the full attack chain 
+          and identifying the scope of compromise.
+        </p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-green);">
+          <h3>Timeline Building Process</h3>
+          <ol>
+            <li><strong>Anchor Event:</strong> Start with the alert or known malicious activity</li>
+            <li><strong>Expand Backward:</strong> What happened before? (Initial access, delivery)</li>
+            <li><strong>Expand Forward:</strong> What happened after? (Actions on objectives)</li>
+            <li><strong>Fill Gaps:</strong> Query additional data sources for missing periods</li>
+            <li><strong>Correlate:</strong> Align events from different sources by timestamp</li>
+          </ol>
+        </div>
+
+        <h3>Example Timeline</h3>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">09:15:00</div>
+            <div class="timeline-title">Phishing Email Delivered</div>
+            <div class="timeline-desc">Email from "support@1egit-company.com" delivered to user jsmith</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">09:23:45</div>
+            <div class="timeline-title">User Clicks Link</div>
+            <div class="timeline-desc">Proxy log shows access to malicious URL from jsmith's workstation</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">09:23:52</div>
+            <div class="timeline-title">Malware Downloaded</div>
+            <div class="timeline-desc">File "invoice.exe" created in Downloads folder</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">09:24:15</div>
+            <div class="timeline-title">Execution</div>
+            <div class="timeline-desc">invoice.exe executed, spawned PowerShell with encoded command</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">09:24:30</div>
+            <div class="timeline-title">C2 Connection</div>
+            <div class="timeline-desc">Outbound connection to 203.0.113.50:443 established</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">09:25:00</div>
+            <div class="timeline-title">Persistence</div>
+            <div class="timeline-desc">Scheduled task created for persistence</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">09:30:00</div>
+            <div class="timeline-title">Discovery</div>
+            <div class="timeline-desc">whoami, net user, net group commands executed</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Time Zone Awareness</div>
+          <p style="margin: 0;">
+            Always be aware of time zones when correlating events. SIEM typically normalizes to UTC, 
+            but some logs may be in local time. Document your time zone assumptions.
+          </p>
+        </div>
+      </section>
+
+      <section id="evidence">
+        <h2>Evidence Collection</h2>
+        <p>Proper evidence collection supports your conclusions and enables further analysis if needed.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>What to Collect</h4>
+            <ul>
+              <li>Screenshots of key findings</li>
+              <li>Exported query results</li>
+              <li>Relevant log excerpts</li>
+              <li>File hashes and samples</li>
+              <li>Network IOCs (IPs, domains)</li>
+              <li>Timeline documentation</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>How to Document</h4>
+            <ul>
+              <li>Include timestamps for all evidence</li>
+              <li>Note the source system/tool</li>
+              <li>Record your query or search terms</li>
+              <li>Explain the significance</li>
+              <li>Link to ticket/case number</li>
+              <li>Preserve chain of custody if needed</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Evidence Preservation</div>
+          <p style="margin: 0;">
+            For significant incidents, preserve evidence before taking remediation actions. 
+            Isolating a host or resetting credentials is important, but first ensure you've 
+            captured the forensic state needed for investigation.
+          </p>
+        </div>
+      </section>
+
+      <section id="common-mistakes">
+        <h2>Common Investigation Mistakes</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Mistake</th>
+                <th>Problem</th>
+                <th>Better Approach</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Tunnel Vision</strong></td>
+                <td>Focusing on first hypothesis, ignoring contradicting evidence</td>
+                <td>Always consider alternative explanations</td>
+              </tr>
+              <tr>
+                <td><strong>Incomplete Scope</strong></td>
+                <td>Only investigating the alerted host/user</td>
+                <td>Pivot to find all affected systems</td>
+              </tr>
+              <tr>
+                <td><strong>Premature Closure</strong></td>
+                <td>Closing investigation before full understanding</td>
+                <td>Ensure all key questions are answered</td>
+              </tr>
+              <tr>
+                <td><strong>Poor Documentation</strong></td>
+                <td>Not recording steps taken and evidence found</td>
+                <td>Document as you go, not after</td>
+              </tr>
+              <tr>
+                <td><strong>Not Asking for Help</strong></td>
+                <td>Struggling alone when stuck</td>
+                <td>Escalate or consult peers early</td>
+              </tr>
+              <tr>
+                <td><strong>Tool Fixation</strong></td>
+                <td>Only looking at one data source</td>
+                <td>Correlate across multiple sources</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Use hypothesis-driven analysis to focus your investigation</li>
+          <li>Answer the key questions: What, When, Where, Who, How, Why</li>
+          <li>Master pivoting to efficiently expand investigation scope</li>
+          <li>Build timelines to understand the full attack chain</li>
+          <li>Document everything—your future self will thank you</li>
+          <li>Avoid common mistakes by staying systematic and open-minded</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="alert-triage.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Alert Triage</span>
+          </a>
+          <a href="documentation.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Documentation Standards</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

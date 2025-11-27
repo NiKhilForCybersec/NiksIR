@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workbook Creation | SOC Analyst Guide</title>
+  <meta name="description" content="SIEM workbook creation: building dashboards, visualizations, and operational views in Microsoft Sentinel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🔷</span> Sentinel Overview</a>
+          <a href="workbook-creation.html" class="nav-link active"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Workbook Creation</span>
+        </nav>
+        <h1>Workbook Creation</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 3.11</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Workbook Overview</a></li>
+          <li><a href="#components">Workbook Components</a></li>
+          <li><a href="#building">Building Workbooks</a></li>
+          <li><a href="#examples">SOC Workbook Examples</a></li>
+          <li><a href="#best-practices">Best Practices</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Workbook Overview</h2>
+        <p>
+          Workbooks provide interactive dashboards and visualizations for security 
+          data. They help SOC teams monitor operations, identify trends, and 
+          communicate status to stakeholders.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Workbook Use Cases</h4>
+            <ul>
+              <li>SOC operational dashboards</li>
+              <li>Incident trend analysis</li>
+              <li>Detection coverage views</li>
+              <li>Executive reporting</li>
+              <li>Investigation aids</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Benefits</h4>
+            <ul>
+              <li>Real-time visibility</li>
+              <li>Interactive exploration</li>
+              <li>Shareable with stakeholders</li>
+              <li>Parameterized views</li>
+              <li>No-code creation</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="components">
+        <h2>Workbook Components</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Purpose</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Text</strong></td>
+                <td>Headers, descriptions, instructions</td>
+                <td>Context and navigation</td>
+              </tr>
+              <tr>
+                <td><strong>Parameters</strong></td>
+                <td>Filters and dropdowns</td>
+                <td>Interactive filtering</td>
+              </tr>
+              <tr>
+                <td><strong>Query (Grid)</strong></td>
+                <td>Tabular data display</td>
+                <td>Detailed data lists</td>
+              </tr>
+              <tr>
+                <td><strong>Chart</strong></td>
+                <td>Visual representations</td>
+                <td>Trends, distributions</td>
+              </tr>
+              <tr>
+                <td><strong>Tiles</strong></td>
+                <td>Single value metrics</td>
+                <td>KPIs, counts</td>
+              </tr>
+              <tr>
+                <td><strong>Map</strong></td>
+                <td>Geographic visualization</td>
+                <td>Location-based data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Chart Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Chart</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Bar Chart</td>
+                <td>Comparing categories (alerts by type)</td>
+              </tr>
+              <tr>
+                <td>Line Chart</td>
+                <td>Trends over time (daily alert volume)</td>
+              </tr>
+              <tr>
+                <td>Pie/Donut</td>
+                <td>Proportions (alerts by severity)</td>
+              </tr>
+              <tr>
+                <td>Time Chart</td>
+                <td>Activity over time (hourly patterns)</td>
+              </tr>
+              <tr>
+                <td>Heatmap</td>
+                <td>Density patterns (hour vs day)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="building">
+        <h2>Building Workbooks</h2>
+
+        <h3>Query for Visualization</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Alert volume over time (line chart)</span>
+          </div>
+          <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> AlertCount = <span class="fn">count</span>() <span class="kw">by</span> bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span>
+| <span class="kw">render</span> timechart</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Alerts by severity (pie chart)</span>
+          </div>
+          <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>() <span class="kw">by</span> AlertSeverity
+| <span class="kw">render</span> piechart</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Top alerting rules (bar chart)</span>
+          </div>
+          <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>() <span class="kw">by</span> AlertName
+| <span class="kw">top</span> <span class="nu">10</span> <span class="kw">by</span> Count
+| <span class="kw">render</span> barchart</code>
+          </div>
+        </div>
+
+        <h3>Using Parameters</h3>
+        <p>Parameters make workbooks interactive:</p>
+        <ul>
+          <li><strong>Time range:</strong> Let users select 24h, 7d, 30d</li>
+          <li><strong>Severity filter:</strong> Filter by High, Medium, Low</li>
+          <li><strong>Device/User:</strong> Focus on specific entity</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Query with parameter reference</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// {TimeRange} is parameter name</span>
+SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>({TimeRange})
+| <span class="kw">where</span> <span class="st">"{Severity}"</span> == <span class="st">"All"</span> <span class="kw">or</span> AlertSeverity == <span class="st">"{Severity}"</span>
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>() <span class="kw">by</span> AlertName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="examples">
+        <h2>SOC Workbook Examples</h2>
+
+        <h3>SOC Operations Dashboard</h3>
+        <ul>
+          <li><strong>Row 1:</strong> KPI tiles (Open incidents, MTTR, SLA %)</li>
+          <li><strong>Row 2:</strong> Alert trend line chart, Severity pie chart</li>
+          <li><strong>Row 3:</strong> Top 10 alerting rules bar chart</li>
+          <li><strong>Row 4:</strong> Recent incidents table</li>
+        </ul>
+
+        <h3>Incident Metrics Workbook</h3>
+        <ul>
+          <li>Incidents by status over time</li>
+          <li>Mean time to acknowledge/resolve</li>
+          <li>Incidents by analyst</li>
+          <li>True positive vs false positive rate</li>
+        </ul>
+
+        <h3>Threat Detection Coverage</h3>
+        <ul>
+          <li>MITRE ATT&CK heatmap</li>
+          <li>Detection rules by technique</li>
+          <li>Coverage gaps visualization</li>
+        </ul>
+      </section>
+
+      <section id="best-practices">
+        <h2>Best Practices</h2>
+
+        <ul class="checklist">
+          <li><strong>Start with purpose:</strong> What question does this answer?</li>
+          <li><strong>Keep it simple:</strong> Don't overload with data</li>
+          <li><strong>Use parameters:</strong> Make it interactive</li>
+          <li><strong>Optimize queries:</strong> Slow queries = slow dashboards</li>
+          <li><strong>Add context:</strong> Include text explaining visualizations</li>
+          <li><strong>Test with users:</strong> Get feedback from consumers</li>
+          <li><strong>Use templates:</strong> Start from built-in workbooks</li>
+        </ul>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Performance Tip</div>
+          <p style="margin: 0;">
+            Pre-aggregate data in queries when possible. Avoid scanning entire 
+            tables for dashboard queries. Use <code>summarize</code> and limit 
+            time ranges to keep workbooks responsive.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Workbooks provide interactive security dashboards</li>
+          <li>Use appropriate chart types for your data</li>
+          <li>Parameters make workbooks flexible and reusable</li>
+          <li>Keep queries optimized for performance</li>
+          <li>Start from templates and customize</li>
+          <li>Design for your audience (SOC vs executives)</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="siem-tuning.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SIEM Tuning</span>
+          </a>
+          <a href="kql-advanced.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">KQL Advanced</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

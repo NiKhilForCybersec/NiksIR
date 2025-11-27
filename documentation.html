@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation Standards | SOC Analyst Guide</title>
+  <meta name="description" content="SOC documentation best practices: ticket writing, investigation notes, incident reports, and handoff documentation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link active"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Documentation</span>
+        </nav>
+        <h1>Documentation Standards</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 1.8</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#importance">Why Documentation Matters</a></li>
+          <li><a href="#principles">Documentation Principles</a></li>
+          <li><a href="#tickets">Ticket Documentation</a></li>
+          <li><a href="#investigation">Investigation Notes</a></li>
+          <li><a href="#incident">Incident Reports</a></li>
+          <li><a href="#handoff">Handoff Documentation</a></li>
+          <li><a href="#templates">Templates</a></li>
+        </ul>
+      </div>
+
+      <section id="importance">
+        <h2>Why Documentation Matters</h2>
+        <p>
+          Documentation is not just administrative overhead—it's a critical security function. 
+          Good documentation enables effective handoffs, supports legal proceedings, improves 
+          detection rules, and helps the team learn from past incidents.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Continuity</h4>
+            <p>Enables seamless handoffs between analysts and shifts</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Legal/Compliance</h4>
+            <p>Provides evidence trail for legal proceedings and audits</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Improvement</h4>
+            <p>Feeds into detection tuning and process improvements</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Knowledge</h4>
+            <p>Builds institutional knowledge for future reference</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">The 3 AM Test</div>
+          <p style="margin: 0;">
+            Write documentation as if another analyst will need to pick up your work at 3 AM 
+            with no ability to contact you. Would they understand what you found, what you did, 
+            and what still needs to be done?
+          </p>
+        </div>
+      </section>
+
+      <section id="principles">
+        <h2>Documentation Principles</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Principle</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Be Specific</strong></td>
+                <td>Include exact values, timestamps, and identifiers</td>
+                <td>"IP 192.168.1.50" not "a workstation"</td>
+              </tr>
+              <tr>
+                <td><strong>Be Objective</strong></td>
+                <td>State facts, not assumptions or opinions</td>
+                <td>"File was executed" not "attacker ran malware"</td>
+              </tr>
+              <tr>
+                <td><strong>Be Complete</strong></td>
+                <td>Include negative findings too</td>
+                <td>"No lateral movement detected" is valuable</td>
+              </tr>
+              <tr>
+                <td><strong>Be Timely</strong></td>
+                <td>Document as you go, not after</td>
+                <td>Update ticket in real-time during investigation</td>
+              </tr>
+              <tr>
+                <td><strong>Be Structured</strong></td>
+                <td>Use consistent formats and templates</td>
+                <td>Follow organizational templates</td>
+              </tr>
+              <tr>
+                <td><strong>Be Searchable</strong></td>
+                <td>Include IOCs and key terms for future searches</td>
+                <td>Include file hashes, IPs, domains in text</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tickets">
+        <h2>Ticket Documentation</h2>
+        <p>Every alert investigation should be documented in a ticket with these elements:</p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>Ticket Structure</h3>
+          <div class="accordion">
+            <div class="accordion-item active">
+              <div class="accordion-header">
+                <span class="accordion-title">1. Alert Summary</span>
+                <span class="accordion-icon">▼</span>
+              </div>
+              <div class="accordion-content">
+                <ul>
+                  <li><strong>Alert Name:</strong> Exact alert title from SIEM/EDR</li>
+                  <li><strong>Alert ID:</strong> Unique identifier for reference</li>
+                  <li><strong>Severity:</strong> As assigned by detection system</li>
+                  <li><strong>Time:</strong> When the alert triggered (UTC)</li>
+                  <li><strong>Source:</strong> Which tool generated the alert</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span class="accordion-title">2. Affected Assets</span>
+                <span class="accordion-icon">▼</span>
+              </div>
+              <div class="accordion-content">
+                <ul>
+                  <li><strong>Hostname:</strong> Device name(s) involved</li>
+                  <li><strong>IP Address:</strong> Internal and external IPs</li>
+                  <li><strong>User:</strong> Account(s) associated with activity</li>
+                  <li><strong>Asset Criticality:</strong> Business importance of affected systems</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span class="accordion-title">3. Investigation Summary</span>
+                <span class="accordion-icon">▼</span>
+              </div>
+              <div class="accordion-content">
+                <ul>
+                  <li><strong>What was detected:</strong> Brief description of the activity</li>
+                  <li><strong>Analysis performed:</strong> Steps taken to investigate</li>
+                  <li><strong>Key findings:</strong> Important discoveries (positive and negative)</li>
+                  <li><strong>Evidence:</strong> Screenshots, query results, IOCs</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span class="accordion-title">4. Conclusion & Actions</span>
+                <span class="accordion-icon">▼</span>
+              </div>
+              <div class="accordion-content">
+                <ul>
+                  <li><strong>Classification:</strong> True Positive, Benign True Positive, False Positive</li>
+                  <li><strong>Actions Taken:</strong> Containment, remediation steps</li>
+                  <li><strong>Recommendations:</strong> Follow-up actions, tuning suggestions</li>
+                  <li><strong>Escalation:</strong> If escalated, to whom and why</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Classification Definitions</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Classification</th>
+                <th>Definition</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>True Positive (TP)</strong></td>
+                <td>Alert correctly identified malicious activity</td>
+                <td>Malware detected and confirmed executed</td>
+              </tr>
+              <tr>
+                <td><strong>Benign True Positive (BTP)</strong></td>
+                <td>Alert correctly fired but activity is authorized</td>
+                <td>Penetration test, authorized admin tool</td>
+              </tr>
+              <tr>
+                <td><strong>False Positive (FP)</strong></td>
+                <td>Alert fired incorrectly, no malicious activity</td>
+                <td>Legitimate software flagged as malware</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Notes</h2>
+        <p>During complex investigations, maintain detailed running notes:</p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">investigation_notes.md</span>
+          </div>
+          <div class="terminal-body">
+<pre>## Investigation: INC-2024-0142
+## Analyst: jsmith | Started: 2024-01-15 14:30 UTC
+
+### Initial Alert
+- Alert: "Suspicious PowerShell Execution"
+- Host: WKSTN-PC042 (10.1.5.42)
+- User: mjohnson
+- Time: 2024-01-15 14:22:15 UTC
+
+### Timeline of Investigation
+
+**14:32** - Reviewed alert in MDE
+- PowerShell with encoded command detected
+- Parent process: WINWORD.EXE
+- Decoded command attempts to download from: hxxp://mal-domain[.]com/payload
+
+**14:38** - Checked VirusTotal for domain
+- mal-domain[.]com: 15/90 vendors flag as malicious
+- Associated with Emotet campaign per community notes
+
+**14:45** - Reviewed device timeline
+- 14:20 - Email with attachment received
+- 14:22 - Word document opened
+- 14:22 - PowerShell spawned from Word
+- 14:22 - Network connection blocked by firewall
+
+**14:50** - Confirmed no successful download
+- Firewall logs show connection blocked
+- No additional processes spawned
+- No persistence mechanisms found
+
+### Findings
+- Phishing email delivered malicious Word doc
+- User opened document, enabling macros
+- Payload download was blocked by firewall
+- No evidence of successful compromise
+
+### Actions Taken
+- Isolated host as precaution
+- Reset user password
+- Blocked sender domain
+- Submitted sample to sandbox
+
+### Status: Contained - Pending user device scan</pre>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Investigation Note Tips</div>
+          <ul style="margin: 0;">
+            <li>Timestamp every significant finding or action</li>
+            <li>Include exact queries used (can be collapsed/linked)</li>
+            <li>Note dead ends—what you checked that was negative</li>
+            <li>Use consistent formatting for IOCs (defang URLs)</li>
+            <li>Update status regularly for visibility</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="incident">
+        <h2>Incident Reports</h2>
+        <p>Formal incident reports are required for confirmed security incidents.</p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-red);">
+          <h3>Incident Report Structure</h3>
+          
+          <h4>1. Executive Summary</h4>
+          <p>Brief overview for management (2-3 paragraphs):</p>
+          <ul>
+            <li>What happened (one sentence)</li>
+            <li>Impact and scope</li>
+            <li>Current status</li>
+            <li>Key actions taken</li>
+          </ul>
+
+          <h4>2. Incident Details</h4>
+          <ul>
+            <li>Incident ID and classification</li>
+            <li>Detection time and method</li>
+            <li>Affected systems and users</li>
+            <li>Attack vector and techniques (MITRE ATT&CK)</li>
+          </ul>
+
+          <h4>3. Timeline</h4>
+          <p>Chronological sequence of events from initial access to containment</p>
+
+          <h4>4. Impact Assessment</h4>
+          <ul>
+            <li>Data affected (type, volume, sensitivity)</li>
+            <li>Systems affected (count, criticality)</li>
+            <li>Business impact (downtime, financial)</li>
+            <li>Regulatory implications</li>
+          </ul>
+
+          <h4>5. Response Actions</h4>
+          <ul>
+            <li>Containment measures</li>
+            <li>Eradication steps</li>
+            <li>Recovery actions</li>
+            <li>Communication (internal/external)</li>
+          </ul>
+
+          <h4>6. Root Cause Analysis</h4>
+          <p>How did the attack succeed? What controls failed?</p>
+
+          <h4>7. Lessons Learned & Recommendations</h4>
+          <ul>
+            <li>What worked well</li>
+            <li>What could be improved</li>
+            <li>Specific recommendations with owners and timelines</li>
+          </ul>
+
+          <h4>8. Appendices</h4>
+          <p>IOC list, detailed timeline, evidence inventory, query results</p>
+        </div>
+      </section>
+
+      <section id="handoff">
+        <h2>Handoff Documentation</h2>
+        <p>When transferring work to another analyst or shift:</p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">shift_handoff.md</span>
+          </div>
+          <div class="terminal-body">
+<pre>## Shift Handoff: Day → Evening
+## Date: 2024-01-15 | From: A.Smith → To: B.Jones
+
+### Active Incidents
+
+**INC-2024-0142** [P2 - High]
+- Status: Containment in progress
+- Summary: Emotet delivery via phishing, one host affected
+- Next Steps: Complete AV scan on WKSTN-PC042, interview user
+- Blockers: None
+- Contact: SOC Lead aware
+
+**INC-2024-0139** [P3 - Medium]  
+- Status: Investigation
+- Summary: Suspicious outbound traffic from server
+- Next Steps: Waiting for firewall team to provide full packet capture
+- Blockers: Firewall team response (ticket FW-456)
+- Contact: Network team CC'd on email thread
+
+### Alerts Pending Review
+- 3 medium severity alerts in queue (< 2 hours old)
+- No high/critical alerts pending
+
+### Ongoing Maintenance
+- Sentinel rule update scheduled for 18:00 UTC
+- Expected brief alert spike during deployment
+
+### Notes
+- VPN issues reported by remote users - IT aware
+- New phishing campaign targeting finance - extra scrutiny on finance user alerts</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="templates">
+        <h2>Quick Reference Templates</h2>
+
+        <div class="tabs">
+          <div class="tab-buttons">
+            <button class="tab-btn active">Alert Ticket</button>
+            <button class="tab-btn">Escalation</button>
+            <button class="tab-btn">Closure Note</button>
+          </div>
+          
+          <div class="tab-content active">
+            <div class="terminal">
+              <div class="terminal-body">
+<pre>## Alert Investigation
+
+**Alert:** [Alert Name]
+**ID:** [Alert ID]
+**Time:** [YYYY-MM-DD HH:MM UTC]
+**Severity:** [High/Medium/Low]
+
+**Affected:**
+- Host: [hostname] ([IP])
+- User: [username]
+
+**Summary:**
+[Brief description of what triggered the alert]
+
+**Investigation:**
+1. [Step taken and finding]
+2. [Step taken and finding]
+3. [Step taken and finding]
+
+**Conclusion:** [TP/BTP/FP]
+**Rationale:** [Why this classification]
+
+**Actions Taken:**
+- [Action 1]
+- [Action 2]
+
+**IOCs:**
+- [Hash/IP/Domain if applicable]</pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content">
+            <div class="terminal">
+              <div class="terminal-body">
+<pre>## Escalation to L2/IR
+
+**Ticket:** [Ticket ID]
+**Priority:** [P1/P2]
+**Time:** [Current time UTC]
+
+**Summary:**
+[One paragraph describing the situation]
+
+**Why Escalating:**
+- [Reason 1 - e.g., confirmed malware execution]
+- [Reason 2 - e.g., privileged account involved]
+
+**Current Status:**
+[What has been done so far]
+
+**Immediate Needs:**
+[What assistance is required]
+
+**Key IOCs:**
+- [Critical IOCs for quick action]
+
+**Contact:** [Your name and how to reach you]</pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content">
+            <div class="terminal">
+              <div class="terminal-body">
+<pre>## Ticket Closure
+
+**Classification:** [TP/BTP/FP]
+
+**Summary:**
+[Brief description of what was detected and outcome]
+
+**Root Cause:**
+[What caused the alert - malicious activity or benign trigger]
+
+**Resolution:**
+[How the issue was resolved]
+
+**Follow-up Required:** [Yes/No]
+[If yes, describe follow-up and owner]
+
+**Detection Improvement:**
+[Any tuning recommendations for this detection]</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Document as you investigate, not after</li>
+          <li>Be specific, objective, and complete</li>
+          <li>Use consistent templates and formats</li>
+          <li>Include both positive and negative findings</li>
+          <li>Write for the analyst who will pick up your work at 3 AM</li>
+          <li>Good documentation improves detection and response over time</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="investigation-methodology.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Investigation Methodology</span>
+          </a>
+          <a href="ticket-management.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Ticketing Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

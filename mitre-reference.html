@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MITRE ATT&CK Reference | SOC Analyst Guide</title>
+  <meta name="description" content="MITRE ATT&CK framework quick reference for SOC analysts with tactics, common techniques, and detection mapping.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Event IDs</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔍</span> IOC Lookup Tools</a>
+          <a href="mitre-reference.html" class="nav-link active"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>MITRE ATT&CK</span>
+        </nav>
+        <h1>MITRE ATT&CK Reference</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">REF-05</span>
+          <span class="meta-item"><a href="https://attack.mitre.org" target="_blank">attack.mitre.org</a></span>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">What is MITRE ATT&CK?</div>
+        <p style="margin: 0;">
+          MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) is a globally accessible knowledge base of adversary 
+          tactics and techniques based on real-world observations. It provides a common language for describing attacker behavior 
+          and helps defenders map detections to threat activities.
+        </p>
+      </div>
+
+      <section id="tactics">
+        <h2>Tactics Overview (Kill Chain)</h2>
+        <p>ATT&CK tactics represent the adversary's tactical goals during an attack. They answer "why" an attacker is performing an action.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tactic</th>
+                <th>Description</th>
+                <th>Example Techniques</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>TA0043</code></td>
+                <td><strong>Reconnaissance</strong></td>
+                <td>Gathering information to plan attack</td>
+                <td>Active scanning, Search open websites</td>
+              </tr>
+              <tr>
+                <td><code>TA0042</code></td>
+                <td><strong>Resource Development</strong></td>
+                <td>Establishing resources for operations</td>
+                <td>Acquire infrastructure, Develop capabilities</td>
+              </tr>
+              <tr>
+                <td><code>TA0001</code></td>
+                <td><strong>Initial Access</strong></td>
+                <td>Getting into the network</td>
+                <td>Phishing, Exploit public-facing app, Valid accounts</td>
+              </tr>
+              <tr>
+                <td><code>TA0002</code></td>
+                <td><strong>Execution</strong></td>
+                <td>Running malicious code</td>
+                <td>PowerShell, Command line, Scripting</td>
+              </tr>
+              <tr>
+                <td><code>TA0003</code></td>
+                <td><strong>Persistence</strong></td>
+                <td>Maintaining foothold</td>
+                <td>Registry run keys, Scheduled tasks, Services</td>
+              </tr>
+              <tr>
+                <td><code>TA0004</code></td>
+                <td><strong>Privilege Escalation</strong></td>
+                <td>Getting higher-level permissions</td>
+                <td>Exploitation, Token manipulation, UAC bypass</td>
+              </tr>
+              <tr>
+                <td><code>TA0005</code></td>
+                <td><strong>Defense Evasion</strong></td>
+                <td>Avoiding detection</td>
+                <td>Disable security tools, Obfuscation, Log deletion</td>
+              </tr>
+              <tr>
+                <td><code>TA0006</code></td>
+                <td><strong>Credential Access</strong></td>
+                <td>Stealing credentials</td>
+                <td>Credential dumping, Keylogging, Brute force</td>
+              </tr>
+              <tr>
+                <td><code>TA0007</code></td>
+                <td><strong>Discovery</strong></td>
+                <td>Learning about the environment</td>
+                <td>Account discovery, Network scanning, File search</td>
+              </tr>
+              <tr>
+                <td><code>TA0008</code></td>
+                <td><strong>Lateral Movement</strong></td>
+                <td>Moving through the network</td>
+                <td>Remote services, Pass-the-hash, RDP</td>
+              </tr>
+              <tr>
+                <td><code>TA0009</code></td>
+                <td><strong>Collection</strong></td>
+                <td>Gathering target data</td>
+                <td>Archive data, Screen capture, Clipboard data</td>
+              </tr>
+              <tr>
+                <td><code>TA0011</code></td>
+                <td><strong>Command & Control</strong></td>
+                <td>Communicating with compromised systems</td>
+                <td>Web protocols, DNS, Encrypted channel</td>
+              </tr>
+              <tr>
+                <td><code>TA0010</code></td>
+                <td><strong>Exfiltration</strong></td>
+                <td>Stealing data</td>
+                <td>Exfil over C2, Exfil over web, Scheduled transfer</td>
+              </tr>
+              <tr>
+                <td><code>TA0040</code></td>
+                <td><strong>Impact</strong></td>
+                <td>Manipulate, interrupt, or destroy systems</td>
+                <td>Data encryption (ransomware), Defacement, Wiper</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="techniques">
+        <h2>High-Priority Techniques for Detection</h2>
+        <p>Focus detection efforts on these commonly observed techniques:</p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Initial Access</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Technique</th><th>Detection Data Sources</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>T1566</code></td>
+                      <td><strong>Phishing</strong></td>
+                      <td>Email logs, File creation, Process creation</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1190</code></td>
+                      <td><strong>Exploit Public-Facing Application</strong></td>
+                      <td>Application logs, Network traffic, IDS/IPS</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1078</code></td>
+                      <td><strong>Valid Accounts</strong></td>
+                      <td>Authentication logs, Account activity</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1133</code></td>
+                      <td><strong>External Remote Services</strong></td>
+                      <td>VPN logs, RDP logs, Authentication logs</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Execution</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Technique</th><th>Detection Data Sources</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>T1059.001</code></td>
+                      <td><strong>PowerShell</strong></td>
+                      <td>Event 4104 (Script Block), Process creation, Module logging</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1059.003</code></td>
+                      <td><strong>Windows Command Shell</strong></td>
+                      <td>Process creation (4688), Command line logging</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1204</code></td>
+                      <td><strong>User Execution</strong></td>
+                      <td>Process creation, File creation, Parent-child</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1047</code></td>
+                      <td><strong>WMI</strong></td>
+                      <td>WMI logs, Process creation, Network connections</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Persistence</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Technique</th><th>Detection Data Sources</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>T1547.001</code></td>
+                      <td><strong>Registry Run Keys</strong></td>
+                      <td>Registry events (4657, Sysmon 12/13)</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1053.005</code></td>
+                      <td><strong>Scheduled Task</strong></td>
+                      <td>Event 4698, Task Scheduler logs</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1543.003</code></td>
+                      <td><strong>Windows Service</strong></td>
+                      <td>Event 7045, 4697, Service creation</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1136</code></td>
+                      <td><strong>Create Account</strong></td>
+                      <td>Event 4720, Account creation logs</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Credential Access</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Technique</th><th>Detection Data Sources</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>T1003.001</code></td>
+                      <td><strong>LSASS Memory</strong></td>
+                      <td>Sysmon 10 (Process Access), EDR alerts</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1110</code></td>
+                      <td><strong>Brute Force</strong></td>
+                      <td>Event 4625, Authentication logs</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1558.003</code></td>
+                      <td><strong>Kerberoasting</strong></td>
+                      <td>Event 4769 (RC4 encryption type)</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1552</code></td>
+                      <td><strong>Unsecured Credentials</strong></td>
+                      <td>File access logs, Process activity</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Lateral Movement</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Technique</th><th>Detection Data Sources</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>T1021.001</code></td>
+                      <td><strong>Remote Desktop Protocol</strong></td>
+                      <td>Event 4624 (Type 10), RDP logs</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1021.002</code></td>
+                      <td><strong>SMB/Windows Admin Shares</strong></td>
+                      <td>Event 5140, Network connections</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1021.006</code></td>
+                      <td><strong>Windows Remote Management</strong></td>
+                      <td>WinRM logs, Process creation</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1550.002</code></td>
+                      <td><strong>Pass the Hash</strong></td>
+                      <td>Event 4624 (NTLM), Event 4776</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Defense Evasion</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Technique</th><th>Detection Data Sources</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>T1070.001</code></td>
+                      <td><strong>Clear Windows Event Logs</strong></td>
+                      <td>Event 1102, Event 104</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1562.001</code></td>
+                      <td><strong>Disable Security Tools</strong></td>
+                      <td>Service stop events, Process termination</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1027</code></td>
+                      <td><strong>Obfuscated Files/Information</strong></td>
+                      <td>Script analysis, Behavioral detection</td>
+                    </tr>
+                    <tr>
+                      <td><code>T1055</code></td>
+                      <td><strong>Process Injection</strong></td>
+                      <td>Sysmon 8, EDR behavioral alerts</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mapping">
+        <h2>Using ATT&CK in SOC Operations</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Alert Enrichment</h4>
+            <p>Map alerts to ATT&CK techniques to understand:</p>
+            <ul>
+              <li>What stage of attack is this?</li>
+              <li>What might come next?</li>
+              <li>What related activity should we look for?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Detection Gaps</h4>
+            <p>Use ATT&CK to identify coverage gaps:</p>
+            <ul>
+              <li>Map existing rules to techniques</li>
+              <li>Identify techniques without detection</li>
+              <li>Prioritize detection development</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Threat Hunting</h4>
+            <p>Structure hunts around ATT&CK:</p>
+            <ul>
+              <li>Hunt for specific techniques</li>
+              <li>Validate detection coverage</li>
+              <li>Test against known threat groups</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Incident Analysis</h4>
+            <p>Map incidents to ATT&CK for:</p>
+            <ul>
+              <li>Complete attack timeline</li>
+              <li>Identify scope and impact</li>
+              <li>Improve future detection</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Resources</div>
+        <ul style="margin: 0;">
+          <li><a href="https://attack.mitre.org" target="_blank">MITRE ATT&CK Website</a> - Full framework with techniques and mitigations</li>
+          <li><a href="https://attack.mitre.org/matrices/enterprise/" target="_blank">Enterprise Matrix</a> - Visual view of all tactics and techniques</li>
+          <li><a href="https://mitre-attack.github.io/attack-navigator/" target="_blank">ATT&CK Navigator</a> - Create coverage heat maps</li>
+          <li><a href="https://car.mitre.org" target="_blank">Cyber Analytics Repository</a> - Detection analytics mapped to ATT&CK</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ioc-tools.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">IOC Lookup Tools</span>
+          </a>
+          <a href="analyst-toolkit.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Analyst Toolkit</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

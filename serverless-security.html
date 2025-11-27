@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serverless Security | SOC Analyst Guide</title>
+  <meta name="description" content="Serverless security: Lambda, Azure Functions, Cloud Functions threats, monitoring, and investigation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link active"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Serverless Security</span>
+        </nav>
+        <h1>Serverless Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 6.8</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Serverless Overview</a></li>
+          <li><a href="#threats">Serverless Threats</a></li>
+          <li><a href="#monitoring">Monitoring</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Serverless Overview</h2>
+        <p>
+          Serverless computing runs code without managing servers. Functions 
+          execute on-demand and scale automatically. Security focus shifts 
+          from infrastructure to application and identity.
+        </p>
+
+        <h3>Serverless Platforms</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Service</th>
+                <th>Log Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AWS</strong></td>
+                <td>Lambda</td>
+                <td>CloudWatch Logs, CloudTrail</td>
+              </tr>
+              <tr>
+                <td><strong>Azure</strong></td>
+                <td>Functions</td>
+                <td>Application Insights, Activity Log</td>
+              </tr>
+              <tr>
+                <td><strong>GCP</strong></td>
+                <td>Cloud Functions</td>
+                <td>Cloud Logging</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Security Differences</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>What You Don't Manage</h4>
+            <ul>
+              <li>OS patching</li>
+              <li>Runtime security</li>
+              <li>Network infrastructure</li>
+              <li>Scaling infrastructure</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>What You Must Secure</h4>
+            <ul>
+              <li>Function code</li>
+              <li>Dependencies</li>
+              <li>IAM permissions</li>
+              <li>Environment variables</li>
+              <li>Triggers and inputs</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>Serverless Threats</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Overprivileged Functions</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Functions with excessive IAM permissions become privilege escalation vectors.</p>
+              <h4>Example:</h4>
+              <p>Lambda with <code>iam:*</code> can create admin users if compromised.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Audit function IAM roles</li>
+                <li>Alert on sensitive API calls from functions</li>
+                <li>Monitor for unexpected resource access</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Injection Attacks</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Untrusted input leads to command injection, SQL injection, etc.</p>
+              <h4>Attack Path:</h4>
+              <p>Attacker sends malicious payload via API Gateway → Lambda executes command.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Monitor function errors and exceptions</li>
+                <li>Look for unusual commands in logs</li>
+                <li>WAF alerts on injection patterns</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Secrets in Environment Variables</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Credentials stored in environment variables can be extracted.</p>
+              <h4>Risk:</h4>
+              <p>Anyone with function read access can view environment variables.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Audit GetFunction/GetFunctionConfiguration calls</li>
+                <li>Scan for secrets in function configs</li>
+                <li>Alert on unauthorized access to function details</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Vulnerable Dependencies</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Third-party packages with vulnerabilities or malicious code.</p>
+              <h4>Example:</h4>
+              <p>Compromised npm package in Lambda layer.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Dependency scanning in CI/CD</li>
+                <li>Monitor for unexpected network connections</li>
+                <li>Function behavior anomalies</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Event Injection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Threat:</h4>
+              <p>Attacker triggers function with malicious event data.</p>
+              <h4>Triggers at Risk:</h4>
+              <ul>
+                <li>S3 events (malicious file upload)</li>
+                <li>API Gateway (crafted requests)</li>
+                <li>SNS/SQS (message manipulation)</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Monitor trigger sources, validate event data patterns.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>Monitoring Strategies</h2>
+
+        <h3>Key Events to Monitor</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Risk</th>
+                <th>Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CreateFunction</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>New code deployed</td>
+              </tr>
+              <tr>
+                <td>UpdateFunctionCode</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Code changed</td>
+              </tr>
+              <tr>
+                <td>UpdateFunctionConfiguration</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Settings/env vars changed</td>
+              </tr>
+              <tr>
+                <td>AddPermission</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Who can invoke changed</td>
+              </tr>
+              <tr>
+                <td>GetFunction</td>
+                <td><span style="color: var(--accent-yellow);">Low-Med</span></td>
+                <td>Code/config retrieved</td>
+              </tr>
+              <tr>
+                <td>Function errors spike</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>May indicate attack</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Log Sources</h3>
+        <ul class="checklist">
+          <li><strong>CloudTrail/Activity Log:</strong> API calls (create, update, invoke)</li>
+          <li><strong>CloudWatch/Application Insights:</strong> Function execution logs</li>
+          <li><strong>X-Ray/Distributed Tracing:</strong> Request flow, latency</li>
+          <li><strong>WAF Logs:</strong> API Gateway attack attempts</li>
+        </ul>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation</h2>
+
+        <h3>Function Compromise Investigation</h3>
+        <ol>
+          <li><strong>Review function changes:</strong> When was code/config last modified?</li>
+          <li><strong>Check IAM activity:</strong> What did the function's role do?</li>
+          <li><strong>Analyze invocations:</strong> Unusual triggers or patterns?</li>
+          <li><strong>Review logs:</strong> Errors, unusual output, commands?</li>
+          <li><strong>Check network:</strong> Unexpected outbound connections?</li>
+          <li><strong>Assess data access:</strong> What resources did it touch?</li>
+        </ol>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Lambda function changes</span>
+          </div>
+          <div class="query-body">
+<code>AWSCloudTrail
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> EventSource == <span class="st">"lambda.amazonaws.com"</span>
+| <span class="kw">where</span> EventName <span class="kw">in</span> (
+    <span class="st">"CreateFunction"</span>, <span class="st">"UpdateFunctionCode20150331v2"</span>,
+    <span class="st">"UpdateFunctionConfiguration20150331v2"</span>,
+    <span class="st">"AddPermission20150331v2"</span>
+)
+| <span class="kw">project</span> TimeGenerated, EventName, UserIdentityArn,
+    SourceIpAddress, RequestParameters
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <h3>Response Actions</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>When to Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Disable function</strong></td>
+                <td>Active compromise, stop execution</td>
+              </tr>
+              <tr>
+                <td><strong>Revoke IAM role</strong></td>
+                <td>Stop function's cloud access</td>
+              </tr>
+              <tr>
+                <td><strong>Remove triggers</strong></td>
+                <td>Prevent invocations</td>
+              </tr>
+              <tr>
+                <td><strong>Rotate secrets</strong></td>
+                <td>If env vars may be exposed</td>
+              </tr>
+              <tr>
+                <td><strong>Rollback code</strong></td>
+                <td>Restore known-good version</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Serverless shifts security focus to code and identity</li>
+          <li>Overprivileged functions are the biggest risk</li>
+          <li>Monitor function changes and permission modifications</li>
+          <li>Don't store secrets in environment variables</li>
+          <li>Validate all input—functions are attack surfaces</li>
+          <li>Error spikes may indicate injection attempts</li>
+          <li>Response includes disabling function and revoking IAM</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="container-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Container Security</span>
+          </a>
+          <a href="cloud-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Cloud Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

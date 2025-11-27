@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Active Directory Security | SOC Analyst Guide</title>
+  <meta name="description" content="Active Directory security monitoring: attack detection, privileged groups, event IDs, and common threats.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">🔑</span> IAM Overview</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">☁️</span> Azure AD Security</a>
+          <a href="ad-security.html" class="nav-link active"><span class="nav-link-icon">🏢</span> Active Directory</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#identity">Identity & Access</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Active Directory</span>
+        </nav>
+        <h1>Active Directory Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 8.3</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">AD Security Basics</a></li>
+          <li><a href="#groups">Critical Groups</a></li>
+          <li><a href="#attacks">Common Attacks</a></li>
+          <li><a href="#events">Key Event IDs</a></li>
+          <li><a href="#detection">Detection Queries</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>AD Security Basics</h2>
+        <p>
+          Active Directory is the crown jewel of most enterprise environments. Compromise of AD 
+          means complete control of the environment. Understanding AD security is critical for 
+          detecting advanced attacks.
+        </p>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Domain Controller Compromise = Game Over</div>
+          <p style="margin: 0;">
+            If an attacker gains Domain Admin or compromises a Domain Controller, they have 
+            complete control. Early detection of AD attacks is essential.
+          </p>
+        </div>
+
+        <h3>Key AD Components</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Description</th>
+                <th>Security Relevance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Domain Controller (DC)</strong></td>
+                <td>Servers running AD DS</td>
+                <td>Primary target for attackers</td>
+              </tr>
+              <tr>
+                <td><strong>KRBTGT Account</strong></td>
+                <td>Encrypts Kerberos tickets</td>
+                <td>Golden Ticket attacks</td>
+              </tr>
+              <tr>
+                <td><strong>NTDS.dit</strong></td>
+                <td>AD database file</td>
+                <td>Contains all password hashes</td>
+              </tr>
+              <tr>
+                <td><strong>GPO</strong></td>
+                <td>Group Policy Objects</td>
+                <td>Persistence, lateral movement</td>
+              </tr>
+              <tr>
+                <td><strong>SYSVOL</strong></td>
+                <td>Shared folder on DCs</td>
+                <td>May contain credentials</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="groups">
+        <h2>Critical Privileged Groups</h2>
+        <p>
+          Membership changes to these groups should trigger immediate alerts and investigation.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Privileges</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Domain Admins</strong></td>
+                <td>Full control of domain</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+              </tr>
+              <tr>
+                <td><strong>Enterprise Admins</strong></td>
+                <td>Full control of forest</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+              </tr>
+              <tr>
+                <td><strong>Schema Admins</strong></td>
+                <td>Modify AD schema</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+              </tr>
+              <tr>
+                <td><strong>Administrators</strong></td>
+                <td>Built-in admin group</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+              </tr>
+              <tr>
+                <td><strong>Account Operators</strong></td>
+                <td>Create/modify accounts</td>
+                <td><span style="color: var(--accent-orange);">High</span></td>
+              </tr>
+              <tr>
+                <td><strong>Backup Operators</strong></td>
+                <td>Backup any file (including NTDS.dit)</td>
+                <td><span style="color: var(--accent-orange);">High</span></td>
+              </tr>
+              <tr>
+                <td><strong>Server Operators</strong></td>
+                <td>Log on to DCs, manage services</td>
+                <td><span style="color: var(--accent-orange);">High</span></td>
+              </tr>
+              <tr>
+                <td><strong>Print Operators</strong></td>
+                <td>Load drivers on DCs (can escalate)</td>
+                <td><span style="color: var(--accent-yellow);">Medium</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="attacks">
+        <h2>Common AD Attacks</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Kerberoasting</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Request service tickets for SPNs, crack offline to get service account passwords.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Event ID 4769 with RC4 encryption (0x17)</li>
+                <li>Many TGS requests from single user</li>
+                <li>Requests for unusual SPNs</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1558.003</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">AS-REP Roasting</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Target accounts with "Do not require Kerberos preauthentication" enabled.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Event ID 4768 without prior preauthentication</li>
+                <li>Enumeration for accounts without preauth</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1558.004</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">DCSync</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Use replication privileges to extract password hashes from DC.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Event ID 4662 with DS-Replication-Get-Changes</li>
+                <li>Replication from non-DC source</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1003.006</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Golden Ticket</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Forge TGT using KRBTGT hash—complete domain persistence.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>TGT with unusual lifetime (default 10 hours, forged may be longer)</li>
+                <li>Account not requesting TGT but using TGS</li>
+                <li>Mismatch between account domain and ticket domain</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1558.001</code>
+              <h4>Remediation:</h4> Reset KRBTGT password twice (10+ hours apart)
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Silver Ticket</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Forge service ticket using service account hash—access specific service.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>TGS without prior TGT request (Event 4769 without 4768)</li>
+                <li>Service access without DC authentication</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1558.002</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Pass-the-Hash (PtH)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Authenticate using NTLM hash without knowing password.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Event ID 4624 Type 3 with NtLmSsp</li>
+                <li>Logon from unusual source</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1550.002</code>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Pass-the-Ticket (PtT)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Steal and reuse Kerberos tickets from memory.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Ticket used from different host than issued</li>
+                <li>LSASS access from suspicious process</li>
+              </ul>
+              <h4>MITRE:</h4> <code>T1550.003</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="events">
+        <h2>Key Event IDs</h2>
+
+        <h3>Authentication Events</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>4624</strong></td>
+                <td>Successful logon</td>
+                <td>Track access, lateral movement</td>
+              </tr>
+              <tr>
+                <td><strong>4625</strong></td>
+                <td>Failed logon</td>
+                <td>Brute force, password spray</td>
+              </tr>
+              <tr>
+                <td><strong>4648</strong></td>
+                <td>Explicit credentials logon</td>
+                <td>RunAs, credential use</td>
+              </tr>
+              <tr>
+                <td><strong>4768</strong></td>
+                <td>Kerberos TGT requested</td>
+                <td>Initial authentication</td>
+              </tr>
+              <tr>
+                <td><strong>4769</strong></td>
+                <td>Kerberos TGS requested</td>
+                <td>Service access, Kerberoasting</td>
+              </tr>
+              <tr>
+                <td><strong>4771</strong></td>
+                <td>Kerberos pre-auth failed</td>
+                <td>Password guessing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Privileged Activity</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>4728</strong></td>
+                <td>Member added to security group</td>
+                <td>Privilege escalation</td>
+              </tr>
+              <tr>
+                <td><strong>4732</strong></td>
+                <td>Member added to local group</td>
+                <td>Local admin addition</td>
+              </tr>
+              <tr>
+                <td><strong>4756</strong></td>
+                <td>Member added to universal group</td>
+                <td>Enterprise Admin changes</td>
+              </tr>
+              <tr>
+                <td><strong>4662</strong></td>
+                <td>Operation on AD object</td>
+                <td>DCSync detection</td>
+              </tr>
+              <tr>
+                <td><strong>4672</strong></td>
+                <td>Special privileges assigned</td>
+                <td>Admin logon tracking</td>
+              </tr>
+              <tr>
+                <td><strong>5136</strong></td>
+                <td>Directory service object modified</td>
+                <td>AD object changes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Privileged group membership changes</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> PrivGroups = <span class="kw">dynamic</span>([<span class="st">"Domain Admins"</span>, <span class="st">"Enterprise Admins"</span>, 
+    <span class="st">"Schema Admins"</span>, <span class="st">"Administrators"</span>, <span class="st">"Backup Operators"</span>]);
+SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventID <span class="kw">in</span> (<span class="nu">4728</span>, <span class="nu">4732</span>, <span class="nu">4756</span>)
+| <span class="kw">where</span> TargetUserName <span class="kw">has_any</span> (PrivGroups)
+| <span class="kw">project</span> TimeGenerated, EventID, 
+    GroupModified = TargetUserName,
+    MemberAdded = MemberName,
+    ChangedBy = SubjectUserName,
+    Computer</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Kerberoasting detection (RC4 TGS requests)</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4769</span>
+| <span class="kw">where</span> TicketEncryptionType == <span class="st">"0x17"</span>  <span class="cm">// RC4</span>
+| <span class="kw">where</span> ServiceName !<span class="kw">endswith</span> <span class="st">"$"</span>  <span class="cm">// Exclude computer accounts</span>
+| <span class="kw">summarize</span> RequestCount = <span class="fn">count</span>() <span class="kw">by</span> 
+    TargetUserName, ServiceName, IpAddress
+| <span class="kw">where</span> RequestCount > <span class="nu">3</span>
+| <span class="kw">order by</span> RequestCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">DCSync detection</span>
+          </div>
+          <div class="query-body">
+<code>SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> EventID == <span class="nu">4662</span>
+| <span class="kw">where</span> Properties <span class="kw">has</span> <span class="st">"1131f6aa-9c07-11d1-f79f-00c04fc2dcd2"</span>  <span class="cm">// DS-Replication-Get-Changes</span>
+    <span class="kw">or</span> Properties <span class="kw">has</span> <span class="st">"1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"</span>  <span class="cm">// DS-Replication-Get-Changes-All</span>
+| <span class="kw">where</span> SubjectUserName !<span class="kw">endswith</span> <span class="st">"$"</span>  <span class="cm">// Exclude computer accounts (DCs)</span>
+| <span class="kw">project</span> TimeGenerated, SubjectUserName, SubjectDomainName, 
+    ObjectName, Computer</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Domain Admin/DC compromise = complete environment control</li>
+          <li>Monitor privileged group changes (4728, 4732, 4756)</li>
+          <li>Kerberoasting uses RC4 encryption (0x17) for offline cracking</li>
+          <li>DCSync detected via 4662 with replication GUIDs</li>
+          <li>Golden Ticket requires KRBTGT reset (twice, 10+ hours apart)</li>
+          <li>Event 4769 without 4768 may indicate Silver Ticket</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="azure-ad-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Azure AD Security</span>
+          </a>
+          <a href="privileged-access.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Privileged Access</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

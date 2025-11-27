@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traffic Analysis | SOC Analyst Guide</title>
+  <meta name="description" content="Network traffic analysis fundamentals: packet capture, flow analysis, and identifying anomalies.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewalls</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🛡️</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy & Web Filtering</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="traffic-analysis.html" class="nav-link active"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Traffic Analysis</span>
+        </nav>
+        <h1>Network Traffic Analysis</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 5.6</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#data-types">Data Types</a></li>
+          <li><a href="#tools">Analysis Tools</a></li>
+          <li><a href="#patterns">Suspicious Patterns</a></li>
+          <li><a href="#techniques">Analysis Techniques</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>What is Traffic Analysis?</h2>
+        <p>
+          Network traffic analysis involves examining network communications to detect threats, 
+          investigate incidents, and understand normal behavior. It's essential for detecting 
+          C2, exfiltration, and lateral movement.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Packet Capture (PCAP)</h4>
+            <p>Full packet data - everything transmitted</p>
+            <ul>
+              <li>Complete content inspection</li>
+              <li>Protocol analysis</li>
+              <li>Very storage-intensive</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Flow Data (NetFlow)</h4>
+            <p>Metadata about connections</p>
+            <ul>
+              <li>Source/dest, ports, bytes</li>
+              <li>Connection timing</li>
+              <li>Lower storage, longer retention</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="data-types">
+        <h2>Network Data Types</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>What It Contains</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>PCAP</strong></td>
+                <td>Full packet captures</td>
+                <td>Deep forensics, malware analysis</td>
+              </tr>
+              <tr>
+                <td><strong>NetFlow/IPFIX</strong></td>
+                <td>Connection metadata (5-tuple + timing)</td>
+                <td>Baseline, anomaly detection</td>
+              </tr>
+              <tr>
+                <td><strong>Zeek/Bro logs</strong></td>
+                <td>Parsed protocol logs</td>
+                <td>Protocol-specific analysis</td>
+              </tr>
+              <tr>
+                <td><strong>DNS logs</strong></td>
+                <td>Query/response data</td>
+                <td>C2 detection, tunneling</td>
+              </tr>
+              <tr>
+                <td><strong>Proxy logs</strong></td>
+                <td>HTTP/HTTPS activity</td>
+                <td>Web-based threats</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>NetFlow Fields</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">NetFlow Record</span>
+          </div>
+          <div class="terminal-body">
+<pre>Start Time:  2024-01-15 09:23:45
+End Time:    2024-01-15 09:24:15
+Source IP:   10.0.1.50
+Source Port: 49152
+Dest IP:     203.0.113.100
+Dest Port:   443
+Protocol:    TCP
+Bytes:       1,245,000
+Packets:     850
+Flags:       ...AP..S</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="tools">
+        <h2>Analysis Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Type</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Wireshark</strong></td>
+                <td>Packet analyzer</td>
+                <td>Deep packet inspection, protocol analysis</td>
+              </tr>
+              <tr>
+                <td><strong>tcpdump</strong></td>
+                <td>CLI packet capture</td>
+                <td>Quick captures, filtering</td>
+              </tr>
+              <tr>
+                <td><strong>Zeek (Bro)</strong></td>
+                <td>Network monitor</td>
+                <td>Protocol parsing, detection scripts</td>
+              </tr>
+              <tr>
+                <td><strong>NetworkMiner</strong></td>
+                <td>Forensic tool</td>
+                <td>File extraction, host profiling</td>
+              </tr>
+              <tr>
+                <td><strong>Suricata</strong></td>
+                <td>IDS/IPS</td>
+                <td>Signature-based detection</td>
+              </tr>
+              <tr>
+                <td><strong>RITA</strong></td>
+                <td>Beacon analysis</td>
+                <td>C2 beaconing detection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Essential Wireshark Filters</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">Wireshark</span>
+            <span class="query-title">Common display filters</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Filter by IP address</span>
+ip.addr == 10.0.1.50
+ip.src == 10.0.1.50
+ip.dst == 203.0.113.100
+
+<span class="cm"># Filter by port</span>
+tcp.port == 443
+tcp.dstport == 4444
+
+<span class="cm"># HTTP traffic</span>
+http
+http.request.method == "POST"
+http.host contains "suspicious"
+
+<span class="cm"># DNS queries</span>
+dns
+dns.qry.name contains "evil"
+
+<span class="cm"># TCP flags</span>
+tcp.flags.syn == 1 and tcp.flags.ack == 0  <span class="cm"># SYN only</span>
+tcp.flags.reset == 1  <span class="cm"># RST packets</span>
+
+<span class="cm"># Follow stream</span>
+tcp.stream eq 5</code>
+          </div>
+        </div>
+
+        <h3>Tcpdump Examples</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">Bash</span>
+            <span class="query-title">tcpdump commands</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Capture to file</span>
+tcpdump -i eth0 -w capture.pcap
+
+<span class="cm"># Filter by host</span>
+tcpdump -i eth0 host 10.0.1.50
+
+<span class="cm"># Filter by port</span>
+tcpdump -i eth0 port 443
+
+<span class="cm"># Show packet contents (ASCII)</span>
+tcpdump -i eth0 -A port 80
+
+<span class="cm"># Capture with no DNS resolution</span>
+tcpdump -i eth0 -n host 10.0.1.50</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="patterns">
+        <h2>Suspicious Traffic Patterns</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Beaconing</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Regular, periodic connections to external host - classic C2 indicator.</p>
+              <h4>Characteristics:</h4>
+              <ul>
+                <li>Consistent time intervals (e.g., every 60 seconds)</li>
+                <li>May include slight jitter (58-62 seconds)</li>
+                <li>Similar packet sizes</li>
+                <li>Continues during off-hours</li>
+              </ul>
+              <h4>Detection:</h4>
+              <p>Calculate standard deviation of connection intervals. Low deviation = beaconing.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Data Exfiltration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Large outbound transfers (unusual for host)</li>
+                <li>Uploads to cloud storage services</li>
+                <li>DNS tunneling (high volume, long queries)</li>
+                <li>ICMP with unusual payload sizes</li>
+                <li>Traffic to rare destinations at odd hours</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Port Scanning</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Patterns:</h4>
+              <ul>
+                <li>Single source → many destination ports</li>
+                <li>Single source → many destination IPs</li>
+                <li>Many SYN packets, few SYN-ACK responses</li>
+                <li>Sequential or common port patterns</li>
+              </ul>
+              <h4>Internal vs External:</h4>
+              <p>External scanning is common. Internal scanning is more concerning (lateral movement).</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Lateral Movement</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Workstation-to-workstation SMB (port 445)</li>
+                <li>RDP between non-server systems</li>
+                <li>WinRM/PSRemoting (5985/5986)</li>
+                <li>Unusual internal authentication patterns</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Protocol Anomalies</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Examples:</h4>
+              <ul>
+                <li>HTTP on non-standard ports (not 80/443)</li>
+                <li>Non-HTTP traffic on port 80/443</li>
+                <li>DNS responses larger than queries</li>
+                <li>ICMP with large payloads</li>
+                <li>TLS to IP addresses (no SNI)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="techniques">
+        <h2>Analysis Techniques</h2>
+
+        <h3>Traffic Analysis Workflow</h3>
+        <ul class="checklist">
+          <li><strong>Identify the question:</strong> What are you looking for?</li>
+          <li><strong>Scope the data:</strong> Time range, hosts, protocols</li>
+          <li><strong>Start broad:</strong> Statistics, top talkers, protocols</li>
+          <li><strong>Narrow down:</strong> Filter to suspicious activity</li>
+          <li><strong>Deep dive:</strong> Examine specific streams/packets</li>
+          <li><strong>Correlate:</strong> Compare with other log sources</li>
+        </ul>
+
+        <h3>Quick Wins: What to Check First</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Check</th>
+                <th>Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Top talkers</strong></td>
+                <td>Identify high-volume connections</td>
+              </tr>
+              <tr>
+                <td><strong>Rare destinations</strong></td>
+                <td>Unusual external IPs</td>
+              </tr>
+              <tr>
+                <td><strong>Long connections</strong></td>
+                <td>Persistent C2, tunnels</td>
+              </tr>
+              <tr>
+                <td><strong>Non-standard ports</strong></td>
+                <td>Protocol misuse</td>
+              </tr>
+              <tr>
+                <td><strong>Failed connections</strong></td>
+                <td>Scanning, C2 check-in</td>
+              </tr>
+              <tr>
+                <td><strong>After-hours traffic</strong></td>
+                <td>Automated malware activity</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect potential beaconing</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    TimeDiffs = <span class="fn">make_list</span>(<span class="fn">datetime_diff</span>(<span class="st">'second'</span>, TimeGenerated, <span class="fn">prev</span>(TimeGenerated)))
+    <span class="kw">by</span> DeviceName, RemoteIP, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> ConnectionCount > <span class="nu">10</span>
+<span class="cm">// Then analyze TimeDiffs for regularity</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Flow data for broad analysis, PCAP for deep investigation</li>
+          <li>Beaconing = regular intervals to same destination</li>
+          <li>Internal lateral traffic (SMB, RDP, WinRM) deserves scrutiny</li>
+          <li>Protocol on wrong port = potential tunneling or evasion</li>
+          <li>Always correlate network data with endpoint telemetry</li>
+          <li>After-hours traffic from user workstations is suspicious</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="dns-security.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">DNS Security</span>
+          </a>
+          <a href="cloud-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Cloud Security</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

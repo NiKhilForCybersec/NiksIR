@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ports & Protocols Reference | SOC Analyst Guide</title>
+  <meta name="description" content="Common network ports, protocols, and suspicious port activity indicators for SOC analysts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Event IDs</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="common-ports.html" class="nav-link active"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔍</span> IOC Lookup Tools</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Ports & Protocols</span>
+        </nav>
+        <h1>Ports & Protocols Reference</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">REF-03</span>
+          <span class="meta-item">Bookmark This Page</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Sections
+        </div>
+        <ul class="toc-list">
+          <li><a href="#common">Common Service Ports</a></li>
+          <li><a href="#windows">Windows-Specific Ports</a></li>
+          <li><a href="#attack">Attack-Relevant Ports</a></li>
+          <li><a href="#suspicious">Suspicious Port Activity</a></li>
+          <li><a href="#protocols">Protocol Reference</a></li>
+        </ul>
+      </div>
+
+      <section id="common">
+        <h2>Common Service Ports</h2>
+        <p>Standard ports you'll frequently encounter during investigations.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Port</th>
+                <th>Protocol</th>
+                <th>Service</th>
+                <th>Security Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>20/21</code></td>
+                <td>TCP</td>
+                <td>FTP (Data/Control)</td>
+                <td>⚠️ Cleartext credentials, consider SFTP</td>
+              </tr>
+              <tr>
+                <td><code>22</code></td>
+                <td>TCP</td>
+                <td>SSH</td>
+                <td>Secure remote access, brute force target</td>
+              </tr>
+              <tr>
+                <td><code>23</code></td>
+                <td>TCP</td>
+                <td>Telnet</td>
+                <td>🔴 Cleartext, should not be used</td>
+              </tr>
+              <tr>
+                <td><code>25</code></td>
+                <td>TCP</td>
+                <td>SMTP</td>
+                <td>Email sending, spam source if open</td>
+              </tr>
+              <tr>
+                <td><code>53</code></td>
+                <td>TCP/UDP</td>
+                <td>DNS</td>
+                <td>DNS tunneling, C2 communication</td>
+              </tr>
+              <tr>
+                <td><code>67/68</code></td>
+                <td>UDP</td>
+                <td>DHCP</td>
+                <td>Rogue DHCP server attacks</td>
+              </tr>
+              <tr>
+                <td><code>80</code></td>
+                <td>TCP</td>
+                <td>HTTP</td>
+                <td>Web traffic, C2, unencrypted</td>
+              </tr>
+              <tr>
+                <td><code>110</code></td>
+                <td>TCP</td>
+                <td>POP3</td>
+                <td>⚠️ Cleartext email retrieval</td>
+              </tr>
+              <tr>
+                <td><code>123</code></td>
+                <td>UDP</td>
+                <td>NTP</td>
+                <td>Time sync, NTP amplification attacks</td>
+              </tr>
+              <tr>
+                <td><code>143</code></td>
+                <td>TCP</td>
+                <td>IMAP</td>
+                <td>⚠️ Cleartext email retrieval</td>
+              </tr>
+              <tr>
+                <td><code>161/162</code></td>
+                <td>UDP</td>
+                <td>SNMP</td>
+                <td>Network monitoring, weak auth in v1/v2</td>
+              </tr>
+              <tr>
+                <td><code>389</code></td>
+                <td>TCP/UDP</td>
+                <td>LDAP</td>
+                <td>Directory queries, AD enumeration</td>
+              </tr>
+              <tr>
+                <td><code>443</code></td>
+                <td>TCP</td>
+                <td>HTTPS</td>
+                <td>Encrypted web, most C2 uses this</td>
+              </tr>
+              <tr>
+                <td><code>465</code></td>
+                <td>TCP</td>
+                <td>SMTPS</td>
+                <td>Encrypted SMTP</td>
+              </tr>
+              <tr>
+                <td><code>587</code></td>
+                <td>TCP</td>
+                <td>SMTP (Submission)</td>
+                <td>Email submission with auth</td>
+              </tr>
+              <tr>
+                <td><code>636</code></td>
+                <td>TCP</td>
+                <td>LDAPS</td>
+                <td>Encrypted LDAP</td>
+              </tr>
+              <tr>
+                <td><code>993</code></td>
+                <td>TCP</td>
+                <td>IMAPS</td>
+                <td>Encrypted IMAP</td>
+              </tr>
+              <tr>
+                <td><code>995</code></td>
+                <td>TCP</td>
+                <td>POP3S</td>
+                <td>Encrypted POP3</td>
+              </tr>
+              <tr>
+                <td><code>1433</code></td>
+                <td>TCP</td>
+                <td>MS SQL Server</td>
+                <td>Database, should not be internet-exposed</td>
+              </tr>
+              <tr>
+                <td><code>1521</code></td>
+                <td>TCP</td>
+                <td>Oracle DB</td>
+                <td>Database, should not be internet-exposed</td>
+              </tr>
+              <tr>
+                <td><code>3306</code></td>
+                <td>TCP</td>
+                <td>MySQL</td>
+                <td>Database, should not be internet-exposed</td>
+              </tr>
+              <tr>
+                <td><code>3389</code></td>
+                <td>TCP</td>
+                <td>RDP</td>
+                <td>⚠️ Remote desktop, major attack target</td>
+              </tr>
+              <tr>
+                <td><code>5432</code></td>
+                <td>TCP</td>
+                <td>PostgreSQL</td>
+                <td>Database, should not be internet-exposed</td>
+              </tr>
+              <tr>
+                <td><code>5900+</code></td>
+                <td>TCP</td>
+                <td>VNC</td>
+                <td>Remote desktop, often weak security</td>
+              </tr>
+              <tr>
+                <td><code>8080</code></td>
+                <td>TCP</td>
+                <td>HTTP Proxy/Alt</td>
+                <td>Alternative HTTP, proxies, admin panels</td>
+              </tr>
+              <tr>
+                <td><code>8443</code></td>
+                <td>TCP</td>
+                <td>HTTPS Alt</td>
+                <td>Alternative HTTPS, admin interfaces</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="windows">
+        <h2>Windows-Specific Ports</h2>
+        <p>Ports commonly used in Windows environments and Active Directory.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Port</th>
+                <th>Service</th>
+                <th>Description</th>
+                <th>Security Relevance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>88</code></td>
+                <td>Kerberos</td>
+                <td>AD authentication</td>
+                <td>Kerberoasting, Golden Ticket attacks</td>
+              </tr>
+              <tr>
+                <td><code>135</code></td>
+                <td>RPC Endpoint Mapper</td>
+                <td>Windows RPC</td>
+                <td>Enumeration, lateral movement</td>
+              </tr>
+              <tr>
+                <td><code>137-139</code></td>
+                <td>NetBIOS</td>
+                <td>Legacy Windows networking</td>
+                <td>Enumeration, should be disabled</td>
+              </tr>
+              <tr>
+                <td><code>389</code></td>
+                <td>LDAP</td>
+                <td>AD queries</td>
+                <td>AD enumeration, LDAP injection</td>
+              </tr>
+              <tr>
+                <td><code>445</code></td>
+                <td>SMB</td>
+                <td>File sharing, named pipes</td>
+                <td>🔴 Lateral movement, ransomware spread</td>
+              </tr>
+              <tr>
+                <td><code>464</code></td>
+                <td>Kerberos Password</td>
+                <td>Password change</td>
+                <td>Password attacks</td>
+              </tr>
+              <tr>
+                <td><code>593</code></td>
+                <td>RPC over HTTP</td>
+                <td>Outlook Anywhere</td>
+                <td>Remote RPC access</td>
+              </tr>
+              <tr>
+                <td><code>636</code></td>
+                <td>LDAPS</td>
+                <td>Secure AD queries</td>
+                <td>Encrypted AD communication</td>
+              </tr>
+              <tr>
+                <td><code>3268</code></td>
+                <td>Global Catalog</td>
+                <td>AD forest queries</td>
+                <td>Cross-domain enumeration</td>
+              </tr>
+              <tr>
+                <td><code>3269</code></td>
+                <td>Global Catalog SSL</td>
+                <td>Secure forest queries</td>
+                <td>Encrypted cross-domain queries</td>
+              </tr>
+              <tr>
+                <td><code>5985</code></td>
+                <td>WinRM HTTP</td>
+                <td>PowerShell Remoting</td>
+                <td>Lateral movement, remote execution</td>
+              </tr>
+              <tr>
+                <td><code>5986</code></td>
+                <td>WinRM HTTPS</td>
+                <td>Secure PS Remoting</td>
+                <td>Encrypted lateral movement</td>
+              </tr>
+              <tr>
+                <td><code>9389</code></td>
+                <td>AD Web Services</td>
+                <td>PowerShell AD Module</td>
+                <td>AD administration</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">SMB (Port 445) Alert</div>
+          <p style="margin: 0;">
+            Port 445 is one of the most abused ports in Windows environments. EternalBlue, ransomware 
+            propagation, lateral movement tools (PsExec, Impacket), and file share access all use SMB. 
+            Monitor this port closely and never expose it to the internet.
+          </p>
+        </div>
+      </section>
+
+      <section id="attack">
+        <h2>Attack-Relevant Ports</h2>
+        <p>Ports frequently associated with attacks, C2, and malicious activity.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Port</th>
+                <th>Common Malicious Use</th>
+                <th>Legitimate Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4444</code></td>
+                <td>Metasploit default, many RATs</td>
+                <td>Rarely legitimate</td>
+              </tr>
+              <tr>
+                <td><code>5555</code></td>
+                <td>Android ADB, some RATs</td>
+                <td>Android development</td>
+              </tr>
+              <tr>
+                <td><code>6666/6667</code></td>
+                <td>IRC botnets</td>
+                <td>IRC chat</td>
+              </tr>
+              <tr>
+                <td><code>8888</code></td>
+                <td>Various malware</td>
+                <td>Alternative HTTP, Jupyter</td>
+              </tr>
+              <tr>
+                <td><code>1234</code></td>
+                <td>Common backdoor port</td>
+                <td>Rarely legitimate</td>
+              </tr>
+              <tr>
+                <td><code>31337</code></td>
+                <td>Historic "elite" backdoor</td>
+                <td>Almost never legitimate</td>
+              </tr>
+              <tr>
+                <td><code>12345</code></td>
+                <td>NetBus, various trojans</td>
+                <td>Rarely legitimate</td>
+              </tr>
+              <tr>
+                <td><code>443</code></td>
+                <td>C2 over HTTPS (very common)</td>
+                <td>Normal HTTPS traffic</td>
+              </tr>
+              <tr>
+                <td><code>53</code></td>
+                <td>DNS tunneling for C2</td>
+                <td>Normal DNS</td>
+              </tr>
+              <tr>
+                <td><code>80</code></td>
+                <td>C2 over HTTP</td>
+                <td>Normal HTTP traffic</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Modern C2 Uses Standard Ports</div>
+          <p style="margin: 0;">
+            Sophisticated attackers use ports 80 and 443 for C2 to blend with normal traffic. 
+            Don't rely on unusual ports to detect C2—focus on behavioral analysis, beaconing patterns, 
+            and destination reputation.
+          </p>
+        </div>
+      </section>
+
+      <section id="suspicious">
+        <h2>Suspicious Port Activity</h2>
+        <p>Patterns that should trigger investigation:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">High Priority</h4>
+            <ul>
+              <li>SMB (445) to internet</li>
+              <li>RDP (3389) from internet</li>
+              <li>Database ports to internet</li>
+              <li>Known malware ports</li>
+              <li>Unusual outbound ports from servers</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Medium Priority</h4>
+            <ul>
+              <li>High ports (>10000) with regular patterns</li>
+              <li>DNS to non-corporate resolvers</li>
+              <li>SSH from unexpected sources</li>
+              <li>IRC ports (6666-6669)</li>
+              <li>Tor-related ports (9001, 9030)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Investigate</h4>
+            <ul>
+              <li>New listening ports on servers</li>
+              <li>Workstation-to-workstation SMB</li>
+              <li>Large data transfers on any port</li>
+              <li>Connections to rare destinations</li>
+              <li>After-hours network activity</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect suspicious outbound ports</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> suspiciousPorts = <span class="kw">dynamic</span>([<span class="nu">4444</span>, <span class="nu">5555</span>, <span class="nu">6666</span>, <span class="nu">6667</span>, <span class="nu">1234</span>, <span class="nu">31337</span>, <span class="nu">12345</span>]);
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ConnectionSuccess"</span>
+| <span class="kw">where</span> RemotePort <span class="kw">in</span> (suspiciousPorts)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, RemoteIP, RemotePort, 
+    InitiatingProcessFileName, InitiatingProcessAccountName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="protocols">
+        <h2>Protocol Reference</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">TCP vs UDP</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Aspect</th>
+                      <th>TCP</th>
+                      <th>UDP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Connection</td>
+                      <td>Connection-oriented (3-way handshake)</td>
+                      <td>Connectionless</td>
+                    </tr>
+                    <tr>
+                      <td>Reliability</td>
+                      <td>Guaranteed delivery, ordered</td>
+                      <td>Best effort, no guarantee</td>
+                    </tr>
+                    <tr>
+                      <td>Speed</td>
+                      <td>Slower (overhead)</td>
+                      <td>Faster</td>
+                    </tr>
+                    <tr>
+                      <td>Use Cases</td>
+                      <td>HTTP, SSH, FTP, SMTP</td>
+                      <td>DNS, NTP, DHCP, streaming</td>
+                    </tr>
+                    <tr>
+                      <td>Security Note</td>
+                      <td>Connection state visible in logs</td>
+                      <td>Spoofing easier, amplification attacks</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">ICMP</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Internet Control Message Protocol - used for diagnostics and error reporting.</p>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr><th>Type</th><th>Name</th><th>Security Relevance</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>0</td><td>Echo Reply</td><td>Ping response</td></tr>
+                    <tr><td>3</td><td>Destination Unreachable</td><td>Firewall blocks, scanning</td></tr>
+                    <tr><td>8</td><td>Echo Request</td><td>Ping, network discovery</td></tr>
+                    <tr><td>11</td><td>Time Exceeded</td><td>Traceroute</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p><strong>Security Notes:</strong> ICMP tunneling can be used for covert C2. Large or unusual ICMP traffic warrants investigation.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Quick Reference</div>
+        <ul style="margin: 0;">
+          <li><strong>Web:</strong> 80 (HTTP), 443 (HTTPS), 8080/8443 (alt)</li>
+          <li><strong>Email:</strong> 25 (SMTP), 587 (submission), 993 (IMAPS), 995 (POP3S)</li>
+          <li><strong>Remote Access:</strong> 22 (SSH), 3389 (RDP), 5985/5986 (WinRM)</li>
+          <li><strong>Windows/AD:</strong> 88 (Kerberos), 389/636 (LDAP), 445 (SMB)</li>
+          <li><strong>DNS:</strong> 53 (TCP/UDP)</li>
+          <li><strong>Database:</strong> 1433 (MSSQL), 3306 (MySQL), 5432 (PostgreSQL)</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="kql-cheatsheet.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">KQL Cheatsheet</span>
+          </a>
+          <a href="ioc-tools.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">IOC Lookup Tools</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Reference Card | SOC Analyst Guide</title>
+  <meta name="description" content="SOC quick reference: one-page cheat sheet with essential commands, ports, and investigation steps.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link active"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Common Ports</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Quick Reference</span>
+        </nav>
+        <h1>Quick Reference Card</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 12.7</span>
+          <span class="meta-item">~8 min read</span>
+        </div>
+      </div>
+
+      <section>
+        <h2>Investigation Checklist</h2>
+        <ul class="checklist">
+          <li>What triggered the alert?</li>
+          <li>What user/device is involved?</li>
+          <li>What time did it occur?</li>
+          <li>What's the process tree/parent-child?</li>
+          <li>Is there network activity?</li>
+          <li>Is this normal for this user/device?</li>
+          <li>Check hash/IP reputation</li>
+          <li>Document findings in ticket</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Critical Ports</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Port</th><th>Service</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>21</td><td>FTP</td><td>Unencrypted file transfer</td></tr>
+              <tr><td>22</td><td>SSH</td><td>Secure shell</td></tr>
+              <tr><td>23</td><td>Telnet</td><td>Unencrypted - should not be used</td></tr>
+              <tr><td>25</td><td>SMTP</td><td>Email sending</td></tr>
+              <tr><td>53</td><td>DNS</td><td>Name resolution, tunneling risk</td></tr>
+              <tr><td>80</td><td>HTTP</td><td>Web traffic</td></tr>
+              <tr><td>443</td><td>HTTPS</td><td>Encrypted web</td></tr>
+              <tr><td>445</td><td>SMB</td><td>File shares, lateral movement</td></tr>
+              <tr><td>3389</td><td>RDP</td><td>Remote desktop</td></tr>
+              <tr><td>5985/6</td><td>WinRM</td><td>PowerShell remoting</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Critical Windows Events</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Event ID</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>4624</td><td>Successful logon</td></tr>
+              <tr><td>4625</td><td>Failed logon</td></tr>
+              <tr><td>4648</td><td>Explicit credential logon</td></tr>
+              <tr><td>4672</td><td>Special privileges assigned</td></tr>
+              <tr><td>4688</td><td>Process creation</td></tr>
+              <tr><td>4720</td><td>User account created</td></tr>
+              <tr><td>4728/32/56</td><td>Member added to group</td></tr>
+              <tr><td>4769</td><td>Kerberos service ticket (Kerberoasting)</td></tr>
+              <tr><td>7045</td><td>Service installed</td></tr>
+              <tr><td>1102</td><td>Audit log cleared</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Essential KQL</h2>
+        <div class="terminal">
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);">// Basic filter</span>
+TableName | where TimeGenerated > ago(24h)
+
+<span style="color: var(--accent-cyan);">// Count by field</span>
+| summarize count() by FieldName
+
+<span style="color: var(--accent-cyan);">// Search text</span>
+| where Field has "searchterm"
+| where Field contains "partial"
+| where Field == "exact"
+
+<span style="color: var(--accent-cyan);">// Multiple values</span>
+| where Field in ("val1", "val2")
+| where Field has_any ("val1", "val2")
+
+<span style="color: var(--accent-cyan);">// Project specific fields</span>
+| project TimeGenerated, User, Action
+
+<span style="color: var(--accent-cyan);">// Top results</span>
+| top 10 by Count desc</pre>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Suspicious Indicators</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Process Red Flags</h4>
+            <ul>
+              <li>Office → cmd/PowerShell</li>
+              <li>Encoded PowerShell commands</li>
+              <li>Processes from Temp folders</li>
+              <li>Misspelled system processes</li>
+              <li>svchost from wrong path</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Network Red Flags</h4>
+            <ul>
+              <li>Regular interval connections</li>
+              <li>Long DNS queries</li>
+              <li>Direct IP connections (no DNS)</li>
+              <li>Unusual ports outbound</li>
+              <li>High data upload volume</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Escalation Triggers</h2>
+        <ul>
+          <li>Confirmed malware execution</li>
+          <li>Active C2 communication</li>
+          <li>Credential theft indicators</li>
+          <li>Data exfiltration</li>
+          <li>Lateral movement</li>
+          <li>Ransomware indicators</li>
+          <li>VIP user impacted</li>
+          <li>Multiple systems affected</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Response Quick Actions</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Scenario</th><th>Immediate Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Active ransomware</td><td>Isolate immediately</td></tr>
+              <tr><td>Confirmed C2</td><td>Isolate, preserve evidence</td></tr>
+              <tr><td>Credential theft</td><td>Reset password, revoke sessions</td></tr>
+              <tr><td>Phishing clicked</td><td>Check for payload, reset creds if entered</td></tr>
+              <tr><td>Malware detected</td><td>Quarantine, check spread</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Reputation Check Sites</h2>
+        <ul>
+          <li><strong>VirusTotal:</strong> virustotal.com (hashes, IPs, URLs)</li>
+          <li><strong>AbuseIPDB:</strong> abuseipdb.com (IP reputation)</li>
+          <li><strong>URLhaus:</strong> urlhaus.abuse.ch (malicious URLs)</li>
+          <li><strong>Shodan:</strong> shodan.io (IP/host info)</li>
+          <li><strong>MX Toolbox:</strong> mxtoolbox.com (email investigation)</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-info">
+        <div class="callout-title">Print This Page</div>
+        <p style="margin: 0;">
+          Use Ctrl+P to print this quick reference card and keep it at your 
+          workstation for fast access during investigations.
+        </p>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="mitre-reference.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">MITRE Reference</span>
+          </a>
+          <a href="common-ports.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Common Ports</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

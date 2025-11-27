@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Communication Best Practices | SOC Analyst Guide</title>
+  <meta name="description" content="SOC communication best practices: professional writing, stakeholder updates, and effective technical communication.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">⬆️</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link active"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#itsm">Ticketing & ITSM</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Communication</span>
+        </nav>
+        <h1>Communication Best Practices</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 2.4</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#principles">Communication Principles</a></li>
+          <li><a href="#writing">Professional Writing</a></li>
+          <li><a href="#audiences">Audience Adaptation</a></li>
+          <li><a href="#channels">Communication Channels</a></li>
+          <li><a href="#templates">Quick Templates</a></li>
+        </ul>
+      </div>
+
+      <section id="principles">
+        <h2>Communication Principles</h2>
+        <p>
+          Clear communication is essential for SOC effectiveness. Whether updating 
+          tickets, briefing management, or coordinating with other teams, how you 
+          communicate impacts response quality.
+        </p>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-green);">
+            <h4>✓ Do</h4>
+            <ul>
+              <li>Be clear and concise</li>
+              <li>State facts before opinions</li>
+              <li>Provide actionable information</li>
+              <li>Tailor to your audience</li>
+              <li>Document in tickets</li>
+              <li>Follow up proactively</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>✗ Don't</h4>
+            <ul>
+              <li>Use jargon with non-technical people</li>
+              <li>Speculate without evidence</li>
+              <li>Blame individuals</li>
+              <li>Leave stakeholders guessing</li>
+              <li>Over-communicate irrelevant details</li>
+              <li>Forget to close the loop</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="writing">
+        <h2>Professional Writing</h2>
+
+        <h3>Ticket Documentation</h3>
+        <ul class="checklist">
+          <li>Start with what, when, where</li>
+          <li>Include specific details (IPs, users, timestamps)</li>
+          <li>Explain actions taken and results</li>
+          <li>Note outstanding questions or blockers</li>
+          <li>Specify next steps clearly</li>
+          <li>Use consistent formatting</li>
+        </ul>
+
+        <h3>Good vs Bad Examples</h3>
+        <div class="card" style="border-left: 4px solid var(--accent-red);">
+          <h4>❌ Poor Documentation</h4>
+          <p style="font-family: var(--font-mono); font-size: 0.9rem;">
+            "Looked at alert. Seems like FP. Closed."
+          </p>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-green);">
+          <h4>✓ Good Documentation</h4>
+          <p style="font-family: var(--font-mono); font-size: 0.9rem;">
+            "Investigated suspicious PowerShell alert on WORKSTATION-123.<br><br>
+            <strong>Findings:</strong><br>
+            - Process triggered by SCCM deployment (parent: ccmexec.exe)<br>
+            - Script hash matches approved IT deployment script<br>
+            - User confirmed scheduled software update<br><br>
+            <strong>Verdict:</strong> False positive - legitimate IT activity<br>
+            <strong>Action:</strong> Added SCCM parent process to exclusion list"
+          </p>
+        </div>
+      </section>
+
+      <section id="audiences">
+        <h2>Audience Adaptation</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Audience</th>
+                <th>Focus On</th>
+                <th>Avoid</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>SOC Peers</strong></td>
+                <td>Technical details, IOCs, next steps</td>
+                <td>Over-explaining basics</td>
+              </tr>
+              <tr>
+                <td><strong>IT Teams</strong></td>
+                <td>What they need to do, impact</td>
+                <td>Security jargon they may not know</td>
+              </tr>
+              <tr>
+                <td><strong>End Users</strong></td>
+                <td>Simple explanation, what to do</td>
+                <td>Technical terms, blame</td>
+              </tr>
+              <tr>
+                <td><strong>Management</strong></td>
+                <td>Business impact, status, timeline</td>
+                <td>Deep technical details</td>
+              </tr>
+              <tr>
+                <td><strong>Executives</strong></td>
+                <td>Risk, business impact, resolution</td>
+                <td>Technical details, acronyms</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Translating Technical to Business</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Technical</th>
+                <th>Business Translation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>"Detected C2 beaconing to known APT infrastructure"</td>
+                <td>"Attacker has remote access to a company computer"</td>
+              </tr>
+              <tr>
+                <td>"Credential harvesting via LSASS dump"</td>
+                <td>"Attacker is trying to steal passwords"</td>
+              </tr>
+              <tr>
+                <td>"Lateral movement via PsExec"</td>
+                <td>"Attacker is spreading to other systems"</td>
+              </tr>
+              <tr>
+                <td>"Data exfiltration to cloud storage"</td>
+                <td>"Company data may have been stolen"</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="channels">
+        <h2>Communication Channels</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>Best For</th>
+                <th>Not For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Ticket/Case</strong></td>
+                <td>Official record, detailed documentation</td>
+                <td>Urgent real-time coordination</td>
+              </tr>
+              <tr>
+                <td><strong>Chat (Slack/Teams)</strong></td>
+                <td>Quick questions, real-time coordination</td>
+                <td>Critical decisions without documentation</td>
+              </tr>
+              <tr>
+                <td><strong>Email</strong></td>
+                <td>Formal updates, external communication</td>
+                <td>Urgent matters needing immediate response</td>
+              </tr>
+              <tr>
+                <td><strong>Phone/Bridge</strong></td>
+                <td>Active incidents, complex discussions</td>
+                <td>Routine updates</td>
+              </tr>
+              <tr>
+                <td><strong>War Room</strong></td>
+                <td>Major incidents, multi-team coordination</td>
+                <td>Normal operations</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Document Everything</div>
+          <p style="margin: 0;">
+            Verbal discussions and chat conversations should be summarized in 
+            tickets. If it's not documented, it didn't happen for purposes of 
+            handoff, metrics, and lessons learned.
+          </p>
+        </div>
+      </section>
+
+      <section id="templates">
+        <h2>Quick Templates</h2>
+
+        <h3>Escalation Message</h3>
+        <div class="terminal">
+          <div class="terminal-body">
+<pre>Escalating [Ticket#] - [Brief Summary]
+
+<strong>Reason for Escalation:</strong> [Why you need help]
+<strong>What I've Done:</strong> [Actions taken so far]
+<strong>What I Need:</strong> [Specific ask]
+<strong>Urgency:</strong> [Priority/SLA status]</pre>
+          </div>
+        </div>
+
+        <h3>User Contact</h3>
+        <div class="terminal">
+          <div class="terminal-body">
+<pre>Hi [Name],
+
+The Security team detected [brief, non-alarming description] 
+on your computer. This is likely [reassurance if appropriate].
+
+To help us investigate, could you please:
+1. [Specific action needed]
+2. [Another action if needed]
+
+Please reply to this message or call [number] if you have questions.
+
+Thanks,
+[Your Name] | Security Operations</pre>
+          </div>
+        </div>
+
+        <h3>Shift Handoff Note</h3>
+        <div class="terminal">
+          <div class="terminal-body">
+<pre><strong>Active Incidents:</strong>
+- [Ticket#]: [Status, next action, owner]
+
+<strong>Pending Items:</strong>
+- [Item needing follow-up]
+
+<strong>Heads Up:</strong>
+- [Anything incoming shift should know]
+
+<strong>Queue Status:</strong> [# alerts pending]</pre>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Be clear, concise, and factual</li>
+          <li>Adapt communication to your audience</li>
+          <li>Document everything in tickets</li>
+          <li>Translate technical to business for non-technical audiences</li>
+          <li>Use the right channel for the situation</li>
+          <li>Follow up and close the loop</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="escalation-management.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Escalation</span>
+          </a>
+          <a href="sla-management.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SLA Management</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

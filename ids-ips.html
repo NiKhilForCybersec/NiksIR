@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDS/IPS Fundamentals | SOC Analyst Guide</title>
+  <meta name="description" content="Intrusion Detection and Prevention Systems for SOC analysts: signature types, alert analysis, and tuning strategies.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewalls</a>
+          <a href="ids-ips.html" class="nav-link active"><span class="nav-link-icon">🛡️</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy & Web Filtering</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>IDS/IPS</span>
+        </nav>
+        <h1>IDS/IPS Fundamentals</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 5.3</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">IDS vs IPS</a></li>
+          <li><a href="#detection">Detection Methods</a></li>
+          <li><a href="#signatures">Understanding Signatures</a></li>
+          <li><a href="#alerts">Alert Analysis</a></li>
+          <li><a href="#tuning">Tuning & Optimization</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>IDS vs IPS</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">IDS - Intrusion Detection System</h4>
+            <p><strong>Passive monitoring</strong></p>
+            <ul>
+              <li>Monitors traffic passively (tap/span)</li>
+              <li>Generates alerts for suspicious activity</li>
+              <li>Does NOT block traffic</li>
+              <li>No impact on network performance</li>
+            </ul>
+            <p><strong>Use case:</strong> Visibility without risk of blocking legitimate traffic</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">IPS - Intrusion Prevention System</h4>
+            <p><strong>Inline blocking</strong></p>
+            <ul>
+              <li>Sits inline in traffic path</li>
+              <li>Can block malicious traffic</li>
+              <li>Real-time prevention</li>
+              <li>Potential latency impact</li>
+            </ul>
+            <p><strong>Use case:</strong> Active protection at network perimeter</p>
+          </div>
+        </div>
+
+        <h3>Deployment Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Location</th>
+                <th>What It Sees</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Network IDS/IPS (NIDS/NIPS)</strong></td>
+                <td>Network perimeter, segments</td>
+                <td>All traffic passing through</td>
+              </tr>
+              <tr>
+                <td><strong>Host IDS/IPS (HIDS/HIPS)</strong></td>
+                <td>On endpoint</td>
+                <td>Traffic to/from that host</td>
+              </tr>
+              <tr>
+                <td><strong>Wireless IDS/IPS</strong></td>
+                <td>Wireless network</td>
+                <td>WiFi traffic and rogue APs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Modern Reality: NGFW</div>
+          <p style="margin: 0;">
+            Most enterprises use Next-Generation Firewalls (NGFW) with integrated IPS functionality 
+            rather than standalone IDS/IPS. The concepts remain the same.
+          </p>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Methods</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Signature-Based Detection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Matches traffic against known attack patterns (signatures).</p>
+              <h4>Pros:</h4>
+              <ul>
+                <li>Very accurate for known attacks</li>
+                <li>Low false positive rate when tuned</li>
+                <li>Fast processing</li>
+              </ul>
+              <h4>Cons:</h4>
+              <ul>
+                <li>Cannot detect unknown/zero-day attacks</li>
+                <li>Requires constant signature updates</li>
+                <li>Evasion possible with obfuscation</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Anomaly-Based Detection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Establishes baseline of normal behavior, alerts on deviations.</p>
+              <h4>Pros:</h4>
+              <ul>
+                <li>Can detect unknown attacks</li>
+                <li>Adapts to environment</li>
+                <li>Detects insider threats</li>
+              </ul>
+              <h4>Cons:</h4>
+              <ul>
+                <li>Higher false positive rate</li>
+                <li>Requires learning period</li>
+                <li>Baseline can be poisoned</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Protocol Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Validates traffic conforms to protocol specifications (RFCs).</p>
+              <h4>Detects:</h4>
+              <ul>
+                <li>Malformed packets</li>
+                <li>Protocol violations</li>
+                <li>Buffer overflow attempts</li>
+                <li>Protocol tunneling</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Behavioral Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Analyzes patterns of behavior rather than individual events.</p>
+              <h4>Detects:</h4>
+              <ul>
+                <li>Port scanning</li>
+                <li>Brute force attempts</li>
+                <li>Data exfiltration patterns</li>
+                <li>Lateral movement</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="signatures">
+        <h2>Understanding Signatures</h2>
+
+        <h3>Signature Components</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Header</strong></td>
+                <td>Protocol, source/dest, ports</td>
+              </tr>
+              <tr>
+                <td><strong>Content</strong></td>
+                <td>Payload patterns to match</td>
+              </tr>
+              <tr>
+                <td><strong>Options</strong></td>
+                <td>Flow direction, thresholds, metadata</td>
+              </tr>
+              <tr>
+                <td><strong>Action</strong></td>
+                <td>Alert, drop, pass, reject</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Example Snort/Suricata Rule</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">snort.rules</span>
+          </div>
+          <div class="terminal-body">
+<pre>alert tcp $EXTERNAL_NET any -> $HOME_NET 445 (
+    msg:"ET EXPLOIT MS17-010 EternalBlue Attempt";
+    flow:to_server,established;
+    content:"|00 00 00|";
+    depth:3;
+    content:"|ff|SMB";
+    within:5;
+    content:"|23 00 00 00 07 00 5c|PIPE|5c 00|";
+    distance:0;
+    sid:2024217;
+    rev:3;
+    classtype:attempted-admin;
+)</pre>
+          </div>
+        </div>
+        <p class="text-muted">
+          <strong>Translation:</strong> Alert on TCP traffic from external to internal on port 445 
+          that matches the EternalBlue exploit pattern in the SMB protocol.
+        </p>
+
+        <h3>Common Signature Categories</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>What It Detects</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>exploit</strong></td>
+                <td>Vulnerability exploitation attempts</td>
+              </tr>
+              <tr>
+                <td><strong>malware</strong></td>
+                <td>Known malware signatures</td>
+              </tr>
+              <tr>
+                <td><strong>policy</strong></td>
+                <td>Policy violations (P2P, Tor, etc.)</td>
+              </tr>
+              <tr>
+                <td><strong>scan</strong></td>
+                <td>Reconnaissance/scanning activity</td>
+              </tr>
+              <tr>
+                <td><strong>trojan</strong></td>
+                <td>Trojan/RAT communication</td>
+              </tr>
+              <tr>
+                <td><strong>web-attack</strong></td>
+                <td>SQLi, XSS, web exploits</td>
+              </tr>
+              <tr>
+                <td><strong>info</strong></td>
+                <td>Informational (not necessarily malicious)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="alerts">
+        <h2>Alert Analysis</h2>
+
+        <h3>Key Alert Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>What to Check</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Signature Name</strong></td>
+                <td>What attack/behavior was detected</td>
+              </tr>
+              <tr>
+                <td><strong>Severity</strong></td>
+                <td>Vendor-assigned risk level</td>
+              </tr>
+              <tr>
+                <td><strong>Source IP</strong></td>
+                <td>Who initiated the traffic</td>
+              </tr>
+              <tr>
+                <td><strong>Destination IP</strong></td>
+                <td>Target of the traffic</td>
+              </tr>
+              <tr>
+                <td><strong>Source/Dest Port</strong></td>
+                <td>Service involved</td>
+              </tr>
+              <tr>
+                <td><strong>Protocol</strong></td>
+                <td>TCP, UDP, ICMP</td>
+              </tr>
+              <tr>
+                <td><strong>Action</strong></td>
+                <td>Was traffic blocked or just alerted?</td>
+              </tr>
+              <tr>
+                <td><strong>Payload/Packet</strong></td>
+                <td>What triggered the signature</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Investigation Questions</h3>
+        <ul class="checklist">
+          <li><strong>Is source internal or external?</strong> External scanning vs internal compromise</li>
+          <li><strong>Is target vulnerable?</strong> Does the target run the affected service/version?</li>
+          <li><strong>Was traffic blocked?</strong> IPS block vs IDS alert only</li>
+          <li><strong>Did follow-on activity occur?</strong> Did attack succeed?</li>
+          <li><strong>Is this expected traffic?</strong> Vulnerability scanner, pentest?</li>
+          <li><strong>Check source reputation</strong> Known malicious IP?</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Query IDS/IPS alerts from CommonSecurityLog</span>
+          </div>
+          <div class="query-body">
+<code>CommonSecurityLog
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> DeviceVendor == <span class="st">"Palo Alto Networks"</span>
+| <span class="kw">where</span> Activity == <span class="st">"THREAT"</span>
+| <span class="kw">project</span> TimeGenerated, SourceIP, DestinationIP,
+    DestinationPort, DeviceAction, 
+    ThreatDescription = Message,
+    Severity = LogSeverity
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="tuning">
+        <h2>Tuning & Optimization</h2>
+
+        <h3>Why Tune?</h3>
+        <p>
+          Out-of-the-box IDS/IPS generates too many alerts, many irrelevant to your environment. 
+          Tuning reduces noise and focuses on real threats.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Too Noisy</h4>
+            <ul>
+              <li>Alert fatigue</li>
+              <li>Real threats missed</li>
+              <li>Analyst burnout</li>
+              <li>SLA violations</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Well Tuned</h4>
+            <ul>
+              <li>High-fidelity alerts</li>
+              <li>Manageable volume</li>
+              <li>Faster response</li>
+              <li>Better detection</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Tuning Strategies</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>When to Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Disable signature</strong></td>
+                <td>Not relevant to your environment (e.g., IIS attacks when you don't run IIS)</td>
+              </tr>
+              <tr>
+                <td><strong>Threshold</strong></td>
+                <td>Alert only after N occurrences (reduce scan noise)</td>
+              </tr>
+              <tr>
+                <td><strong>Suppress by source</strong></td>
+                <td>Known scanners, vulnerability assessment tools</td>
+              </tr>
+              <tr>
+                <td><strong>Suppress by destination</strong></td>
+                <td>Honeypots, test systems that generate expected alerts</td>
+              </tr>
+              <tr>
+                <td><strong>Time-based</strong></td>
+                <td>Suppress during scheduled maintenance windows</td>
+              </tr>
+              <tr>
+                <td><strong>Severity adjustment</strong></td>
+                <td>Lower priority for low-risk targets</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Document Tuning Decisions</div>
+          <p style="margin: 0;">
+            Always document why a signature was disabled or suppressed. Future analysts need 
+            to understand the reasoning, and auditors may ask.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>IDS monitors passively; IPS blocks inline</li>
+          <li>Signature-based is accurate but misses unknown attacks</li>
+          <li>Anomaly-based can detect unknowns but has more false positives</li>
+          <li>Check if target is vulnerable—not all exploits apply</li>
+          <li>Verify if traffic was blocked (IPS) or just alerted (IDS)</li>
+          <li>Tune aggressively to reduce noise and focus on real threats</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="firewall-basics.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Firewalls</span>
+          </a>
+          <a href="proxy-analysis.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Proxy & Web Filtering</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

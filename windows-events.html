@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Event ID Reference | SOC Analyst Guide</title>
+  <meta name="description" content="Comprehensive Windows Security Event ID reference for SOC analysts covering logon events, process creation, privilege use, and more.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="windows-events.html" class="nav-link active"><span class="nav-link-icon">📋</span> Windows Event IDs</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔍</span> IOC Lookup Tools</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Log Analysis</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL for Sentinel</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Windows Event IDs</span>
+        </nav>
+        <h1>Windows Event ID Reference</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">REF-01</span>
+          <span class="meta-item">Bookmark This Page</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Categories
+        </div>
+        <ul class="toc-list">
+          <li><a href="#authentication">Authentication Events</a></li>
+          <li><a href="#account">Account Management</a></li>
+          <li><a href="#process">Process Events</a></li>
+          <li><a href="#privilege">Privilege Use</a></li>
+          <li><a href="#object">Object Access</a></li>
+          <li><a href="#policy">Policy Changes</a></li>
+          <li><a href="#powershell">PowerShell</a></li>
+          <li><a href="#sysmon">Sysmon Events</a></li>
+        </ul>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+          </svg>
+          Event ID Ranges
+        </div>
+        <p style="margin: 0;">
+          <strong>4xxx</strong> - Security events | 
+          <strong>7xxx</strong> - System events | 
+          <strong>1xxx</strong> - Application events |
+          <strong>1-26</strong> - Sysmon events
+        </p>
+      </div>
+
+      <section id="authentication">
+        <h2>Authentication Events</h2>
+        <p>Critical events for tracking user logon activity, authentication attempts, and session management.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4624</code></td>
+                <td>Successful Logon</td>
+                <td>Account successfully logged on</td>
+                <td><span class="priority-badge priority-p3">High</span> - Track successful access, correlate with failures</td>
+              </tr>
+              <tr>
+                <td><code>4625</code></td>
+                <td>Failed Logon</td>
+                <td>Account failed to log on</td>
+                <td><span class="priority-badge priority-p2">Critical</span> - Brute force, password spray detection</td>
+              </tr>
+              <tr>
+                <td><code>4634</code></td>
+                <td>Logoff</td>
+                <td>Account logged off</td>
+                <td><span class="priority-badge priority-p4">Medium</span> - Session duration analysis</td>
+              </tr>
+              <tr>
+                <td><code>4647</code></td>
+                <td>User Initiated Logoff</td>
+                <td>User initiated logoff</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Normal user behavior</td>
+              </tr>
+              <tr>
+                <td><code>4648</code></td>
+                <td>Explicit Credentials</td>
+                <td>Logon attempted using explicit credentials</td>
+                <td><span class="priority-badge priority-p2">High</span> - Lateral movement indicator</td>
+              </tr>
+              <tr>
+                <td><code>4768</code></td>
+                <td>Kerberos TGT Request</td>
+                <td>Kerberos authentication ticket (TGT) was requested</td>
+                <td><span class="priority-badge priority-p3">High</span> - AS-REP roasting detection</td>
+              </tr>
+              <tr>
+                <td><code>4769</code></td>
+                <td>Kerberos Service Ticket</td>
+                <td>Kerberos service ticket (TGS) was requested</td>
+                <td><span class="priority-badge priority-p2">Critical</span> - Kerberoasting detection</td>
+              </tr>
+              <tr>
+                <td><code>4771</code></td>
+                <td>Kerberos Pre-Auth Failed</td>
+                <td>Kerberos pre-authentication failed</td>
+                <td><span class="priority-badge priority-p2">High</span> - Password attacks</td>
+              </tr>
+              <tr>
+                <td><code>4776</code></td>
+                <td>NTLM Authentication</td>
+                <td>DC attempted to validate credentials (NTLM)</td>
+                <td><span class="priority-badge priority-p3">High</span> - Pass-the-hash detection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Logon Type Values (Event 4624/4625)</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Logon Type</th>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>2</code></td><td>Interactive</td><td>Local keyboard/console logon</td></tr>
+              <tr><td><code>3</code></td><td>Network</td><td>Network logon (e.g., accessing share)</td></tr>
+              <tr><td><code>4</code></td><td>Batch</td><td>Scheduled task execution</td></tr>
+              <tr><td><code>5</code></td><td>Service</td><td>Service startup</td></tr>
+              <tr><td><code>7</code></td><td>Unlock</td><td>Workstation unlock</td></tr>
+              <tr><td><code>8</code></td><td>NetworkCleartext</td><td>Network logon with cleartext creds</td></tr>
+              <tr><td><code>9</code></td><td>NewCredentials</td><td>RunAs with /netonly</td></tr>
+              <tr><td><code>10</code></td><td>RemoteInteractive</td><td>RDP logon</td></tr>
+              <tr><td><code>11</code></td><td>CachedInteractive</td><td>Logon with cached creds (offline)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="account">
+        <h2>Account Management Events</h2>
+        <p>Track user and group changes - critical for detecting privilege escalation and persistence.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4720</code></td>
+                <td>User Account Created</td>
+                <td>A user account was created</td>
+                <td><span class="priority-badge priority-p2">High</span> - Persistence, unauthorized accounts</td>
+              </tr>
+              <tr>
+                <td><code>4722</code></td>
+                <td>User Account Enabled</td>
+                <td>A user account was enabled</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Re-enabled dormant accounts</td>
+              </tr>
+              <tr>
+                <td><code>4723</code></td>
+                <td>Password Change Attempt</td>
+                <td>User attempted to change their password</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Normal activity</td>
+              </tr>
+              <tr>
+                <td><code>4724</code></td>
+                <td>Password Reset Attempt</td>
+                <td>Attempt to reset password by admin</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Admin activity tracking</td>
+              </tr>
+              <tr>
+                <td><code>4725</code></td>
+                <td>User Account Disabled</td>
+                <td>A user account was disabled</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Track offboarding</td>
+              </tr>
+              <tr>
+                <td><code>4726</code></td>
+                <td>User Account Deleted</td>
+                <td>A user account was deleted</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Evidence destruction?</td>
+              </tr>
+              <tr>
+                <td><code>4728</code></td>
+                <td>Member Added to Global Group</td>
+                <td>Member added to security-enabled global group</td>
+                <td><span class="priority-badge priority-p2">High</span> - Privilege escalation</td>
+              </tr>
+              <tr>
+                <td><code>4732</code></td>
+                <td>Member Added to Local Group</td>
+                <td>Member added to security-enabled local group</td>
+                <td><span class="priority-badge priority-p2">High</span> - Local admin addition</td>
+              </tr>
+              <tr>
+                <td><code>4735</code></td>
+                <td>Local Group Changed</td>
+                <td>Security-enabled local group was changed</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Group modifications</td>
+              </tr>
+              <tr>
+                <td><code>4738</code></td>
+                <td>User Account Changed</td>
+                <td>A user account was changed</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Account manipulation</td>
+              </tr>
+              <tr>
+                <td><code>4740</code></td>
+                <td>Account Locked Out</td>
+                <td>A user account was locked out</td>
+                <td><span class="priority-badge priority-p2">High</span> - Brute force indicator</td>
+              </tr>
+              <tr>
+                <td><code>4756</code></td>
+                <td>Member Added to Universal Group</td>
+                <td>Member added to security-enabled universal group</td>
+                <td><span class="priority-badge priority-p2">Critical</span> - Enterprise admin groups</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-danger">
+          <div class="callout-title">Critical Groups to Monitor</div>
+          <ul style="margin: 0;">
+            <li><strong>Domain Admins</strong> - Full domain control</li>
+            <li><strong>Enterprise Admins</strong> - Forest-wide control</li>
+            <li><strong>Schema Admins</strong> - AD schema modifications</li>
+            <li><strong>Administrators</strong> - Local admin access</li>
+            <li><strong>Backup Operators</strong> - Can backup/restore files</li>
+            <li><strong>Account Operators</strong> - Can manage most accounts</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="process">
+        <h2>Process Events</h2>
+        <p>Process creation and termination events are essential for detecting malicious execution.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4688</code></td>
+                <td>Process Created</td>
+                <td>A new process has been created</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Primary execution detection</td>
+              </tr>
+              <tr>
+                <td><code>4689</code></td>
+                <td>Process Exited</td>
+                <td>A process has exited</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Duration analysis</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Enable Command Line Logging</div>
+          <p style="margin: 0;">
+            Event 4688 requires "Include command line in process creation events" policy to capture full command lines. 
+            Without this, you only see the executable path, not the arguments.
+          </p>
+        </div>
+
+        <h3>Key Fields in Event 4688</h3>
+        <ul>
+          <li><strong>NewProcessName:</strong> Full path of the created process</li>
+          <li><strong>CommandLine:</strong> Command line arguments (if enabled)</li>
+          <li><strong>ParentProcessName:</strong> Process that created this one</li>
+          <li><strong>SubjectUserName:</strong> User context of execution</li>
+          <li><strong>TokenElevationType:</strong> Elevation status (1=default, 2=elevated, 3=limited)</li>
+        </ul>
+      </section>
+
+      <section id="privilege">
+        <h2>Privilege Use Events</h2>
+        <p>Track when sensitive privileges are assigned or used - key for detecting privilege escalation.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4672</code></td>
+                <td>Special Privileges Assigned</td>
+                <td>Special privileges assigned to new logon</td>
+                <td><span class="priority-badge priority-p2">High</span> - Admin/sensitive logon detection</td>
+              </tr>
+              <tr>
+                <td><code>4673</code></td>
+                <td>Privileged Service Called</td>
+                <td>A privileged service was called</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Sensitive operation tracking</td>
+              </tr>
+              <tr>
+                <td><code>4674</code></td>
+                <td>Privileged Operation</td>
+                <td>Operation attempted on privileged object</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Object access patterns</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Sensitive Privileges (Event 4672)</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>High-Risk Privileges</h4>
+            <ul>
+              <li><code>SeDebugPrivilege</code> - Debug processes (credential theft)</li>
+              <li><code>SeTcbPrivilege</code> - Act as part of OS</li>
+              <li><code>SeBackupPrivilege</code> - Backup files (bypass access)</li>
+              <li><code>SeRestorePrivilege</code> - Restore files</li>
+              <li><code>SeTakeOwnershipPrivilege</code> - Take ownership</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Medium-Risk Privileges</h4>
+            <ul>
+              <li><code>SeRemoteShutdownPrivilege</code> - Remote shutdown</li>
+              <li><code>SeLoadDriverPrivilege</code> - Load drivers</li>
+              <li><code>SeCreateTokenPrivilege</code> - Create tokens</li>
+              <li><code>SeImpersonatePrivilege</code> - Impersonate clients</li>
+              <li><code>SeEnableDelegationPrivilege</code> - Delegation</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="object">
+        <h2>Object Access Events</h2>
+        <p>File, registry, and kernel object access auditing.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4656</code></td>
+                <td>Handle Requested</td>
+                <td>Handle to an object was requested</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Object access attempt</td>
+              </tr>
+              <tr>
+                <td><code>4658</code></td>
+                <td>Handle Closed</td>
+                <td>Handle to an object was closed</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Duration tracking</td>
+              </tr>
+              <tr>
+                <td><code>4660</code></td>
+                <td>Object Deleted</td>
+                <td>An object was deleted</td>
+                <td><span class="priority-badge priority-p3">High</span> - Evidence destruction</td>
+              </tr>
+              <tr>
+                <td><code>4663</code></td>
+                <td>Object Access Attempt</td>
+                <td>Attempt to access an object</td>
+                <td><span class="priority-badge priority-p3">High</span> - File/registry access</td>
+              </tr>
+              <tr>
+                <td><code>4670</code></td>
+                <td>Permissions Changed</td>
+                <td>Permissions on object were changed</td>
+                <td><span class="priority-badge priority-p2">High</span> - ACL manipulation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="policy">
+        <h2>Policy Change & System Events</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>1102</code></td>
+                <td>Audit Log Cleared</td>
+                <td>The audit log was cleared</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Evidence destruction</td>
+              </tr>
+              <tr>
+                <td><code>4697</code></td>
+                <td>Service Installed</td>
+                <td>A service was installed</td>
+                <td><span class="priority-badge priority-p2">High</span> - Persistence mechanism</td>
+              </tr>
+              <tr>
+                <td><code>4698</code></td>
+                <td>Scheduled Task Created</td>
+                <td>A scheduled task was created</td>
+                <td><span class="priority-badge priority-p2">High</span> - Persistence mechanism</td>
+              </tr>
+              <tr>
+                <td><code>4699</code></td>
+                <td>Scheduled Task Deleted</td>
+                <td>A scheduled task was deleted</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Cleanup activity</td>
+              </tr>
+              <tr>
+                <td><code>4700</code></td>
+                <td>Scheduled Task Enabled</td>
+                <td>A scheduled task was enabled</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Task activation</td>
+              </tr>
+              <tr>
+                <td><code>4702</code></td>
+                <td>Scheduled Task Updated</td>
+                <td>A scheduled task was updated</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Task modification</td>
+              </tr>
+              <tr>
+                <td><code>4719</code></td>
+                <td>Audit Policy Changed</td>
+                <td>System audit policy was changed</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Defense evasion</td>
+              </tr>
+              <tr>
+                <td><code>7045</code></td>
+                <td>Service Installed (System)</td>
+                <td>A new service was installed (System log)</td>
+                <td><span class="priority-badge priority-p2">High</span> - More reliable than 4697</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="powershell">
+        <h2>PowerShell Events</h2>
+        <p>PowerShell logging is critical for detecting script-based attacks.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Log</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>4103</code></td>
+                <td>PowerShell/Operational</td>
+                <td>Module Logging - Command execution</td>
+                <td><span class="priority-badge priority-p2">High</span> - Full command capture</td>
+              </tr>
+              <tr>
+                <td><code>4104</code></td>
+                <td>PowerShell/Operational</td>
+                <td>Script Block Logging - Script content</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Full script content</td>
+              </tr>
+              <tr>
+                <td><code>4105</code></td>
+                <td>PowerShell/Operational</td>
+                <td>Script Block Logging - Start</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Script execution start</td>
+              </tr>
+              <tr>
+                <td><code>4106</code></td>
+                <td>PowerShell/Operational</td>
+                <td>Script Block Logging - Stop</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Script execution end</td>
+              </tr>
+              <tr>
+                <td><code>400</code></td>
+                <td>Windows PowerShell</td>
+                <td>Engine state changed to Available</td>
+                <td><span class="priority-badge priority-p4">Low</span> - PowerShell started</td>
+              </tr>
+              <tr>
+                <td><code>800</code></td>
+                <td>Windows PowerShell</td>
+                <td>Pipeline execution details</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Execution tracking</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Enable PowerShell Logging</div>
+          <p style="margin: 0;">
+            Script Block Logging (4104) captures the full content of PowerShell scripts, including decoded/decrypted content. 
+            This is essential for detecting encoded commands and obfuscated malware.
+          </p>
+        </div>
+      </section>
+
+      <section id="sysmon">
+        <h2>Sysmon Events</h2>
+        <p>Sysmon provides enhanced visibility beyond native Windows logging. Install and configure Sysmon for comprehensive endpoint telemetry.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Security Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>1</code></td>
+                <td>Process Create</td>
+                <td>Process creation with full command line and hashes</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Primary execution telemetry</td>
+              </tr>
+              <tr>
+                <td><code>2</code></td>
+                <td>File Creation Time Changed</td>
+                <td>File creation time was modified (timestomping)</td>
+                <td><span class="priority-badge priority-p2">High</span> - Anti-forensics detection</td>
+              </tr>
+              <tr>
+                <td><code>3</code></td>
+                <td>Network Connection</td>
+                <td>Network connection initiated by process</td>
+                <td><span class="priority-badge priority-p2">High</span> - C2, data exfil detection</td>
+              </tr>
+              <tr>
+                <td><code>5</code></td>
+                <td>Process Terminated</td>
+                <td>Process terminated</td>
+                <td><span class="priority-badge priority-p4">Low</span> - Duration analysis</td>
+              </tr>
+              <tr>
+                <td><code>6</code></td>
+                <td>Driver Loaded</td>
+                <td>Driver loaded into kernel</td>
+                <td><span class="priority-badge priority-p2">High</span> - Rootkit detection</td>
+              </tr>
+              <tr>
+                <td><code>7</code></td>
+                <td>Image Loaded</td>
+                <td>DLL loaded by process</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - DLL hijacking/injection</td>
+              </tr>
+              <tr>
+                <td><code>8</code></td>
+                <td>CreateRemoteThread</td>
+                <td>Remote thread created in another process</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Process injection</td>
+              </tr>
+              <tr>
+                <td><code>10</code></td>
+                <td>Process Access</td>
+                <td>Process opened another process</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - LSASS access, credential theft</td>
+              </tr>
+              <tr>
+                <td><code>11</code></td>
+                <td>File Create</td>
+                <td>File created or overwritten</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - File drops, staging</td>
+              </tr>
+              <tr>
+                <td><code>12</code></td>
+                <td>Registry Event - Create/Delete</td>
+                <td>Registry key/value created or deleted</td>
+                <td><span class="priority-badge priority-p2">High</span> - Persistence detection</td>
+              </tr>
+              <tr>
+                <td><code>13</code></td>
+                <td>Registry Event - Set Value</td>
+                <td>Registry value modified</td>
+                <td><span class="priority-badge priority-p2">High</span> - Configuration changes</td>
+              </tr>
+              <tr>
+                <td><code>15</code></td>
+                <td>FileCreateStreamHash</td>
+                <td>Alternate data stream created</td>
+                <td><span class="priority-badge priority-p2">High</span> - Hidden data storage</td>
+              </tr>
+              <tr>
+                <td><code>17</code></td>
+                <td>Pipe Created</td>
+                <td>Named pipe created</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - C2 communication</td>
+              </tr>
+              <tr>
+                <td><code>18</code></td>
+                <td>Pipe Connected</td>
+                <td>Named pipe connection</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Lateral movement</td>
+              </tr>
+              <tr>
+                <td><code>22</code></td>
+                <td>DNS Query</td>
+                <td>DNS query made by process</td>
+                <td><span class="priority-badge priority-p2">High</span> - C2, DNS tunneling</td>
+              </tr>
+              <tr>
+                <td><code>23</code></td>
+                <td>File Delete</td>
+                <td>File deleted (archived)</td>
+                <td><span class="priority-badge priority-p3">Medium</span> - Evidence destruction</td>
+              </tr>
+              <tr>
+                <td><code>25</code></td>
+                <td>Process Tampering</td>
+                <td>Process image changed (hollowing)</td>
+                <td><span class="priority-badge priority-p1">Critical</span> - Process hollowing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Sysmon Configuration</div>
+          <p style="margin: 0;">
+            Use a curated Sysmon configuration like <a href="https://github.com/SwiftOnSecurity/sysmon-config" target="_blank">SwiftOnSecurity/sysmon-config</a> 
+            or <a href="https://github.com/olafhartong/sysmon-modular" target="_blank">olafhartong/sysmon-modular</a> for optimal coverage with reduced noise.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Quick Reference Priority
+        </div>
+        <ul style="margin: 0;">
+          <li><strong>Authentication:</strong> 4624, 4625, 4648, 4768, 4769, 4776</li>
+          <li><strong>Account Changes:</strong> 4720, 4728, 4732, 4740, 4756</li>
+          <li><strong>Execution:</strong> 4688, Sysmon 1</li>
+          <li><strong>Persistence:</strong> 4697, 4698, 7045, Sysmon 12/13</li>
+          <li><strong>Credential Access:</strong> 4672, Sysmon 10</li>
+          <li><strong>Defense Evasion:</strong> 1102, 4719, Sysmon 2</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#reference" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Reference Section</span>
+          </a>
+          <a href="kql-cheatsheet.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">KQL Cheatsheet</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

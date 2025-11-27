@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDR Fundamentals | SOC Analyst Guide</title>
+  <meta name="description" content="Understanding Endpoint Detection and Response: architecture, telemetry, detection methods, and comparison with XDR and MDR.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link active"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> MDE Alerts</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> MDE Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">⚡</span> MDE Response</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Concepts</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">📋</span> EDR Triage</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>EDR Fundamentals</span>
+        </nav>
+        <h1>EDR Fundamentals</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 4.1</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#what-is-edr">What is EDR?</a></li>
+          <li><a href="#architecture">EDR Architecture</a></li>
+          <li><a href="#telemetry">Telemetry Types</a></li>
+          <li><a href="#detection">Detection Methods</a></li>
+          <li><a href="#comparison">EDR vs XDR vs MDR</a></li>
+          <li><a href="#vendors">EDR Vendor Landscape</a></li>
+        </ul>
+      </div>
+
+      <section id="what-is-edr">
+        <h2>What is EDR?</h2>
+        <p>
+          Endpoint Detection and Response (EDR) provides continuous monitoring and analysis of endpoint 
+          activity to detect, investigate, and respond to cyber threats. Unlike traditional antivirus 
+          that focuses on known malware signatures, EDR captures detailed telemetry about endpoint behavior 
+          to identify both known and unknown threats.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Traditional AV</h4>
+            <ul>
+              <li>Signature-based detection</li>
+              <li>Block known malware</li>
+              <li>Limited visibility</li>
+              <li>Reactive protection</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">EDR</h4>
+            <ul>
+              <li>Behavioral detection</li>
+              <li>Continuous monitoring</li>
+              <li>Deep endpoint visibility</li>
+              <li>Investigation & response</li>
+              <li>Threat hunting capability</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">EDR Value Proposition</div>
+          <p style="margin: 0;">
+            EDR shifts endpoint security from "did we block the malware?" to "what is happening on this 
+            endpoint and is any of it malicious?" This enables detection of fileless attacks, living-off-the-land 
+            techniques, and insider threats that bypass traditional AV.
+          </p>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>EDR Architecture</h2>
+        
+        <div class="card">
+          <h3>Core Components</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node action">
+                <strong>Endpoint Agent</strong><br>
+                <small>Collects telemetry, enforces policies</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node decision">
+                <strong>Cloud Backend</strong><br>
+                <small>Processing, correlation, ML</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node endpoint">
+                <strong>Management Console</strong><br>
+                <small>Alerts, investigation, response</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Component Details</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Endpoint Agent (Sensor)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Lightweight software installed on endpoints that:</p>
+              <ul>
+                <li>Monitors system activity in real-time</li>
+                <li>Hooks into OS to capture process, file, network, registry events</li>
+                <li>Performs local detection for time-sensitive threats</li>
+                <li>Executes response actions (isolate, kill process, quarantine)</li>
+                <li>Streams telemetry to cloud for analysis</li>
+              </ul>
+              <p><strong>Considerations:</strong> CPU/memory impact, kernel vs user-mode, tamper protection</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Cloud Backend</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Centralized infrastructure that:</p>
+              <ul>
+                <li>Ingests and stores telemetry from all endpoints</li>
+                <li>Runs behavioral analytics and machine learning</li>
+                <li>Correlates events across the environment</li>
+                <li>Generates alerts based on detection rules</li>
+                <li>Provides threat intelligence integration</li>
+              </ul>
+              <p><strong>Considerations:</strong> Data residency, retention, scalability</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Management Console</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Analyst interface providing:</p>
+              <ul>
+                <li>Alert queue and incident management</li>
+                <li>Investigation tools (process tree, timeline)</li>
+                <li>Threat hunting and query interface</li>
+                <li>Response action execution</li>
+                <li>Reporting and dashboards</li>
+                <li>Policy and configuration management</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="telemetry">
+        <h2>Telemetry Types</h2>
+        <p>EDR captures detailed information about endpoint activity. Understanding telemetry types helps analysts know what questions EDR can answer.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Telemetry Type</th>
+                <th>What It Captures</th>
+                <th>Security Use Cases</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Process</strong></td>
+                <td>Process creation, termination, parent-child relationships, command lines, user context</td>
+                <td>Malware execution, living-off-the-land, unusual process chains</td>
+              </tr>
+              <tr>
+                <td><strong>File</strong></td>
+                <td>File create, modify, delete, rename, hash values, paths</td>
+                <td>Malware drops, ransomware encryption, data staging</td>
+              </tr>
+              <tr>
+                <td><strong>Network</strong></td>
+                <td>Connections, DNS queries, listening ports, process-to-network mapping</td>
+                <td>C2 communication, lateral movement, data exfiltration</td>
+              </tr>
+              <tr>
+                <td><strong>Registry</strong></td>
+                <td>Key/value creation, modification, deletion</td>
+                <td>Persistence mechanisms, configuration changes</td>
+              </tr>
+              <tr>
+                <td><strong>Memory</strong></td>
+                <td>Process injection, memory allocation, credential access patterns</td>
+                <td>Fileless malware, credential theft, process hollowing</td>
+              </tr>
+              <tr>
+                <td><strong>User/Logon</strong></td>
+                <td>Authentication events, session activity, privilege use</td>
+                <td>Credential abuse, privilege escalation, lateral movement</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Telemetry Depth vs. Performance</div>
+          <p style="margin: 0;">
+            More telemetry means better visibility but higher resource usage and storage costs. 
+            EDR vendors balance this through configurable collection policies and smart filtering.
+          </p>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Methods</h2>
+        <p>Modern EDR uses multiple detection approaches to catch different threat types.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Signature-Based</h4>
+            <p>Match known malware hashes, patterns, and IOCs.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">
+              <strong>✓</strong> Fast, low FP for known threats<br>
+              <strong>✗</strong> Misses new/modified malware
+            </p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Behavioral Analysis</h4>
+            <p>Detect suspicious patterns regardless of file hash.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">
+              <strong>✓</strong> Catches unknown threats, fileless attacks<br>
+              <strong>✗</strong> Higher FP rate, tuning required
+            </p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Machine Learning</h4>
+            <p>ML models trained on malicious vs benign behavior.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">
+              <strong>✓</strong> Adapts to new threats<br>
+              <strong>✗</strong> Black box, adversarial evasion
+            </p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">IOC Matching</h4>
+            <p>Match against threat intel feeds (IPs, domains, hashes).</p>
+            <p class="text-muted" style="font-size: 0.85rem;">
+              <strong>✓</strong> Quick wins on known campaigns<br>
+              <strong>✗</strong> Reactive, IOCs change quickly
+            </p>
+          </div>
+        </div>
+
+        <h3>Behavioral Detection Examples</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Behavior</th>
+                <th>Why It's Suspicious</th>
+                <th>ATT&CK Mapping</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Word spawns PowerShell</td>
+                <td>Macro-based malware delivery</td>
+                <td>T1059.001 - PowerShell</td>
+              </tr>
+              <tr>
+                <td>LSASS memory access</td>
+                <td>Credential dumping attempt</td>
+                <td>T1003.001 - LSASS Memory</td>
+              </tr>
+              <tr>
+                <td>Encoded PowerShell command</td>
+                <td>Obfuscation to evade detection</td>
+                <td>T1027 - Obfuscated Files</td>
+              </tr>
+              <tr>
+                <td>Service created by cmd.exe</td>
+                <td>Persistence mechanism</td>
+                <td>T1543.003 - Windows Service</td>
+              </tr>
+              <tr>
+                <td>Process injection detected</td>
+                <td>Code execution in another process</td>
+                <td>T1055 - Process Injection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="comparison">
+        <h2>EDR vs XDR vs MDR</h2>
+        <p>Understanding the differences helps you know what capabilities each solution provides.</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Aspect</th>
+                <th>EDR</th>
+                <th>XDR</th>
+                <th>MDR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Full Name</strong></td>
+                <td>Endpoint Detection & Response</td>
+                <td>Extended Detection & Response</td>
+                <td>Managed Detection & Response</td>
+              </tr>
+              <tr>
+                <td><strong>Scope</strong></td>
+                <td>Endpoints only</td>
+                <td>Endpoints + Network + Cloud + Email + Identity</td>
+                <td>Varies by provider</td>
+              </tr>
+              <tr>
+                <td><strong>Operation Model</strong></td>
+                <td>Tool (you operate)</td>
+                <td>Platform (you operate)</td>
+                <td>Service (vendor operates)</td>
+              </tr>
+              <tr>
+                <td><strong>Correlation</strong></td>
+                <td>Endpoint events only</td>
+                <td>Cross-domain correlation</td>
+                <td>Depends on underlying tech</td>
+              </tr>
+              <tr>
+                <td><strong>Response</strong></td>
+                <td>Endpoint actions</td>
+                <td>Multi-domain response</td>
+                <td>Analyst-driven (vendor)</td>
+              </tr>
+              <tr>
+                <td><strong>Staffing Need</strong></td>
+                <td>Internal SOC required</td>
+                <td>Internal SOC required</td>
+                <td>Minimal internal staff</td>
+              </tr>
+              <tr>
+                <td><strong>Best For</strong></td>
+                <td>Endpoint-focused security</td>
+                <td>Unified security operations</td>
+                <td>Orgs without mature SOC</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">XDR Value</div>
+          <p style="margin: 0;">
+            XDR's power is in correlation. A phishing email (email telemetry) → user clicks link (web telemetry) 
+            → malware downloads (endpoint telemetry) → C2 connection (network telemetry) becomes one unified incident 
+            instead of four separate alerts.
+          </p>
+        </div>
+      </section>
+
+      <section id="vendors">
+        <h2>EDR Vendor Landscape</h2>
+        
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Product</th>
+                <th>Notable Strengths</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Microsoft</strong></td>
+                <td>Defender for Endpoint</td>
+                <td>Native Windows integration, M365 ecosystem, cost-effective with E5</td>
+              </tr>
+              <tr>
+                <td><strong>CrowdStrike</strong></td>
+                <td>Falcon</td>
+                <td>Cloud-native, strong threat intel, low agent footprint</td>
+              </tr>
+              <tr>
+                <td><strong>SentinelOne</strong></td>
+                <td>Singularity</td>
+                <td>Autonomous response, strong Linux support, Storyline visualization</td>
+              </tr>
+              <tr>
+                <td><strong>Palo Alto</strong></td>
+                <td>Cortex XDR</td>
+                <td>Network integration, XSOAR automation, unified platform</td>
+              </tr>
+              <tr>
+                <td><strong>Carbon Black</strong></td>
+                <td>VMware CB</td>
+                <td>Deep visibility, query flexibility, VMware integration</td>
+              </tr>
+              <tr>
+                <td><strong>Trend Micro</strong></td>
+                <td>Vision One</td>
+                <td>XDR capabilities, email integration, virtual patching</td>
+              </tr>
+              <tr>
+                <td><strong>Cybereason</strong></td>
+                <td>Defense Platform</td>
+                <td>Operation-centric approach, MalOp visualization</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>EDR provides deep endpoint visibility through continuous telemetry collection</li>
+          <li>Multiple detection methods (signature, behavioral, ML) catch different threat types</li>
+          <li>Process, file, network, registry, and memory telemetry enable comprehensive analysis</li>
+          <li>XDR extends EDR with cross-domain correlation; MDR adds managed services</li>
+          <li>Understanding your EDR's capabilities and limitations is essential for effective use</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#edr" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR/XDR Section</span>
+          </a>
+          <a href="mde-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">MDE Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

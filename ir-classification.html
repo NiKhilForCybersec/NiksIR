@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incident Classification | SOC Analyst Guide</title>
+  <meta name="description" content="How to classify security incidents: severity levels, categories, priority assignment, and escalation thresholds.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link active"><span class="nav-link-icon">📊</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🛑</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Classification</span>
+        </nav>
+        <h1>Incident Classification</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 10.2</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#why">Why Classification Matters</a></li>
+          <li><a href="#severity">Severity Levels</a></li>
+          <li><a href="#categories">Incident Categories</a></li>
+          <li><a href="#verdicts">Alert Verdicts</a></li>
+          <li><a href="#escalation">Escalation Thresholds</a></li>
+        </ul>
+      </div>
+
+      <section id="why">
+        <h2>Why Classification Matters</h2>
+        <p>
+          Proper classification ensures incidents receive appropriate resources, response times, 
+          and management attention. It drives SLAs, escalation paths, and reporting requirements.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Resource Allocation</h4>
+            <p>Critical incidents get immediate full-team response; low-severity can wait.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">SLA Compliance</h4>
+            <p>Response and resolution times tied to severity levels.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Communication</h4>
+            <p>Determines who gets notified—team lead, CISO, or board.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Metrics</h4>
+            <p>Enables meaningful reporting and trend analysis.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="severity">
+        <h2>Severity Levels</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Description</th>
+                <th>Response Time</th>
+                <th>Resolution Target</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">P1 Critical</span></td>
+                <td>Active breach, ransomware, widespread impact, C2 detected</td>
+                <td>Immediate (&lt;15 min)</td>
+                <td>&lt;4 hours</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">P2 High</span></td>
+                <td>Confirmed compromise, malware execution, data exfiltration attempt</td>
+                <td>&lt;30 minutes</td>
+                <td>&lt;24 hours</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">P3 Medium</span></td>
+                <td>Suspicious activity, policy violation, potential threat</td>
+                <td>&lt;2 hours</td>
+                <td>&lt;72 hours</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">P4 Low</span></td>
+                <td>Minor policy violation, informational, false positive tuning</td>
+                <td>&lt;8 hours</td>
+                <td>&lt;1 week</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Severity Decision Factors</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Impact</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Scope:</strong> How many systems/users affected?</li>
+                <li><strong>Data:</strong> What data is at risk? (PII, financial, IP)</li>
+                <li><strong>Business:</strong> Which business functions impacted?</li>
+                <li><strong>Regulatory:</strong> Are compliance requirements triggered?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Urgency</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Active threat:</strong> Is the attack ongoing?</li>
+                <li><strong>Spreading:</strong> Is it propagating to other systems?</li>
+                <li><strong>Time-sensitive:</strong> Will delay increase damage?</li>
+                <li><strong>Attacker presence:</strong> Is attacker currently active?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Asset Criticality</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Crown jewels:</strong> Domain controllers, financial systems, customer data</li>
+                <li><strong>Executive systems:</strong> C-suite, board members</li>
+                <li><strong>Production:</strong> Revenue-generating systems</li>
+                <li><strong>Standard:</strong> Regular workstations, test systems</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">When in Doubt, Escalate</div>
+          <p style="margin: 0;">
+            If you're unsure whether something is P1 or P2, treat it as P1 initially. 
+            It's easier to downgrade than to recover from a delayed response.
+          </p>
+        </div>
+      </section>
+
+      <section id="categories">
+        <h2>Incident Categories</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Malware</strong></td>
+                <td>Malicious software execution</td>
+                <td>Ransomware, trojan, worm, cryptominer</td>
+              </tr>
+              <tr>
+                <td><strong>Phishing</strong></td>
+                <td>Social engineering via email</td>
+                <td>Credential phishing, BEC, spear phishing</td>
+              </tr>
+              <tr>
+                <td><strong>Account Compromise</strong></td>
+                <td>Unauthorized account access</td>
+                <td>Credential theft, session hijacking</td>
+              </tr>
+              <tr>
+                <td><strong>Unauthorized Access</strong></td>
+                <td>Access to systems/data without permission</td>
+                <td>Privilege escalation, lateral movement</td>
+              </tr>
+              <tr>
+                <td><strong>Data Breach</strong></td>
+                <td>Unauthorized data access or exfiltration</td>
+                <td>Data theft, accidental exposure</td>
+              </tr>
+              <tr>
+                <td><strong>Denial of Service</strong></td>
+                <td>Availability attack</td>
+                <td>DDoS, resource exhaustion</td>
+              </tr>
+              <tr>
+                <td><strong>Insider Threat</strong></td>
+                <td>Malicious or negligent insider</td>
+                <td>Data theft, sabotage, policy violation</td>
+              </tr>
+              <tr>
+                <td><strong>Policy Violation</strong></td>
+                <td>Security policy breach</td>
+                <td>Unauthorized software, data handling</td>
+              </tr>
+              <tr>
+                <td><strong>Reconnaissance</strong></td>
+                <td>Information gathering</td>
+                <td>Port scanning, enumeration</td>
+              </tr>
+              <tr>
+                <td><strong>Web Attack</strong></td>
+                <td>Application-layer attacks</td>
+                <td>SQLi, XSS, API abuse</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="verdicts">
+        <h2>Alert Verdicts</h2>
+        <p>How to classify the outcome of alert investigation:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Verdict</th>
+                <th>Abbr</th>
+                <th>Definition</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>True Positive</strong></td>
+                <td>TP</td>
+                <td>Alert correctly identified malicious activity</td>
+                <td>Malware detected and confirmed</td>
+              </tr>
+              <tr>
+                <td><strong>Benign True Positive</strong></td>
+                <td>BTP</td>
+                <td>Alert fired correctly but activity was authorized</td>
+                <td>Pentest, authorized tool, IT activity</td>
+              </tr>
+              <tr>
+                <td><strong>False Positive</strong></td>
+                <td>FP</td>
+                <td>Alert fired incorrectly; no malicious activity</td>
+                <td>Legitimate app flagged as malware</td>
+              </tr>
+              <tr>
+                <td><strong>Inconclusive</strong></td>
+                <td>INC</td>
+                <td>Insufficient evidence to determine</td>
+                <td>Logs missing, host unavailable</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3>Verdict Decision Tree</h3>
+          <ol>
+            <li><strong>Was the alert detection logic correct?</strong>
+              <ul>
+                <li>No → <span class="priority-badge priority-p4" style="font-size: 0.75rem;">False Positive</span></li>
+                <li>Yes → Continue</li>
+              </ul>
+            </li>
+            <li><strong>Was the activity malicious?</strong>
+              <ul>
+                <li>Yes → <span class="priority-badge priority-p1" style="font-size: 0.75rem;">True Positive</span></li>
+                <li>No, but expected behavior triggered alert → <span class="priority-badge priority-p3" style="font-size: 0.75rem;">Benign True Positive</span></li>
+              </ul>
+            </li>
+            <li><strong>Could you determine either way?</strong>
+              <ul>
+                <li>No → <span class="priority-badge priority-p4" style="font-size: 0.75rem;">Inconclusive</span></li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="escalation">
+        <h2>Escalation Thresholds</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Trigger</th>
+                <th>Escalate To</th>
+                <th>Timeframe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Any P1 incident</td>
+                <td>SOC Lead, IR Team, Security Manager</td>
+                <td>Immediately</td>
+              </tr>
+              <tr>
+                <td>Confirmed data breach</td>
+                <td>CISO, Legal, Privacy Officer</td>
+                <td>&lt;1 hour</td>
+              </tr>
+              <tr>
+                <td>Ransomware confirmed</td>
+                <td>CISO, Executive team, IR retainer</td>
+                <td>Immediately</td>
+              </tr>
+              <tr>
+                <td>Domain controller compromise</td>
+                <td>IR Team, AD Team, Management</td>
+                <td>Immediately</td>
+              </tr>
+              <tr>
+                <td>Executive account compromise</td>
+                <td>CISO, HR, Legal</td>
+                <td>&lt;30 min</td>
+              </tr>
+              <tr>
+                <td>P2 not contained in 2 hours</td>
+                <td>SOC Lead, Security Manager</td>
+                <td>At threshold</td>
+              </tr>
+              <tr>
+                <td>Insider threat suspected</td>
+                <td>HR, Legal, Security Manager</td>
+                <td>Before investigation</td>
+              </tr>
+              <tr>
+                <td>Regulatory data involved</td>
+                <td>Legal, Compliance, Privacy</td>
+                <td>&lt;1 hour</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Document Escalations</div>
+          <p style="margin: 0;">
+            Always document when you escalated, to whom, and what information was provided. 
+            This creates an audit trail and ensures continuity.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Classification drives response speed, resources, and communication</li>
+          <li>Consider impact, urgency, and asset criticality</li>
+          <li>When uncertain, escalate up rather than down</li>
+          <li>Use consistent verdict terminology (TP, BTP, FP, INC)</li>
+          <li>Know your escalation thresholds and contacts</li>
+          <li>Document all classification decisions</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ir-overview.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">IR Overview</span>
+          </a>
+          <a href="ir-containment.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Containment</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

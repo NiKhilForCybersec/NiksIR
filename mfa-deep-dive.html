@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MFA Deep Dive | SOC Analyst Guide</title>
+  <meta name="description" content="Multi-factor authentication security: MFA methods, bypass attacks, fatigue attacks, and detection strategies.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">🔐</span> Identity Overview</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">☁️</span> Azure AD Security</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="mfa-deep-dive.html" class="nav-link active"><span class="nav-link-icon">📱</span> MFA Deep Dive</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#identity">Identity & Access</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>MFA Deep Dive</span>
+        </nav>
+        <h1>MFA Deep Dive</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 8.6</span>
+          <span class="meta-item">~18 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#methods">MFA Methods</a></li>
+          <li><a href="#attacks">MFA Bypass Attacks</a></li>
+          <li><a href="#fatigue">MFA Fatigue</a></li>
+          <li><a href="#detection">Detection Strategies</a></li>
+          <li><a href="#queries">Investigation Queries</a></li>
+          <li><a href="#response">Response Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="methods">
+        <h2>MFA Methods</h2>
+        <p>
+          Not all MFA is equal. Understanding the security properties of different 
+          methods helps prioritize alerts and assess risk.
+        </p>
+
+        <h3>MFA Method Comparison</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Security</th>
+                <th>Phishing Resistant?</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>FIDO2/WebAuthn</strong></td>
+                <td><span style="color: var(--accent-green);">Highest</span></td>
+                <td>✅ Yes</td>
+                <td>Hardware keys, bound to origin</td>
+              </tr>
+              <tr>
+                <td><strong>Windows Hello</strong></td>
+                <td><span style="color: var(--accent-green);">Highest</span></td>
+                <td>✅ Yes</td>
+                <td>Device-bound, biometric</td>
+              </tr>
+              <tr>
+                <td><strong>Certificate-based</strong></td>
+                <td><span style="color: var(--accent-green);">High</span></td>
+                <td>✅ Yes</td>
+                <td>Smart cards, PKI</td>
+              </tr>
+              <tr>
+                <td><strong>Authenticator App (Number Match)</strong></td>
+                <td><span style="color: var(--accent-cyan);">Good</span></td>
+                <td>⚠️ Partial</td>
+                <td>Requires user attention</td>
+              </tr>
+              <tr>
+                <td><strong>Authenticator App (Push)</strong></td>
+                <td><span style="color: var(--accent-yellow);">Medium</span></td>
+                <td>❌ No</td>
+                <td>Vulnerable to fatigue attacks</td>
+              </tr>
+              <tr>
+                <td><strong>TOTP (6-digit code)</strong></td>
+                <td><span style="color: var(--accent-yellow);">Medium</span></td>
+                <td>❌ No</td>
+                <td>Phishable in real-time</td>
+              </tr>
+              <tr>
+                <td><strong>SMS/Voice</strong></td>
+                <td><span style="color: var(--accent-orange);">Low</span></td>
+                <td>❌ No</td>
+                <td>SIM swap, SS7 attacks</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Phishing-Resistant MFA</div>
+          <p style="margin: 0;">
+            Phishing-resistant MFA methods (FIDO2, Windows Hello, certificates) cryptographically 
+            bind authentication to the legitimate site. Even if a user is phished, the 
+            attacker can't replay the authentication to the real site.
+          </p>
+        </div>
+      </section>
+
+      <section id="attacks">
+        <h2>MFA Bypass Attacks</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Real-Time Phishing (Adversary-in-the-Middle)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>How It Works:</h4>
+              <ol>
+                <li>Attacker creates phishing site that proxies to legitimate site</li>
+                <li>User enters credentials on phishing site</li>
+                <li>Attacker relays credentials to real site in real-time</li>
+                <li>User receives MFA prompt, approves it</li>
+                <li>Attacker captures session token/cookie</li>
+              </ol>
+              <h4>Tools Used:</h4>
+              <p>Evilginx2, Modlishka, Muraena</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Sign-in from IP different than session IP</li>
+                <li>Unusual user-agent or client properties</li>
+                <li>Session token used from different location</li>
+              </ul>
+              <h4>Prevention:</h4>
+              <p>Phishing-resistant MFA (FIDO2), Conditional Access policies</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Session Hijacking / Token Theft</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>How It Works:</h4>
+              <p>Attacker steals session token after successful MFA, bypassing 
+              need to authenticate again.</p>
+              <h4>Methods:</h4>
+              <ul>
+                <li>Cookie theft from browser (infostealer malware)</li>
+                <li>Pass-the-Cookie attack</li>
+                <li>Token extraction from memory</li>
+              </ul>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Session used from impossible travel locations</li>
+                <li>Session used from different device fingerprint</li>
+                <li>Activity after known compromise indicator</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">SIM Swapping</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>How It Works:</h4>
+              <p>Attacker convinces carrier to transfer victim's phone number to 
+              attacker-controlled SIM, receiving all SMS MFA codes.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>User reports phone not working</li>
+                <li>MFA codes sent but user didn't request</li>
+                <li>Account takeover shortly after phone issues</li>
+              </ul>
+              <h4>Prevention:</h4>
+              <p>Don't use SMS MFA. If required, carrier PIN protection.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">SS7 Attacks</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>How It Works:</h4>
+              <p>Attackers exploit SS7 protocol vulnerabilities to intercept 
+              SMS messages without physical access to phone.</p>
+              <h4>Requirements:</h4>
+              <ul>
+                <li>Access to SS7 network (telecom insider, nation-state)</li>
+                <li>Target phone number</li>
+              </ul>
+              <h4>Prevention:</h4>
+              <p>Don't use SMS MFA for high-value accounts.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Help Desk Social Engineering</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>How It Works:</h4>
+              <p>Attacker calls help desk pretending to be user, convinces them 
+              to reset MFA or add new authentication method.</p>
+              <h4>Scenarios:</h4>
+              <ul>
+                <li>"I lost my phone, need to reset MFA"</li>
+                <li>"I'm locked out, urgent deadline"</li>
+                <li>"New employee, MFA not set up yet"</li>
+              </ul>
+              <h4>Prevention:</h4>
+              <p>Strong identity verification before MFA changes. Callback to 
+              known number. Manager approval for resets.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="fatigue">
+        <h2>MFA Fatigue Attacks</h2>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">MFA Fatigue (Push Bombing)</div>
+          <p style="margin: 0;">
+            Attacker repeatedly triggers MFA push notifications until the user 
+            accidentally or frustratedly approves one. High-profile breaches 
+            (Uber, Cisco) have used this technique.
+          </p>
+        </div>
+
+        <h3>Attack Pattern</h3>
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Stolen Credentials</strong><br>
+                <small>Phishing/breach/spray</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Repeated Auth</strong><br>
+                <small>Dozens of attempts</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Push Spam</strong><br>
+                <small>Flood user's phone</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>User Approves</strong><br>
+                <small>Fatigue/accident</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>MFA Fatigue Indicators</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th>What to Look For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>High volume prompts</strong></td>
+                <td>>5 MFA prompts in short period (minutes)</td>
+              </tr>
+              <tr>
+                <td><strong>Off-hours attempts</strong></td>
+                <td>Late night/early morning when user might be groggy</td>
+              </tr>
+              <tr>
+                <td><strong>Different source IPs</strong></td>
+                <td>Legitimate user location vs attacker location</td>
+              </tr>
+              <tr>
+                <td><strong>Failed then success</strong></td>
+                <td>Many denials followed by approval</td>
+              </tr>
+              <tr>
+                <td><strong>User complaints</strong></td>
+                <td>Reports of unexpected MFA prompts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Mitigations</h3>
+        <ul class="checklist">
+          <li><strong>Number matching:</strong> User must type number shown on screen</li>
+          <li><strong>Location display:</strong> Show sign-in location in prompt</li>
+          <li><strong>Rate limiting:</strong> Limit MFA prompts per time period</li>
+          <li><strong>Lockout:</strong> Lock account after multiple denied prompts</li>
+          <li><strong>Phishing-resistant MFA:</strong> FIDO2 eliminates push bombing</li>
+        </ul>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Strategies</h2>
+
+        <h3>High-Priority MFA Alerts</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Alert</th>
+                <th>Risk</th>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>MFA method changed</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>Verify with user, check for compromise</td>
+              </tr>
+              <tr>
+                <td>New MFA method registered</td>
+                <td><span style="color: var(--accent-orange);">Medium-High</span></td>
+                <td>Confirm user initiated</td>
+              </tr>
+              <tr>
+                <td>MFA reset by admin</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Verify legitimate ticket/request</td>
+              </tr>
+              <tr>
+                <td>Many MFA prompts denied</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+                <td>MFA fatigue attack, contact user</td>
+              </tr>
+              <tr>
+                <td>MFA approved after many denials</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+                <td>Likely compromise, immediate response</td>
+              </tr>
+              <tr>
+                <td>Login from new location after MFA</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+                <td>Token theft possible</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="queries">
+        <h2>Investigation Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">MFA fatigue detection - many prompts in short time</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50074"</span>  <span class="cm">// MFA required</span>
+    <span class="kw">or</span> ResultType == <span class="st">"50076"</span>  <span class="cm">// MFA denied</span>
+| <span class="kw">summarize</span> 
+    MFAPrompts = <span class="fn">count</span>(),
+    DeniedCount = <span class="fn">countif</span>(ResultType == <span class="st">"50076"</span>),
+    SourceIPs = <span class="fn">make_set</span>(IPAddress),
+    TimeRange = <span class="fn">max</span>(TimeGenerated) - <span class="fn">min</span>(TimeGenerated)
+    <span class="kw">by</span> UserPrincipalName, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> MFAPrompts > <span class="nu">5</span>
+| <span class="kw">order by</span> MFAPrompts <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">MFA method changes</span>
+          </div>
+          <div class="query-body">
+<code>AuditLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> OperationName <span class="kw">has_any</span> (
+    <span class="st">"User registered security info"</span>,
+    <span class="st">"User changed default security info"</span>,
+    <span class="st">"User deleted security info"</span>,
+    <span class="st">"Admin registered security info"</span>
+)
+| <span class="kw">extend</span> TargetUser = <span class="fn">tostring</span>(TargetResources[<span class="nu">0</span>].userPrincipalName)
+| <span class="kw">extend</span> InitiatedBy = InitiatedBy.user.userPrincipalName
+| <span class="kw">project</span> TimeGenerated, OperationName, TargetUser, 
+    InitiatedBy, Result
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Successful login after MFA fatigue pattern</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Find users with many denied MFA then success</span>
+<span class="kw">let</span> MFADenied = SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50076"</span>  <span class="cm">// MFA denied</span>
+| <span class="kw">summarize</span> DeniedCount = <span class="fn">count</span>(), 
+    FirstDenied = <span class="fn">min</span>(TimeGenerated)
+    <span class="kw">by</span> UserPrincipalName, IPAddress
+| <span class="kw">where</span> DeniedCount > <span class="nu">3</span>;
+
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>  <span class="cm">// Success</span>
+| <span class="kw">join</span> <span class="kw">kind</span>=inner MFADenied <span class="kw">on</span> UserPrincipalName
+| <span class="kw">where</span> TimeGenerated > FirstDenied
+| <span class="kw">where</span> TimeGenerated < FirstDenied + <span class="nu">2h</span>
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, 
+    AttackerIP = IPAddress1, LoginIP = IPAddress,
+    DeniedCount, AppDisplayName, Location</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Session anomaly after MFA - potential token theft</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">summarize</span> 
+    Locations = <span class="fn">make_set</span>(Location),
+    IPs = <span class="fn">make_set</span>(IPAddress),
+    UserAgents = <span class="fn">make_set</span>(UserAgent),
+    LocationCount = <span class="fn">dcount</span>(Location),
+    IPCount = <span class="fn">dcount</span>(IPAddress)
+    <span class="kw">by</span> UserPrincipalName, CorrelationId
+| <span class="kw">where</span> LocationCount > <span class="nu">1</span> <span class="kw">or</span> IPCount > <span class="nu">1</span>
+| <span class="kw">project</span> UserPrincipalName, Locations, IPs, UserAgents</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <h3>MFA Fatigue Attack Response</h3>
+        <ol>
+          <li><strong>Contact user immediately</strong> - Did they approve any prompts?</li>
+          <li><strong>If approved:</strong>
+            <ul>
+              <li>Reset password immediately</li>
+              <li>Revoke all sessions</li>
+              <li>Review sign-in logs for post-approval activity</li>
+              <li>Check for inbox rules, OAuth apps, persistence</li>
+            </ul>
+          </li>
+          <li><strong>If not approved:</strong>
+            <ul>
+              <li>Still reset password (credentials are compromised)</li>
+              <li>Review where credentials were stolen</li>
+              <li>Consider temporary account lockout</li>
+            </ul>
+          </li>
+          <li><strong>Block attacker IPs</strong> if identifiable</li>
+          <li><strong>Enable number matching</strong> if not already</li>
+        </ol>
+
+        <h3>MFA Reset Response</h3>
+        <ul class="checklist">
+          <li>Verify reset was requested through legitimate channel</li>
+          <li>Check for help desk ticket or documented request</li>
+          <li>Confirm with user through known contact method</li>
+          <li>Review account for suspicious activity before/after reset</li>
+          <li>If unauthorized, treat as compromise—full investigation</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Not all MFA is equal—FIDO2/WebAuthn are phishing-resistant</li>
+          <li>SMS MFA is vulnerable to SIM swap and SS7 attacks</li>
+          <li>MFA fatigue attacks flood users with push notifications</li>
+          <li>Number matching significantly reduces fatigue attack success</li>
+          <li>Monitor for: many prompts, method changes, post-MFA anomalies</li>
+          <li>Real-time phishing can bypass non-phishing-resistant MFA</li>
+          <li>Session tokens can be stolen after successful MFA</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="privileged-access.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Privileged Access</span>
+          </a>
+          <a href="service-accounts.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Service Accounts</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

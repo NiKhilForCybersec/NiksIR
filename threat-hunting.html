@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threat Hunting | SOC Analyst Guide</title>
+  <meta name="description" content="Proactive threat hunting: methodologies, hypothesis development, hunt techniques, and detection engineering.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link active"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Threat Hunting</span>
+        </nav>
+        <h1>Threat Hunting</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 3.7</span>
+          <span class="meta-item">~28 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#fundamentals">Hunting Fundamentals</a></li>
+          <li><a href="#methodology">Hunt Methodology</a></li>
+          <li><a href="#hypotheses">Hypothesis Development</a></li>
+          <li><a href="#techniques">Hunt Techniques</a></li>
+          <li><a href="#hunts">Example Hunts</a></li>
+          <li><a href="#output">Hunt Outputs</a></li>
+        </ul>
+      </div>
+
+      <section id="fundamentals">
+        <h2>Hunting Fundamentals</h2>
+        <p>
+          Threat hunting is the proactive search for threats that have evaded existing 
+          detection capabilities. Unlike reactive alert investigation, hunting assumes 
+          the adversary is already in your environment.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Reactive SOC</h4>
+            <ul>
+              <li>Waits for alerts to fire</li>
+              <li>Investigates known-bad indicators</li>
+              <li>Relies on existing detections</li>
+              <li>Catches what tools detect</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Proactive Hunting</h4>
+            <ul>
+              <li>Assumes compromise</li>
+              <li>Searches for unknown threats</li>
+              <li>Develops new detections</li>
+              <li>Finds what tools miss</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">The Hunting Mindset</div>
+          <p style="margin: 0;">
+            "Assume breach" - Start with the premise that adversaries are already in your 
+            environment, then look for evidence to prove or disprove that assumption. 
+            Absence of evidence is not evidence of absence.
+          </p>
+        </div>
+
+        <h3>Hunt Maturity Model</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Description</th>
+                <th>Characteristics</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HM0 - Initial</strong></td>
+                <td>No hunting capability</td>
+                <td>Relies entirely on automated alerts</td>
+              </tr>
+              <tr>
+                <td><strong>HM1 - Minimal</strong></td>
+                <td>IOC searching</td>
+                <td>Searches for known indicators from threat intel</td>
+              </tr>
+              <tr>
+                <td><strong>HM2 - Procedural</strong></td>
+                <td>Following procedures</td>
+                <td>Uses documented hunt playbooks</td>
+              </tr>
+              <tr>
+                <td><strong>HM3 - Innovative</strong></td>
+                <td>Creating new hunts</td>
+                <td>Develops original hypotheses, creates detections</td>
+              </tr>
+              <tr>
+                <td><strong>HM4 - Leading</strong></td>
+                <td>Automating discoveries</td>
+                <td>Converts hunts to automated detections at scale</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="methodology">
+        <h2>Hunt Methodology</h2>
+
+        <div class="card">
+          <h3>The Hunt Cycle</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Hypothesis</strong><br>
+                <small>What are we looking for?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Data Collection</strong><br>
+                <small>What data do we need?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Investigation</strong><br>
+                <small>Search and analyze</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Response</strong><br>
+                <small>Act on findings</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Hunt Documentation Template</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Hunt Name</strong></td>
+                <td>Descriptive name for the hunt</td>
+              </tr>
+              <tr>
+                <td><strong>Hypothesis</strong></td>
+                <td>What we're looking for and why</td>
+              </tr>
+              <tr>
+                <td><strong>MITRE ATT&CK</strong></td>
+                <td>Relevant techniques being hunted</td>
+              </tr>
+              <tr>
+                <td><strong>Data Sources</strong></td>
+                <td>Required logs and telemetry</td>
+              </tr>
+              <tr>
+                <td><strong>Hunt Query</strong></td>
+                <td>KQL/SPL queries used</td>
+              </tr>
+              <tr>
+                <td><strong>Analysis Steps</strong></td>
+                <td>How to analyze results</td>
+              </tr>
+              <tr>
+                <td><strong>Expected False Positives</strong></td>
+                <td>Legitimate activity to exclude</td>
+              </tr>
+              <tr>
+                <td><strong>Findings</strong></td>
+                <td>Results and conclusions</td>
+              </tr>
+              <tr>
+                <td><strong>Detection Opportunity</strong></td>
+                <td>Can this become an automated rule?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="hypotheses">
+        <h2>Hypothesis Development</h2>
+        <p>
+          A good hunt starts with a good hypothesis. Hypotheses should be specific, 
+          testable, and based on threat intelligence or environmental knowledge.
+        </p>
+
+        <h3>Hypothesis Sources</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Intelligence-Driven</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Based on external threat intelligence:</p>
+              <ul>
+                <li>APT group TTPs targeting your industry</li>
+                <li>New malware family techniques</li>
+                <li>Vulnerability exploitation in the wild</li>
+                <li>Published threat reports</li>
+              </ul>
+              <h4>Example Hypothesis:</h4>
+              <p><em>"APT29 has been targeting healthcare with spearphishing. We should 
+              look for their known C2 domains and PowerShell obfuscation patterns."</em></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">TTP-Driven (MITRE ATT&CK)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Based on adversary techniques:</p>
+              <ul>
+                <li>Pick a technique from ATT&CK matrix</li>
+                <li>Research how it manifests in logs</li>
+                <li>Hunt for that behavior pattern</li>
+              </ul>
+              <h4>Example Hypothesis:</h4>
+              <p><em>"Attackers commonly use T1053.005 (Scheduled Tasks) for persistence. 
+              We should look for scheduled tasks created via command line or with 
+              suspicious actions."</em></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Anomaly-Driven</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Based on deviations from baseline:</p>
+              <ul>
+                <li>Statistical outliers in normal behavior</li>
+                <li>First-time events (new process, new connection)</li>
+                <li>Rare patterns in high-frequency data</li>
+              </ul>
+              <h4>Example Hypothesis:</h4>
+              <p><em>"Most lateral movement uses common protocols. We should look for 
+              authentication to systems a user has never accessed before."</em></p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Environment-Driven</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Based on your specific environment:</p>
+              <ul>
+                <li>Known gaps in detection coverage</li>
+                <li>High-value assets to protect</li>
+                <li>Recent changes or vulnerabilities</li>
+              </ul>
+              <h4>Example Hypothesis:</h4>
+              <p><em>"We just deployed new VPN concentrators. We should hunt for 
+              unusual VPN access patterns that might indicate compromised credentials."</em></p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Hypothesis Quality Checklist</h3>
+        <ul class="checklist">
+          <li><strong>Specific:</strong> Clearly defines what we're looking for</li>
+          <li><strong>Testable:</strong> Can be proved or disproved with available data</li>
+          <li><strong>Relevant:</strong> Addresses a realistic threat to our environment</li>
+          <li><strong>Scoped:</strong> Has a defined time range and data set</li>
+          <li><strong>Actionable:</strong> Results can lead to response or detection improvement</li>
+        </ul>
+      </section>
+
+      <section id="techniques">
+        <h2>Hunt Techniques</h2>
+
+        <h3>Technique Categories</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Technique</th>
+                <th>Description</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>IOC Searching</strong></td>
+                <td>Search for known bad indicators</td>
+                <td>Quick check for known threats</td>
+              </tr>
+              <tr>
+                <td><strong>Stack Counting</strong></td>
+                <td>Count occurrences, find rare items</td>
+                <td>Finding outliers in large datasets</td>
+              </tr>
+              <tr>
+                <td><strong>Clustering</strong></td>
+                <td>Group similar events together</td>
+                <td>Identifying patterns and campaigns</td>
+              </tr>
+              <tr>
+                <td><strong>Baselining</strong></td>
+                <td>Compare current to historical normal</td>
+                <td>Detecting behavioral changes</td>
+              </tr>
+              <tr>
+                <td><strong>Visualization</strong></td>
+                <td>Graph relationships and timelines</td>
+                <td>Understanding complex relationships</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Stack Counting (Least Frequency Analysis)</h3>
+        <p>
+          Stack counting identifies rare events that may indicate malicious activity. 
+          The theory: attackers create artifacts that are uncommon in your environment.
+        </p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Stack count: Rare processes by execution count</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">summarize</span> 
+    ExecutionCount = <span class="fn">count</span>(),
+    DeviceCount = <span class="fn">dcount</span>(DeviceName),
+    Users = <span class="fn">make_set</span>(AccountName, <span class="nu">5</span>),
+    Devices = <span class="fn">make_set</span>(DeviceName, <span class="nu">5</span>)
+    <span class="kw">by</span> FileName, FolderPath
+| <span class="kw">where</span> ExecutionCount < <span class="nu">5</span>  <span class="cm">// Rare</span>
+| <span class="kw">where</span> DeviceCount == <span class="nu">1</span>    <span class="cm">// Only one device</span>
+| <span class="kw">order by</span> ExecutionCount <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Stack count: Rare network destinations</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    DeviceCount = <span class="fn">dcount</span>(DeviceName),
+    Devices = <span class="fn">make_set</span>(DeviceName, <span class="nu">5</span>),
+    Processes = <span class="fn">make_set</span>(InitiatingProcessFileName, <span class="nu">5</span>)
+    <span class="kw">by</span> RemoteIP
+| <span class="kw">where</span> DeviceCount == <span class="nu">1</span>  <span class="cm">// Only one device talks to this IP</span>
+| <span class="kw">where</span> ConnectionCount > <span class="nu">10</span>  <span class="cm">// But talks frequently</span>
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <h3>Baselining and Anomaly Detection</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Hunt: First-time service installations</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Services seen in last 30 days</span>
+<span class="kw">let</span> KnownServices = DeviceEvents
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(<span class="nu">30d</span>) .. <span class="fn">ago</span>(<span class="nu">1d</span>))
+| <span class="kw">where</span> ActionType == <span class="st">"ServiceInstalled"</span>
+| <span class="kw">extend</span> ServiceName = <span class="fn">tostring</span>(AdditionalFields.ServiceName)
+| <span class="kw">distinct</span> ServiceName;
+
+<span class="cm">// New services in last 24 hours</span>
+DeviceEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ServiceInstalled"</span>
+| <span class="kw">extend</span> ServiceName = <span class="fn">tostring</span>(AdditionalFields.ServiceName)
+| <span class="kw">extend</span> ServicePath = <span class="fn">tostring</span>(AdditionalFields.ServicePath)
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti KnownServices <span class="kw">on</span> ServiceName
+| <span class="kw">project</span> TimeGenerated, DeviceName, ServiceName, 
+    ServicePath, InitiatingProcessAccountName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="hunts">
+        <h2>Example Hunts</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Hunt: Persistence via Registry Run Keys</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Hypothesis:</h4>
+              <p>Attackers establish persistence by adding entries to registry Run keys 
+              that execute on login.</p>
+              
+              <h4>MITRE ATT&CK:</h4>
+              <p>T1547.001 - Boot or Logon Autostart Execution: Registry Run Keys</p>
+              
+              <h4>Hunt Query:</h4>
+              <div class="query-box" style="margin: 1rem 0;">
+                <div class="query-body">
+<code>DeviceRegistryEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"RegistryValueSet"</span>
+| <span class="kw">where</span> RegistryKey <span class="kw">has_any</span> (
+    <span class="st">@"\CurrentVersion\Run"</span>,
+    <span class="st">@"\CurrentVersion\RunOnce"</span>
+)
+| <span class="kw">where</span> RegistryValueData <span class="kw">has_any</span> (
+    <span class="st">".exe"</span>, <span class="st">".dll"</span>, <span class="st">".bat"</span>, <span class="st">".ps1"</span>, <span class="st">".vbs"</span>,
+    <span class="st">"powershell"</span>, <span class="st">"cmd"</span>, <span class="st">"wscript"</span>, <span class="st">"mshta"</span>
+)
+<span class="cm">// Exclude known software</span>
+| <span class="kw">where</span> RegistryValueData !<span class="kw">has</span> <span class="st">"Microsoft"</span>
+| <span class="kw">where</span> RegistryValueData !<span class="kw">has</span> <span class="st">"Google"</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, RegistryKey,
+    RegistryValueName, RegistryValueData,
+    InitiatingProcessFileName, InitiatingProcessCommandLine</code>
+                </div>
+              </div>
+              
+              <h4>Analysis:</h4>
+              <ul>
+                <li>Review paths in RegistryValueData - are they in unusual locations?</li>
+                <li>Check InitiatingProcess - was it cmd/powershell?</li>
+                <li>Validate executables against known-good lists</li>
+              </ul>
+              
+              <h4>Expected False Positives:</h4>
+              <ul>
+                <li>Legitimate software installations</li>
+                <li>IT deployment tools</li>
+                <li>Startup optimization utilities</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Hunt: LSASS Access for Credential Dumping</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Hypothesis:</h4>
+              <p>Attackers access LSASS memory to dump credentials. This is detectable 
+              through process access events.</p>
+              
+              <h4>MITRE ATT&CK:</h4>
+              <p>T1003.001 - OS Credential Dumping: LSASS Memory</p>
+              
+              <h4>Hunt Query:</h4>
+              <div class="query-box" style="margin: 1rem 0;">
+                <div class="query-body">
+<code>DeviceEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ProcessAccessed"</span>
+| <span class="kw">where</span> FileName =~ <span class="st">"lsass.exe"</span>
+<span class="cm">// Exclude legitimate security software</span>
+| <span class="kw">where</span> InitiatingProcessFileName !<span class="kw">in~</span> (
+    <span class="st">"MsMpEng.exe"</span>, <span class="st">"csrss.exe"</span>, <span class="st">"svchost.exe"</span>,
+    <span class="st">"wininit.exe"</span>, <span class="st">"wmiprvse.exe"</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName,
+    InitiatingProcessFileName, 
+    InitiatingProcessCommandLine,
+    InitiatingProcessAccountName
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>(), 
+    Devices = <span class="fn">make_set</span>(DeviceName)
+    <span class="kw">by</span> InitiatingProcessFileName
+| <span class="kw">order by</span> Count <span class="kw">asc</span></code>
+                </div>
+              </div>
+              
+              <h4>Suspicious Findings:</h4>
+              <ul>
+                <li>procdump.exe, taskmgr.exe (with dump), comsvcs.dll</li>
+                <li>Any unsigned process accessing LSASS</li>
+                <li>PowerShell or cmd accessing LSASS</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Hunt: C2 Beaconing Patterns</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Hypothesis:</h4>
+              <p>Command and control malware beacons at regular intervals. Detecting 
+              regular timing patterns can identify C2.</p>
+              
+              <h4>MITRE ATT&CK:</h4>
+              <p>T1071 - Application Layer Protocol (C2 Communication)</p>
+              
+              <h4>Hunt Query:</h4>
+              <div class="query-box" style="margin: 1rem 0;">
+                <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    Connections = <span class="fn">make_list</span>(TimeGenerated, <span class="nu">1000</span>)
+    <span class="kw">by</span> DeviceName, RemoteIP, InitiatingProcessFileName
+| <span class="kw">where</span> <span class="fn">array_length</span>(Connections) > <span class="nu">20</span>
+| <span class="kw">mv-apply</span> Connections <span class="kw">to</span> <span class="kw">typeof</span>(datetime) <span class="kw">on</span> (
+    <span class="kw">sort by</span> Connections <span class="kw">asc</span>
+    | <span class="kw">extend</span> NextConn = <span class="fn">next</span>(Connections)
+    | <span class="kw">extend</span> IntervalSec = <span class="fn">datetime_diff</span>(<span class="st">'second'</span>, NextConn, Connections)
+    | <span class="kw">where</span> <span class="fn">isnotnull</span>(IntervalSec)
+    | <span class="kw">summarize</span> 
+        AvgInterval = <span class="fn">avg</span>(IntervalSec),
+        StdDev = <span class="fn">stdev</span>(IntervalSec),
+        Count = <span class="fn">count</span>()
+)
+| <span class="kw">extend</span> CoeffVariation = StdDev / AvgInterval
+| <span class="kw">where</span> CoeffVariation < <span class="nu">0.3</span>  <span class="cm">// Low variation = regular</span>
+| <span class="kw">where</span> AvgInterval <span class="kw">between</span> (<span class="nu">30</span> .. <span class="nu">3600</span>)  <span class="cm">// 30s to 1hr</span>
+| <span class="kw">project</span> DeviceName, RemoteIP, InitiatingProcessFileName,
+    AvgIntervalSec = <span class="fn">round</span>(AvgInterval, <span class="nu">0</span>),
+    CoeffVariation = <span class="fn">round</span>(CoeffVariation, <span class="nu">3</span>), Count
+| <span class="kw">order by</span> CoeffVariation <span class="kw">asc</span></code>
+                </div>
+              </div>
+              
+              <h4>Investigation:</h4>
+              <ul>
+                <li>Lower coefficient of variation = more regular beaconing</li>
+                <li>Check reputation of RemoteIP</li>
+                <li>Investigate the process making connections</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Hunt: Living off the Land (LOLBins)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Hypothesis:</h4>
+              <p>Attackers use legitimate Windows binaries to download payloads and 
+              execute malicious code to avoid detection.</p>
+              
+              <h4>MITRE ATT&CK:</h4>
+              <p>T1218 - System Binary Proxy Execution</p>
+              
+              <h4>Hunt Query:</h4>
+              <div class="query-box" style="margin: 1rem 0;">
+                <div class="query-body">
+<code><span class="kw">let</span> LOLBins = <span class="kw">dynamic</span>([
+    <span class="st">"certutil.exe"</span>, <span class="st">"mshta.exe"</span>, <span class="st">"regsvr32.exe"</span>,
+    <span class="st">"rundll32.exe"</span>, <span class="st">"msiexec.exe"</span>, <span class="st">"wmic.exe"</span>,
+    <span class="st">"cscript.exe"</span>, <span class="st">"wscript.exe"</span>, <span class="st">"bitsadmin.exe"</span>,
+    <span class="st">"msbuild.exe"</span>, <span class="st">"installutil.exe"</span>
+]);
+<span class="kw">let</span> SuspiciousArgs = <span class="kw">dynamic</span>([
+    <span class="st">"http"</span>, <span class="st">"ftp"</span>, <span class="st">"/download"</span>, <span class="st">"-urlcache"</span>,
+    <span class="st">"javascript:"</span>, <span class="st">"vbscript:"</span>, <span class="st">"/i:http"</span>,
+    <span class="st">"scrobj.dll"</span>, <span class="st">"-decode"</span>, <span class="st">"-encode"</span>
+]);
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (LOLBins)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (SuspiciousArgs)
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName,
+    ProcessCommandLine, AccountName,
+    InitiatingProcessFileName
+| <span class="kw">summarize</span> Count = <span class="fn">count</span>(),
+    Devices = <span class="fn">make_set</span>(DeviceName, <span class="nu">10</span>)
+    <span class="kw">by</span> FileName, ProcessCommandLine
+| <span class="kw">order by</span> Count <span class="kw">desc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="output">
+        <h2>Hunt Outputs</h2>
+        <p>
+          Successful hunts produce actionable outputs. Document findings and convert 
+          discoveries into improvements.
+        </p>
+
+        <h3>Output Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Output</th>
+                <th>Description</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>True Positive</strong></td>
+                <td>Actual malicious activity found</td>
+                <td>Escalate to incident response</td>
+              </tr>
+              <tr>
+                <td><strong>Detection Rule</strong></td>
+                <td>Hunt query becomes automated alert</td>
+                <td>Create analytic rule in SIEM</td>
+              </tr>
+              <tr>
+                <td><strong>Visibility Gap</strong></td>
+                <td>Required data isn't being collected</td>
+                <td>Improve logging coverage</td>
+              </tr>
+              <tr>
+                <td><strong>Configuration Issue</strong></td>
+                <td>Misconfigurations found during hunt</td>
+                <td>Remediate and document</td>
+              </tr>
+              <tr>
+                <td><strong>False Positive Tuning</strong></td>
+                <td>Legitimate activity to exclude</td>
+                <td>Update existing detection rules</td>
+              </tr>
+              <tr>
+                <td><strong>Hypothesis Disproved</strong></td>
+                <td>No evidence of threat found</td>
+                <td>Document and move to next hunt</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Converting Hunts to Detections</h3>
+        <div class="callout callout-tip">
+          <div class="callout-title">Detection Engineering Cycle</div>
+          <ol style="margin: 0;">
+            <li>Hunt finds suspicious pattern</li>
+            <li>Validate pattern against known attacks</li>
+            <li>Tune query to reduce false positives</li>
+            <li>Create detection rule from hunt query</li>
+            <li>Document detection logic and response</li>
+            <li>Monitor and refine over time</li>
+          </ol>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Hunting is proactive—assume compromise and look for evidence</li>
+          <li>Good hypotheses are specific, testable, and based on intelligence</li>
+          <li>Stack counting finds rare events that may indicate threats</li>
+          <li>Baselining detects deviations from normal behavior</li>
+          <li>Coefficient of variation < 0.3 suggests regular beaconing (C2)</li>
+          <li>Document all hunts—even negative results have value</li>
+          <li>Convert successful hunts into automated detection rules</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="log-correlation.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Log Correlation</span>
+          </a>
+          <a href="siem-fundamentals.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SIEM Fundamentals</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

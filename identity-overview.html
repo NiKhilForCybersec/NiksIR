@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Security Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Identity and access management security for SOC analysts: authentication, authorization, AD/Azure AD, and identity-based attacks.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link active"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> Active Directory</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">☁️</span> Azure AD / Entra ID</a>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">🎭</span> Identity Attacks</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Security</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Events</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#identity">Identity & Access</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Identity Overview</span>
+        </nav>
+        <h1>Identity Security Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 8.1</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#concepts">Core Concepts</a></li>
+          <li><a href="#authn-authz">Authentication vs Authorization</a></li>
+          <li><a href="#identity-providers">Identity Providers</a></li>
+          <li><a href="#attacks">Common Identity Attacks</a></li>
+          <li><a href="#monitoring">What to Monitor</a></li>
+          <li><a href="#investigation">Investigation Focus</a></li>
+        </ul>
+      </div>
+
+      <section id="concepts">
+        <h2>Why Identity Matters</h2>
+        <p>
+          Identity is the new perimeter. With cloud adoption and remote work, attackers increasingly 
+          target identities rather than network boundaries. Compromising one privileged account can 
+          give access to the entire environment.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">80%</div>
+            <div class="stat-label">of breaches involve compromised credentials</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">#1</div>
+            <div class="stat-label">attack vector: phishing for credentials</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">207</div>
+            <div class="stat-label">days average to detect credential theft</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Identity-First Security</div>
+          <p style="margin: 0;">
+            Modern security assumes the network is already breached. Identity verification becomes the 
+            primary control—every access request must be authenticated, authorized, and continuously validated.
+          </p>
+        </div>
+      </section>
+
+      <section id="authn-authz">
+        <h2>Authentication vs Authorization</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Authentication (AuthN)</h4>
+            <p><strong>"Who are you?"</strong></p>
+            <p>Verifying the identity of a user or system.</p>
+            <h5>Factors:</h5>
+            <ul>
+              <li><strong>Something you know:</strong> Password, PIN</li>
+              <li><strong>Something you have:</strong> Phone, token, smart card</li>
+              <li><strong>Something you are:</strong> Fingerprint, face, voice</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Authorization (AuthZ)</h4>
+            <p><strong>"What can you do?"</strong></p>
+            <p>Determining what resources an authenticated user can access.</p>
+            <h5>Methods:</h5>
+            <ul>
+              <li><strong>RBAC:</strong> Role-Based Access Control</li>
+              <li><strong>ABAC:</strong> Attribute-Based Access Control</li>
+              <li><strong>ACLs:</strong> Access Control Lists</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Authentication Strength</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Strength</th>
+                <th>Vulnerabilities</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Password only</td>
+                <td>🔴 Weak</td>
+                <td>Phishing, brute force, credential stuffing, reuse</td>
+              </tr>
+              <tr>
+                <td>Password + SMS OTP</td>
+                <td>🟠 Medium</td>
+                <td>SIM swapping, SS7 attacks, real-time phishing</td>
+              </tr>
+              <tr>
+                <td>Password + Authenticator App</td>
+                <td>🟡 Good</td>
+                <td>Real-time phishing (AiTM), device compromise</td>
+              </tr>
+              <tr>
+                <td>Password + Push Notification</td>
+                <td>🟡 Good</td>
+                <td>MFA fatigue/bombing attacks</td>
+              </tr>
+              <tr>
+                <td>Password + Hardware Key (FIDO2)</td>
+                <td>🟢 Strong</td>
+                <td>Physical theft, supply chain attacks</td>
+              </tr>
+              <tr>
+                <td>Passwordless (FIDO2/Passkey)</td>
+                <td>🟢 Strongest</td>
+                <td>Device compromise, physical access</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="identity-providers">
+        <h2>Identity Providers</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Active Directory (On-Premises)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Microsoft's directory service for Windows domain networks.</p>
+              <h4>Key Components:</h4>
+              <ul>
+                <li><strong>Domain Controllers (DC):</strong> Authenticate users, store directory</li>
+                <li><strong>Kerberos:</strong> Primary authentication protocol</li>
+                <li><strong>NTLM:</strong> Legacy authentication (should be minimized)</li>
+                <li><strong>Group Policy:</strong> Centralized configuration management</li>
+                <li><strong>LDAP:</strong> Directory query protocol</li>
+              </ul>
+              <h4>Critical Objects:</h4>
+              <ul>
+                <li>Domain Admins, Enterprise Admins, Schema Admins groups</li>
+                <li>KRBTGT account (Kerberos ticket granting)</li>
+                <li>Service accounts with SPNs</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Azure AD / Microsoft Entra ID (Cloud)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Microsoft's cloud identity and access management service.</p>
+              <h4>Key Features:</h4>
+              <ul>
+                <li><strong>Single Sign-On (SSO):</strong> One identity for all cloud apps</li>
+                <li><strong>Conditional Access:</strong> Context-aware access policies</li>
+                <li><strong>Identity Protection:</strong> Risk-based detection</li>
+                <li><strong>Privileged Identity Management:</strong> Just-in-time admin access</li>
+                <li><strong>B2B/B2C:</strong> External identity management</li>
+              </ul>
+              <h4>Critical Roles:</h4>
+              <ul>
+                <li>Global Administrator</li>
+                <li>Privileged Role Administrator</li>
+                <li>Exchange Administrator</li>
+                <li>Application Administrator</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Hybrid Identity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Most enterprises use both on-prem AD and Azure AD together.</p>
+              <h4>Sync Methods:</h4>
+              <ul>
+                <li><strong>Azure AD Connect:</strong> Syncs on-prem AD to Azure AD</li>
+                <li><strong>Password Hash Sync (PHS):</strong> Hashes synced to cloud</li>
+                <li><strong>Pass-Through Auth (PTA):</strong> Auth stays on-prem</li>
+                <li><strong>Federation (ADFS):</strong> On-prem handles all auth</li>
+              </ul>
+              <div class="callout callout-warning" style="margin-top: 1rem;">
+                <div class="callout-title">Hybrid Risk</div>
+                <p style="margin: 0;">Compromise of on-prem AD can lead to Azure AD compromise through sync. Azure AD Connect servers are high-value targets.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="attacks">
+        <h2>Common Identity Attacks</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Attack</th>
+                <th>Description</th>
+                <th>Detection</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Credential Phishing</strong></td>
+                <td>Fake login pages to steal passwords</td>
+                <td>Email gateway, user reports, impossible travel</td>
+              </tr>
+              <tr>
+                <td><strong>Password Spraying</strong></td>
+                <td>Try common passwords against many accounts</td>
+                <td>Many failed logins across accounts, same password</td>
+              </tr>
+              <tr>
+                <td><strong>Credential Stuffing</strong></td>
+                <td>Use leaked credentials from other breaches</td>
+                <td>Failed logins from known bad IPs, unusual locations</td>
+              </tr>
+              <tr>
+                <td><strong>Brute Force</strong></td>
+                <td>Try many passwords against one account</td>
+                <td>Many failed logins for single account</td>
+              </tr>
+              <tr>
+                <td><strong>MFA Fatigue</strong></td>
+                <td>Spam push notifications until user approves</td>
+                <td>Many MFA prompts in short time, after-hours</td>
+              </tr>
+              <tr>
+                <td><strong>AiTM Phishing</strong></td>
+                <td>Proxy attack captures session tokens</td>
+                <td>Sign-in from phishing infra, unusual session</td>
+              </tr>
+              <tr>
+                <td><strong>Kerberoasting</strong></td>
+                <td>Request service tickets, crack offline</td>
+                <td>High volume of TGS requests for SPNs</td>
+              </tr>
+              <tr>
+                <td><strong>Golden Ticket</strong></td>
+                <td>Forged Kerberos TGT using KRBTGT hash</td>
+                <td>Tickets with long lifetimes, impossible access</td>
+              </tr>
+              <tr>
+                <td><strong>Pass-the-Hash</strong></td>
+                <td>Use stolen NTLM hash to authenticate</td>
+                <td>NTLM auth from unexpected sources</td>
+              </tr>
+              <tr>
+                <td><strong>Token Theft</strong></td>
+                <td>Steal session/refresh tokens from device</td>
+                <td>Token use from different device/location</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>What to Monitor</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">High Priority</h4>
+            <ul>
+              <li>Failed logins to privileged accounts</li>
+              <li>Logins from unusual locations</li>
+              <li>Impossible travel alerts</li>
+              <li>Admin role assignments</li>
+              <li>MFA registration changes</li>
+              <li>Conditional Access policy changes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Medium Priority</h4>
+            <ul>
+              <li>Password changes/resets</li>
+              <li>New device registrations</li>
+              <li>OAuth app consents</li>
+              <li>Guest user additions</li>
+              <li>Legacy authentication usage</li>
+              <li>Service principal activity</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Investigate</h4>
+            <ul>
+              <li>After-hours privileged access</li>
+              <li>Bulk user enumeration</li>
+              <li>Password spray patterns</li>
+              <li>Unusual application access</li>
+              <li>Cross-tenant activity</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Risky sign-ins in Azure AD</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RiskLevelDuringSignIn <span class="kw">in</span> (<span class="st">"high"</span>, <span class="st">"medium"</span>)
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, IPAddress, 
+    Location, AppDisplayName, RiskLevelDuringSignIn,
+    RiskState, DeviceDetail
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Identity Investigation Focus</h2>
+
+        <p>When investigating identity-related alerts, answer these questions:</p>
+
+        <ul class="checklist">
+          <li><strong>Who:</strong> Which account? What privileges does it have?</li>
+          <li><strong>From where:</strong> IP address, location, device—are they expected?</li>
+          <li><strong>When:</strong> Normal working hours? Expected timing?</li>
+          <li><strong>What:</strong> What did the account access after authentication?</li>
+          <li><strong>How:</strong> What authentication method? Legacy auth? MFA bypassed?</li>
+          <li><strong>Pattern:</strong> Is this consistent with user's normal behavior?</li>
+        </ul>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Quick Validation</div>
+          <p style="margin: 0;">
+            For suspicious sign-ins, contact the user through a trusted channel (phone call, in-person) to verify 
+            if they performed the activity. Don't use email—it may be compromised.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Identity is the primary attack surface in modern environments</li>
+          <li>Authentication = who you are; Authorization = what you can do</li>
+          <li>MFA significantly reduces risk but isn't foolproof (AiTM, fatigue)</li>
+          <li>Monitor privileged accounts and administrative changes closely</li>
+          <li>Hybrid environments have compounded attack surface</li>
+          <li>Verify suspicious activity through out-of-band communication</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#identity" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Identity Section</span>
+          </a>
+          <a href="ad-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Active Directory</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

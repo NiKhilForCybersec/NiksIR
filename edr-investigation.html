@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDR Investigation | SOC Analyst Guide</title>
+  <meta name="description" content="EDR investigation techniques: alert triage, process analysis, timeline reconstruction, and response actions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔍</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link active"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> MDE Queries</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>EDR Investigation</span>
+        </nav>
+        <h1>EDR Investigation</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 4.3</span>
+          <span class="meta-item">~22 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#workflow">Investigation Workflow</a></li>
+          <li><a href="#process">Process Analysis</a></li>
+          <li><a href="#network">Network Analysis</a></li>
+          <li><a href="#files">File Analysis</a></li>
+          <li><a href="#timeline">Timeline Building</a></li>
+          <li><a href="#response">Response Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="workflow">
+        <h2>Investigation Workflow</h2>
+
+        <div class="card">
+          <h3>EDR Alert Investigation Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Triage Alert</strong><br>
+                <small>Review alert details</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Analyze Context</strong><br>
+                <small>User, device, timing</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Build Process Tree</strong><br>
+                <small>Parent-child chain</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Determine Verdict</strong><br>
+                <small>TP/FP/Benign</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Initial Triage Questions</h3>
+        <ul class="checklist">
+          <li><strong>What triggered the alert?</strong> Specific detection logic</li>
+          <li><strong>What user/device?</strong> Context about normal activity</li>
+          <li><strong>What process?</strong> Legitimate or suspicious?</li>
+          <li><strong>What was the parent process?</strong> How did it start?</li>
+          <li><strong>What time?</strong> Business hours or unusual?</li>
+          <li><strong>Has this happened before?</strong> Check for patterns</li>
+        </ul>
+
+        <h3>Alert Context Assessment</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Context</th>
+                <th>Questions to Answer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>User Context</strong></td>
+                <td>Role? Department? Expected to use these tools? On vacation?</td>
+              </tr>
+              <tr>
+                <td><strong>Device Context</strong></td>
+                <td>Workstation or server? What's its purpose? Who uses it?</td>
+              </tr>
+              <tr>
+                <td><strong>Time Context</strong></td>
+                <td>Business hours? Weekend? Holiday? Matches user location?</td>
+              </tr>
+              <tr>
+                <td><strong>Process Context</strong></td>
+                <td>Normally seen? Unusual parent? Suspicious command line?</td>
+              </tr>
+              <tr>
+                <td><strong>Network Context</strong></td>
+                <td>Connected to suspicious IPs? High data transfer?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="process">
+        <h2>Process Analysis</h2>
+        <p>
+          Process tree analysis is the core of EDR investigation. Understanding 
+          parent-child relationships reveals attack chains.
+        </p>
+
+        <h3>Process Tree Red Flags</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Suspicious Parent-Child Relationships</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Parent</th>
+                      <th>Suspicious Child</th>
+                      <th>Likely Attack</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>WINWORD.EXE / EXCEL.EXE</td>
+                      <td>cmd.exe, powershell.exe</td>
+                      <td>Macro execution</td>
+                    </tr>
+                    <tr>
+                      <td>OUTLOOK.EXE</td>
+                      <td>powershell.exe, cmd.exe</td>
+                      <td>Malicious attachment/link</td>
+                    </tr>
+                    <tr>
+                      <td>browser (chrome, edge)</td>
+                      <td>powershell.exe, cmd.exe</td>
+                      <td>Drive-by download</td>
+                    </tr>
+                    <tr>
+                      <td>wmiprvse.exe</td>
+                      <td>powershell.exe</td>
+                      <td>WMI lateral movement</td>
+                    </tr>
+                    <tr>
+                      <td>services.exe</td>
+                      <td>cmd.exe (unusual)</td>
+                      <td>Service exploitation</td>
+                    </tr>
+                    <tr>
+                      <td>svchost.exe</td>
+                      <td>powershell.exe</td>
+                      <td>Scheduled task abuse</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Suspicious Command Line Patterns</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>PowerShell Red Flags:</h4>
+              <ul>
+                <li><code>-enc</code> or <code>-encodedcommand</code> - Base64 encoded</li>
+                <li><code>-nop</code> or <code>-noprofile</code> - Skip profile</li>
+                <li><code>-w hidden</code> - Hidden window</li>
+                <li><code>-ep bypass</code> - Execution policy bypass</li>
+                <li><code>IEX</code> or <code>Invoke-Expression</code> - Execute string</li>
+                <li><code>DownloadString</code> / <code>DownloadFile</code> - Download payload</li>
+                <li><code>Net.WebClient</code> - Web download</li>
+              </ul>
+              <h4>CMD Red Flags:</h4>
+              <ul>
+                <li>Long obfuscated commands</li>
+                <li>Multiple && or || chained commands</li>
+                <li>certutil with -urlcache or -decode</li>
+                <li>bitsadmin /transfer</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Process Masquerading</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Attackers disguise malware as legitimate processes:</p>
+              <ul>
+                <li><strong>Wrong path:</strong> svchost.exe not in System32</li>
+                <li><strong>Typosquatting:</strong> svch0st.exe, scvhost.exe</li>
+                <li><strong>Wrong parent:</strong> svchost.exe not from services.exe</li>
+                <li><strong>Unsigned:</strong> Windows binaries should be signed</li>
+              </ul>
+              <h4>Expected Paths:</h4>
+              <div class="terminal">
+                <div class="terminal-body">
+<pre>svchost.exe    → C:\Windows\System32\
+lsass.exe      → C:\Windows\System32\
+csrss.exe      → C:\Windows\System32\
+services.exe   → C:\Windows\System32\
+smss.exe       → C:\Windows\System32\</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Build process tree for suspicious process</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> TargetDevice = <span class="st">"WORKSTATION-01"</span>;
+<span class="kw">let</span> SuspiciousPID = <span class="nu">1234</span>;
+<span class="kw">let</span> TimeWindow = <span class="fn">ago</span>(<span class="nu">24h</span>);
+
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> DeviceName =~ TargetDevice
+| <span class="kw">where</span> ProcessId == SuspiciousPID 
+    <span class="kw">or</span> InitiatingProcessId == SuspiciousPID
+    <span class="kw">or</span> ProcessId == InitiatingProcessId
+| <span class="kw">project</span> TimeGenerated, 
+    ProcessId, FileName, ProcessCommandLine,
+    InitiatingProcessId, InitiatingProcessFileName,
+    InitiatingProcessCommandLine, AccountName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="network">
+        <h2>Network Analysis</h2>
+        <p>
+          Network activity from suspicious processes can reveal C2 communication, 
+          data exfiltration, or lateral movement.
+        </p>
+
+        <h3>Network Red Flags</h3>
+        <ul class="checklist">
+          <li>Connections to unusual countries</li>
+          <li>High data transfer to external IPs</li>
+          <li>Connections on non-standard ports</li>
+          <li>Process that shouldn't make network connections (notepad, calc)</li>
+          <li>Regular interval connections (beaconing)</li>
+          <li>DNS queries to suspicious domains</li>
+          <li>Direct IP connections (no DNS)</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Network activity for suspicious process</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> TargetDevice = <span class="st">"WORKSTATION-01"</span>;
+<span class="kw">let</span> SuspiciousProcess = <span class="st">"powershell.exe"</span>;
+<span class="kw">let</span> TimeWindow = <span class="fn">ago</span>(<span class="nu">24h</span>);
+
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> DeviceName =~ TargetDevice
+| <span class="kw">where</span> InitiatingProcessFileName =~ SuspiciousProcess
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    TotalBytesSent = <span class="fn">sum</span>(SentBytes),
+    TotalBytesReceived = <span class="fn">sum</span>(ReceivedBytes),
+    Ports = <span class="fn">make_set</span>(RemotePort),
+    URLs = <span class="fn">make_set</span>(RemoteUrl, <span class="nu">10</span>)
+    <span class="kw">by</span> RemoteIP, RemoteIPType
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Check IP reputation and connection timing</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> SuspiciousIP = <span class="st">"203.0.113.50"</span>;
+
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteIP == SuspiciousIP
+| <span class="kw">project</span> TimeGenerated, DeviceName, 
+    InitiatingProcessFileName, InitiatingProcessCommandLine,
+    RemotePort, SentBytes, ReceivedBytes
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="files">
+        <h2>File Analysis</h2>
+        <p>
+          File events reveal malware drops, staging files, and exfiltration preparation.
+        </p>
+
+        <h3>File Activity Red Flags</h3>
+        <ul class="checklist">
+          <li>Executables in temp folders</li>
+          <li>Files with double extensions (.pdf.exe)</li>
+          <li>Recently created files in startup locations</li>
+          <li>Large files created before network upload</li>
+          <li>Many files renamed with same extension (ransomware)</li>
+          <li>Script files (.ps1, .vbs, .bat) in unusual locations</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Files created by suspicious process</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> TargetDevice = <span class="st">"WORKSTATION-01"</span>;
+<span class="kw">let</span> SuspiciousProcess = <span class="st">"powershell.exe"</span>;
+
+DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> DeviceName =~ TargetDevice
+| <span class="kw">where</span> InitiatingProcessFileName =~ SuspiciousProcess
+| <span class="kw">where</span> ActionType <span class="kw">in</span> (<span class="st">"FileCreated"</span>, <span class="st">"FileModified"</span>)
+| <span class="kw">project</span> TimeGenerated, ActionType, FileName, 
+    FolderPath, SHA256, FileSize,
+    InitiatingProcessCommandLine
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <h3>Hash Investigation</h3>
+        <p>Check file hashes against threat intelligence:</p>
+        <ul>
+          <li><strong>VirusTotal:</strong> Multi-engine scan results</li>
+          <li><strong>Hybrid Analysis:</strong> Behavioral analysis</li>
+          <li><strong>Internal IOC database:</strong> Known bad hashes</li>
+        </ul>
+      </section>
+
+      <section id="timeline">
+        <h2>Timeline Building</h2>
+        <p>
+          Combine process, network, and file events into a unified timeline to 
+          understand the full attack sequence.
+        </p>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Unified timeline for device</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> TargetDevice = <span class="st">"WORKSTATION-01"</span>;
+<span class="kw">let</span> TimeWindow = <span class="fn">ago</span>(<span class="nu">24h</span>);
+
+<span class="kw">let</span> ProcessEvents = DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> DeviceName =~ TargetDevice
+| <span class="kw">project</span> TimeGenerated, EventType = <span class="st">"Process"</span>,
+    Description = <span class="fn">strcat</span>(FileName, <span class="st">" - "</span>, 
+        <span class="fn">substring</span>(ProcessCommandLine, <span class="nu">0</span>, <span class="nu">100</span>)),
+    Details = InitiatingProcessFileName;
+
+<span class="kw">let</span> NetworkEvents = DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> DeviceName =~ TargetDevice
+| <span class="kw">project</span> TimeGenerated, EventType = <span class="st">"Network"</span>,
+    Description = <span class="fn">strcat</span>(RemoteIP, <span class="st">":"</span>, RemotePort),
+    Details = InitiatingProcessFileName;
+
+<span class="kw">let</span> FileEvents = DeviceFileEvents
+| <span class="kw">where</span> TimeGenerated > TimeWindow
+| <span class="kw">where</span> DeviceName =~ TargetDevice
+| <span class="kw">where</span> ActionType <span class="kw">in</span> (<span class="st">"FileCreated"</span>, <span class="st">"FileModified"</span>)
+| <span class="kw">project</span> TimeGenerated, EventType = <span class="st">"File"</span>,
+    Description = <span class="fn">strcat</span>(ActionType, <span class="st">": "</span>, FileName),
+    Details = FolderPath;
+
+<span class="kw">union</span> ProcessEvents, NetworkEvents, FileEvents
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <h3>EDR Response Capabilities</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Description</th>
+                <th>When to Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Isolate Device</strong></td>
+                <td>Cut network except EDR communication</td>
+                <td>Confirmed compromise, prevent spread</td>
+              </tr>
+              <tr>
+                <td><strong>Kill Process</strong></td>
+                <td>Terminate running malicious process</td>
+                <td>Active malware execution</td>
+              </tr>
+              <tr>
+                <td><strong>Quarantine File</strong></td>
+                <td>Move malicious file to quarantine</td>
+                <td>Identified malware file</td>
+              </tr>
+              <tr>
+                <td><strong>Block Hash</strong></td>
+                <td>Prevent file from running anywhere</td>
+                <td>Known malicious file</td>
+              </tr>
+              <tr>
+                <td><strong>Collect Investigation Package</strong></td>
+                <td>Gather forensic artifacts</td>
+                <td>Need deeper analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Run Live Response</strong></td>
+                <td>Remote shell/commands on endpoint</td>
+                <td>Manual investigation/remediation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Response Decision Tree</h3>
+        <div class="card">
+          <ul>
+            <li><strong>Confirmed malware execution?</strong> → Isolate, kill process, collect artifacts</li>
+            <li><strong>Suspicious but not confirmed?</strong> → Collect investigation package, continue analysis</li>
+            <li><strong>Lateral movement detected?</strong> → Isolate affected systems, hunt for spread</li>
+            <li><strong>Data exfiltration?</strong> → Isolate, preserve evidence, escalate to IR</li>
+            <li><strong>False positive?</strong> → Document, consider tuning</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Start with process tree—parent-child relationships tell the story</li>
+          <li>Office apps spawning cmd/PowerShell is almost always malicious</li>
+          <li>Check command line for encoded commands, bypass flags, downloads</li>
+          <li>Verify process paths—svchost outside System32 is suspicious</li>
+          <li>Correlate network activity with process for C2 identification</li>
+          <li>Build timeline combining process, network, and file events</li>
+          <li>Isolate before it spreads if confirmed compromise</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="edr-deep-dive.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR Deep Dive</span>
+          </a>
+          <a href="mde-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">MDE Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

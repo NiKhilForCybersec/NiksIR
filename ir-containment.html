@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Containment Strategies | SOC Analyst Guide</title>
+  <meta name="description" content="Incident containment strategies: host isolation, account actions, network blocking, and containment decision framework.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link active"><span class="nav-link-icon">🛑</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Containment</span>
+        </nav>
+        <h1>Containment Strategies</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 10.3</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#principles">Containment Principles</a></li>
+          <li><a href="#host">Host Containment</a></li>
+          <li><a href="#account">Account Actions</a></li>
+          <li><a href="#network">Network Containment</a></li>
+          <li><a href="#decision">Decision Framework</a></li>
+          <li><a href="#documentation">Documentation</a></li>
+        </ul>
+      </div>
+
+      <section id="principles">
+        <h2>Containment Principles</h2>
+        <p>
+          Containment stops the bleeding. The goal is to limit damage and prevent spread while 
+          preserving evidence for investigation.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Speed</h4>
+            <p>Every minute an attacker has access, they can cause more damage. Contain fast.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Scope</h4>
+            <p>Contain enough to stop the threat, but avoid unnecessary business disruption.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Evidence</h4>
+            <p>Preserve evidence while containing. Don't power off if you need memory forensics.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Coordination</h4>
+            <p>Coordinate containment actions to execute simultaneously when possible.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Don't Tip Off the Attacker</div>
+          <p style="margin: 0;">
+            If you contain one system and the attacker notices, they may accelerate their attack 
+            on other systems. For widespread compromise, coordinate containment to happen simultaneously.
+          </p>
+        </div>
+      </section>
+
+      <section id="host">
+        <h2>Host Containment Options</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>How</th>
+                <th>Impact</th>
+                <th>Evidence Impact</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>EDR Isolation</strong></td>
+                <td>Network isolation via EDR agent</td>
+                <td>🟢 Low - Host stays on, user notified</td>
+                <td>🟢 Preserves - Memory, disk intact</td>
+              </tr>
+              <tr>
+                <td><strong>VLAN Isolation</strong></td>
+                <td>Move to quarantine VLAN</td>
+                <td>🟡 Medium - Network access lost</td>
+                <td>🟢 Preserves - Host running</td>
+              </tr>
+              <tr>
+                <td><strong>Disable Network Port</strong></td>
+                <td>Switch port shutdown</td>
+                <td>🟡 Medium - Network access lost</td>
+                <td>🟢 Preserves - Host running</td>
+              </tr>
+              <tr>
+                <td><strong>Suspend VM</strong></td>
+                <td>Suspend virtual machine</td>
+                <td>🟠 High - System unavailable</td>
+                <td>🟢 Preserves - Memory snapshot</td>
+              </tr>
+              <tr>
+                <td><strong>Shutdown</strong></td>
+                <td>Graceful OS shutdown</td>
+                <td>🔴 High - System offline</td>
+                <td>🟠 Partial - Loses memory</td>
+              </tr>
+              <tr>
+                <td><strong>Power Off</strong></td>
+                <td>Hard power cut</td>
+                <td>🔴 High - System offline</td>
+                <td>🔴 Loses - Memory lost, disk may corrupt</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">EDR Isolation is Preferred</div>
+          <p style="margin: 0;">
+            EDR isolation is the best option for most cases: it's fast, preserves evidence, 
+            allows remote investigation, and can be reversed easily. Use this as your default.
+          </p>
+        </div>
+
+        <h3>EDR Isolation Commands</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Microsoft Defender for Endpoint isolation</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Via MDE Portal: Device page → "Isolate device"</span>
+
+<span class="cm"># Via API/PowerShell</span>
+$deviceId = <span class="st">"device-id-here"</span>
+$isolationType = <span class="st">"Full"</span>  <span class="cm"># or "Selective"</span>
+
+Invoke-MgGraphRequest -Method POST `
+    -Uri <span class="st">"https://api.securitycenter.microsoft.com/api/machines/$deviceId/isolate"</span> `
+    -Body @{ IsolationType = $isolationType; Comment = <span class="st">"Incident INC-2024-0142"</span> }</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="account">
+        <h2>Account Actions</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>When to Use</th>
+                <th>How</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Disable Account</strong></td>
+                <td>Confirmed compromise, immediate stop needed</td>
+                <td>AD: Disable in ADUC or PowerShell</td>
+              </tr>
+              <tr>
+                <td><strong>Reset Password</strong></td>
+                <td>Credentials compromised but account needed</td>
+                <td>Force password change</td>
+              </tr>
+              <tr>
+                <td><strong>Revoke Sessions</strong></td>
+                <td>Active sessions may be hijacked</td>
+                <td>Azure AD: Revoke-MgUserSignInSession</td>
+              </tr>
+              <tr>
+                <td><strong>Revoke Tokens</strong></td>
+                <td>OAuth/refresh tokens stolen</td>
+                <td>Invalidate all refresh tokens</td>
+              </tr>
+              <tr>
+                <td><strong>Remove MFA</strong></td>
+                <td>MFA methods may be attacker-controlled</td>
+                <td>Clear and re-register MFA</td>
+              </tr>
+              <tr>
+                <td><strong>Block Sign-in</strong></td>
+                <td>Temporary block without disabling</td>
+                <td>Azure AD: Block sign-in toggle</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Account containment commands</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Disable AD account</span>
+Disable-ADAccount -Identity <span class="st">"compromised.user"</span>
+
+<span class="cm"># Reset password (on-prem AD)</span>
+Set-ADAccountPassword -Identity <span class="st">"compromised.user"</span> -Reset -NewPassword (ConvertTo-SecureString <span class="st">"TempP@ss123!"</span> -AsPlainText -Force)
+
+<span class="cm"># Revoke Azure AD sessions</span>
+Revoke-MgUserSignInSession -UserId <span class="st">"user@domain.com"</span>
+
+<span class="cm"># Block Azure AD sign-in</span>
+Update-MgUser -UserId <span class="st">"user@domain.com"</span> -AccountEnabled:<span class="nu">$false</span></code>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Service Accounts</div>
+          <p style="margin: 0;">
+            Be careful disabling service accounts—they may break critical applications. 
+            Coordinate with application owners or have a rollback plan ready.
+          </p>
+        </div>
+      </section>
+
+      <section id="network">
+        <h2>Network Containment</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Scope</th>
+                <th>Implementation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Block IP at Firewall</strong></td>
+                <td>Single malicious IP</td>
+                <td>Add to firewall block list</td>
+              </tr>
+              <tr>
+                <td><strong>Block Domain at DNS</strong></td>
+                <td>Malicious domain</td>
+                <td>DNS sinkhole or block</td>
+              </tr>
+              <tr>
+                <td><strong>Block URL at Proxy</strong></td>
+                <td>Specific malicious URL</td>
+                <td>Proxy/web filter rule</td>
+              </tr>
+              <tr>
+                <td><strong>Block Hash at EDR</strong></td>
+                <td>Known malicious file</td>
+                <td>Add to EDR block list</td>
+              </tr>
+              <tr>
+                <td><strong>Segment Isolation</strong></td>
+                <td>Network segment</td>
+                <td>Firewall rules between segments</td>
+              </tr>
+              <tr>
+                <td><strong>Internet Disconnect</strong></td>
+                <td>Entire network</td>
+                <td>Last resort - executive decision</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Block IOCs Checklist</h3>
+        <ul class="checklist">
+          <li>Block C2 IP addresses at perimeter firewall</li>
+          <li>Block C2 domains at DNS resolver</li>
+          <li>Block malicious file hashes in EDR</li>
+          <li>Block sender addresses in email gateway</li>
+          <li>Block malicious URLs in web proxy</li>
+          <li>Add IOCs to threat intelligence platform</li>
+        </ul>
+      </section>
+
+      <section id="decision">
+        <h2>Containment Decision Framework</h2>
+
+        <div class="card">
+          <h3>Questions to Ask</h3>
+          <ol>
+            <li><strong>How critical is the affected system?</strong>
+              <ul>
+                <li>Critical production → Minimize disruption, consider partial containment</li>
+                <li>Standard workstation → Full isolation acceptable</li>
+              </ul>
+            </li>
+            <li><strong>Is the attack active or historical?</strong>
+              <ul>
+                <li>Active → Immediate containment required</li>
+                <li>Historical → Can take time to plan</li>
+              </ul>
+            </li>
+            <li><strong>Is the attacker aware we've detected them?</strong>
+              <ul>
+                <li>Unknown → Coordinate simultaneous containment</li>
+                <li>Likely aware → Speed over coordination</li>
+              </ul>
+            </li>
+            <li><strong>Do we need forensic evidence?</strong>
+              <ul>
+                <li>Yes → Preserve memory, don't power off</li>
+                <li>No → Standard containment acceptable</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <h3>Authority Levels</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Who Can Authorize</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Isolate single workstation</td>
+                <td><span class="tier-badge tier-l2">L2 Analyst</span></td>
+              </tr>
+              <tr>
+                <td>Disable user account</td>
+                <td><span class="tier-badge tier-l2">L2 Analyst</span> + Manager notification</td>
+              </tr>
+              <tr>
+                <td>Isolate server</td>
+                <td><span class="tier-badge tier-lead">SOC Lead</span> or <span class="tier-badge tier-l3">L3</span></td>
+              </tr>
+              <tr>
+                <td>Disable service account</td>
+                <td><span class="tier-badge tier-lead">SOC Lead</span> + App owner</td>
+              </tr>
+              <tr>
+                <td>Network segment isolation</td>
+                <td>IR Lead / Security Manager</td>
+              </tr>
+              <tr>
+                <td>Internet disconnect</td>
+                <td>CISO / Executive</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="documentation">
+        <h2>Containment Documentation</h2>
+        <p>Document every containment action for audit trail and lessons learned:</p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">containment_log.md</span>
+          </div>
+          <div class="terminal-body">
+<pre>## Containment Actions - INC-2024-0142
+
+### Action 1: Host Isolation
+- Time: 2024-01-15 09:45:00 UTC
+- Target: WKSTN-PC042 (192.168.1.50)
+- Action: EDR network isolation (Full)
+- Performed by: J. Smith (L2)
+- Authorized by: M. Garcia (SOC Lead)
+- Result: Success - host isolated
+- Ticket: INC-2024-0142
+
+### Action 2: Account Disable
+- Time: 2024-01-15 09:48:00 UTC
+- Target: jdoe@company.com
+- Action: Disabled account, revoked sessions
+- Performed by: J. Smith (L2)
+- Authorized by: M. Garcia (SOC Lead)
+- Result: Success
+- User notified: Pending (HR coordinating)
+
+### Action 3: Block C2
+- Time: 2024-01-15 09:50:00 UTC
+- Target: 203.0.113.50, evil-c2.com
+- Action: Blocked at firewall and DNS
+- Performed by: Network team (NW-456)
+- Result: Success - blocks confirmed</pre>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Speed matters—contain quickly to limit damage</li>
+          <li>EDR isolation is preferred—preserves evidence, reversible</li>
+          <li>Coordinate simultaneous containment for widespread compromise</li>
+          <li>Preserve evidence—don't power off if you need memory</li>
+          <li>Know your authority level—escalate for major actions</li>
+          <li>Document everything—time, action, who, result</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ir-classification.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Classification</span>
+          </a>
+          <a href="ir-eradication.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Eradication</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

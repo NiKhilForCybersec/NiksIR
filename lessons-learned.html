@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lessons Learned | SOC Analyst Guide</title>
+  <meta name="description" content="Post-incident review process: conducting lessons learned, documenting improvements, and preventing recurrence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="lessons-learned.html" class="nav-link active"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#ir">Incident Response</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Lessons Learned</span>
+        </nav>
+        <h1>Lessons Learned</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 10.6</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#purpose">Purpose</a></li>
+          <li><a href="#meeting">The Meeting</a></li>
+          <li><a href="#questions">Key Questions</a></li>
+          <li><a href="#report">Documentation</a></li>
+          <li><a href="#actions">Follow-up Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="purpose">
+        <h2>Purpose</h2>
+        <p>
+          The lessons learned (post-incident review, retrospective) is the final phase of 
+          incident response. It's where we turn incidents into improvements.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Goals</h4>
+            <ul>
+              <li>Understand what happened</li>
+              <li>Identify what worked well</li>
+              <li>Find gaps in detection/response</li>
+              <li>Improve processes and tools</li>
+              <li>Prevent recurrence</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Not About</h4>
+            <ul>
+              <li>Blaming individuals</li>
+              <li>Punishing mistakes</li>
+              <li>Assigning fault</li>
+              <li>Creating fear</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Blameless Culture</div>
+          <p style="margin: 0;">
+            Effective lessons learned require a blameless approach. Focus on process and 
+            system improvements, not individual mistakes. People are more honest when they 
+            don't fear punishment.
+          </p>
+        </div>
+      </section>
+
+      <section id="meeting">
+        <h2>The Meeting</h2>
+
+        <h3>When to Hold</h3>
+        <ul>
+          <li>Within 1-2 weeks of incident closure</li>
+          <li>While details are still fresh</li>
+          <li>After systems are stable and stress has reduced</li>
+        </ul>
+
+        <h3>Who Should Attend</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Incident responders</td>
+                <td>Firsthand knowledge of what happened</td>
+              </tr>
+              <tr>
+                <td>SOC analysts involved</td>
+                <td>Detection and initial response perspective</td>
+              </tr>
+              <tr>
+                <td>IT teams affected</td>
+                <td>System recovery perspective</td>
+              </tr>
+              <tr>
+                <td>Management (as appropriate)</td>
+                <td>Resource and policy decisions</td>
+              </tr>
+              <tr>
+                <td>Facilitator (neutral)</td>
+                <td>Keep discussion productive</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Meeting Structure</h3>
+        <div class="card">
+          <h4>Suggested Agenda (60-90 minutes)</h4>
+          <ol>
+            <li><strong>Timeline review</strong> (15 min) - Walk through what happened</li>
+            <li><strong>What worked well</strong> (15 min) - Celebrate successes</li>
+            <li><strong>What could improve</strong> (20 min) - Identify gaps</li>
+            <li><strong>Root cause analysis</strong> (15 min) - Why did this happen</li>
+            <li><strong>Action items</strong> (15 min) - Specific improvements</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="questions">
+        <h2>Key Questions</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Detection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>How was the incident detected?</li>
+                <li>How long between compromise and detection?</li>
+                <li>Were there earlier indicators we missed?</li>
+                <li>What alerts fired? Which should have?</li>
+                <li>How can we detect this faster next time?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Response</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Was the initial response appropriate?</li>
+                <li>Did we have the right tools and access?</li>
+                <li>Were runbooks/playbooks helpful?</li>
+                <li>Was escalation timely and effective?</li>
+                <li>What slowed us down?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Communication</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Was communication clear and timely?</li>
+                <li>Did the right people get informed?</li>
+                <li>Were stakeholders kept updated?</li>
+                <li>Any communication breakdowns?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Containment & Recovery</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Was containment fast enough?</li>
+                <li>Did containment cause unnecessary impact?</li>
+                <li>Was eradication complete?</li>
+                <li>How long did recovery take?</li>
+                <li>Were backups adequate?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Root Cause</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What was the initial access vector?</li>
+                <li>Why was that vector available?</li>
+                <li>What vulnerabilities were exploited?</li>
+                <li>Were there control gaps?</li>
+                <li>How can we prevent this specific attack?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="report">
+        <h2>Documentation</h2>
+
+        <h3>Post-Incident Report Contents</h3>
+        <ul class="checklist">
+          <li><strong>Executive Summary</strong> - Brief overview for leadership</li>
+          <li><strong>Timeline</strong> - Detailed chronology of events</li>
+          <li><strong>Impact Assessment</strong> - What was affected, business impact</li>
+          <li><strong>Root Cause</strong> - How the incident occurred</li>
+          <li><strong>Detection Analysis</strong> - How/when discovered</li>
+          <li><strong>Response Summary</strong> - Actions taken</li>
+          <li><strong>What Worked Well</strong> - Successes to reinforce</li>
+          <li><strong>Areas for Improvement</strong> - Gaps identified</li>
+          <li><strong>Action Items</strong> - Specific remediation tasks</li>
+          <li><strong>IOCs</strong> - Indicators for future detection</li>
+        </ul>
+
+        <h3>Report Audience</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Audience</th>
+                <th>Content Focus</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Executive/Board</td>
+                <td>Business impact, risk, high-level actions</td>
+              </tr>
+              <tr>
+                <td>Technical Teams</td>
+                <td>Full technical detail, IOCs, detection rules</td>
+              </tr>
+              <tr>
+                <td>Legal/Compliance</td>
+                <td>Timeline, data affected, regulatory impact</td>
+              </tr>
+              <tr>
+                <td>SOC/IR Team</td>
+                <td>Playbook updates, detection improvements</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="actions">
+        <h2>Follow-up Actions</h2>
+
+        <h3>Common Improvement Areas</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Example Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Detection</strong></td>
+                <td>New alert rules, improved logging, threat hunting queries</td>
+              </tr>
+              <tr>
+                <td><strong>Prevention</strong></td>
+                <td>Patching, configuration changes, new controls</td>
+              </tr>
+              <tr>
+                <td><strong>Process</strong></td>
+                <td>Updated playbooks, improved escalation, communication plans</td>
+              </tr>
+              <tr>
+                <td><strong>Training</strong></td>
+                <td>User awareness, analyst skill development</td>
+              </tr>
+              <tr>
+                <td><strong>Tooling</strong></td>
+                <td>New capabilities, better visibility, automation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Action Item Tracking</h3>
+        <ul class="checklist">
+          <li>Assign owner to each action item</li>
+          <li>Set realistic due dates</li>
+          <li>Track completion status</li>
+          <li>Review in regular security meetings</li>
+          <li>Measure improvement in future incidents</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Don't Skip This Phase</div>
+          <p style="margin: 0;">
+            Under pressure to move on, teams often skip lessons learned. This is a mistake—
+            without this phase, the same incidents repeat. Schedule it immediately after 
+            incident closure so it doesn't get forgotten.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Hold lessons learned within 1-2 weeks while details are fresh</li>
+          <li>Focus on process improvement, not blame</li>
+          <li>Include all stakeholders who were involved</li>
+          <li>Document both what worked AND what needs improvement</li>
+          <li>Create specific, assigned action items with due dates</li>
+          <li>Track action completion in regular meetings</li>
+          <li>Turn incidents into organizational improvements</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ir-recovery.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Recovery</span>
+          </a>
+          <a href="ir-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">IR Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

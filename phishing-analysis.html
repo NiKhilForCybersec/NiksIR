@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Analysis | SOC Analyst Guide</title>
+  <meta name="description" content="Complete guide to analyzing phishing emails: URL analysis, attachment investigation, and user impact assessment.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">✅</span> SPF/DKIM/DMARC</a>
+          <a href="phishing-analysis.html" class="nav-link active"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#email">Email & Phishing</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Phishing Analysis</span>
+        </nav>
+        <h1>Phishing Analysis</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 7.4</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#workflow">Analysis Workflow</a></li>
+          <li><a href="#indicators">Phishing Indicators</a></li>
+          <li><a href="#urls">URL Analysis</a></li>
+          <li><a href="#attachments">Attachment Analysis</a></li>
+          <li><a href="#impact">Impact Assessment</a></li>
+          <li><a href="#response">Response Actions</a></li>
+        </ul>
+      </div>
+
+      <section id="workflow">
+        <h2>Analysis Workflow</h2>
+
+        <div class="card">
+          <h3>Phishing Investigation Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Initial Review</strong><br>
+                <small>Headers, sender, content</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Analyze Payload</strong><br>
+                <small>URLs, attachments</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Assess Impact</strong><br>
+                <small>Who clicked? Credentials?</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Respond</strong><br>
+                <small>Block, purge, remediate</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Initial Questions</h3>
+        <ul class="checklist">
+          <li>Is the sender legitimate or spoofed?</li>
+          <li>Does the email contain URLs or attachments?</li>
+          <li>What is the email trying to get the user to do?</li>
+          <li>How many users received this email?</li>
+          <li>Did anyone click or open attachments?</li>
+        </ul>
+      </section>
+
+      <section id="indicators">
+        <h2>Phishing Indicators</h2>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>🚩 Strong Indicators</h4>
+            <ul>
+              <li>SPF/DKIM/DMARC failures</li>
+              <li>Lookalike domain (typosquatting)</li>
+              <li>Mismatched display name and email</li>
+              <li>Known malicious URL/attachment</li>
+              <li>Reply-to different from sender</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-orange);">
+            <h4>⚠️ Moderate Indicators</h4>
+            <ul>
+              <li>Urgency language ("act now")</li>
+              <li>Requests for credentials</li>
+              <li>Generic greeting ("Dear Customer")</li>
+              <li>Unusual sending time</li>
+              <li>Spelling/grammar errors</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-yellow);">
+            <h4>💡 Context Clues</h4>
+            <ul>
+              <li>Unexpected invoice or document</li>
+              <li>Unsolicited password reset</li>
+              <li>Too good to be true offers</li>
+              <li>Fear/threat tactics</li>
+              <li>Request to bypass procedures</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Common Phishing Themes</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Theme</th>
+                <th>Typical Lure</th>
+                <th>Goal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Account Alert</strong></td>
+                <td>"Your account has been compromised"</td>
+                <td>Credential harvesting</td>
+              </tr>
+              <tr>
+                <td><strong>Invoice/Payment</strong></td>
+                <td>"Invoice attached for payment"</td>
+                <td>Malware delivery</td>
+              </tr>
+              <tr>
+                <td><strong>Package Delivery</strong></td>
+                <td>"Your package is waiting"</td>
+                <td>Credential harvesting</td>
+              </tr>
+              <tr>
+                <td><strong>IT Support</strong></td>
+                <td>"Update your password"</td>
+                <td>Credential harvesting</td>
+              </tr>
+              <tr>
+                <td><strong>HR/Payroll</strong></td>
+                <td>"Review your benefits"</td>
+                <td>Credential/PII theft</td>
+              </tr>
+              <tr>
+                <td><strong>Voicemail</strong></td>
+                <td>"You have a new voicemail"</td>
+                <td>Malware/credentials</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="urls">
+        <h2>URL Analysis</h2>
+
+        <h3>URL Red Flags</h3>
+        <ul class="checklist">
+          <li><strong>Lookalike domains:</strong> micros0ft.com, paypa1.com</li>
+          <li><strong>Suspicious TLDs:</strong> .xyz, .top, .tk, .ml</li>
+          <li><strong>IP address URLs:</strong> http://192.168.1.1/login</li>
+          <li><strong>Excessive subdomains:</strong> login.microsoft.com.evil.com</li>
+          <li><strong>URL shorteners:</strong> bit.ly, tinyurl (hide real destination)</li>
+          <li><strong>Encoded characters:</strong> %20, %2F in suspicious places</li>
+        </ul>
+
+        <h3>URL Analysis Tools</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Purpose</th>
+                <th>URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>VirusTotal</strong></td>
+                <td>Multi-engine URL scan</td>
+                <td>virustotal.com</td>
+              </tr>
+              <tr>
+                <td><strong>URLScan.io</strong></td>
+                <td>Visual site analysis, screenshot</td>
+                <td>urlscan.io</td>
+              </tr>
+              <tr>
+                <td><strong>Any.Run</strong></td>
+                <td>Interactive sandbox</td>
+                <td>any.run</td>
+              </tr>
+              <tr>
+                <td><strong>PhishTank</strong></td>
+                <td>Phishing URL database</td>
+                <td>phishtank.org</td>
+              </tr>
+              <tr>
+                <td><strong>URLhaus</strong></td>
+                <td>Malware URL database</td>
+                <td>urlhaus.abuse.ch</td>
+              </tr>
+              <tr>
+                <td><strong>Unfurl</strong></td>
+                <td>URL parameter analysis</td>
+                <td>dfir.blog/unfurl</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Safe URL Analysis</div>
+          <p style="margin: 0;">
+            Never visit suspicious URLs directly. Use analysis tools, sandbox environments, 
+            or defang URLs (hxxp://evil[.]com) when sharing.
+          </p>
+        </div>
+
+        <h3>Defanging URLs</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">URL Defanging</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-red);">Original:</span>  https://malicious-site.com/payload.exe
+<span style="color: var(--accent-green);">Defanged:</span> hxxps://malicious-site[.]com/payload[.]exe
+
+<span style="color: var(--text-muted);"># Replace http with hxxp</span>
+<span style="color: var(--text-muted);"># Replace . with [.]</span>
+<span style="color: var(--text-muted);"># Prevents accidental clicks</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="attachments">
+        <h2>Attachment Analysis</h2>
+
+        <h3>High-Risk File Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Risk</th>
+                <th>Extensions</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-red);"><strong>Critical</strong></span></td>
+                <td>.exe, .dll, .scr, .bat, .cmd, .ps1, .vbs, .js</td>
+                <td>Direct execution, should be blocked</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);"><strong>High</strong></span></td>
+                <td>.docm, .xlsm, .pptm, .iso, .img</td>
+                <td>Macro-enabled or disk images</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);"><strong>Medium</strong></span></td>
+                <td>.doc, .xls, .pdf, .html, .zip, .rar</td>
+                <td>May contain macros or exploits</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-green);"><strong>Lower</strong></span></td>
+                <td>.jpg, .png, .txt</td>
+                <td>Generally safe (but check for polyglots)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Attachment Analysis Tools</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>VirusTotal</strong></td>
+                <td>Multi-engine file scan, hash lookup</td>
+              </tr>
+              <tr>
+                <td><strong>Hybrid Analysis</strong></td>
+                <td>Free sandbox detonation</td>
+              </tr>
+              <tr>
+                <td><strong>Any.Run</strong></td>
+                <td>Interactive malware analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Joe Sandbox</strong></td>
+                <td>Detailed behavioral analysis</td>
+              </tr>
+              <tr>
+                <td><strong>OLETools</strong></td>
+                <td>Office macro extraction</td>
+              </tr>
+              <tr>
+                <td><strong>PDF Parser</strong></td>
+                <td>PDF structure analysis</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Quick Hash Check</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Get File Hash</span>
+          </div>
+          <div class="terminal-body">
+<pre><span style="color: var(--accent-cyan);"># Windows PowerShell</span>
+Get-FileHash -Algorithm SHA256 suspicious_file.doc
+
+<span style="color: var(--accent-cyan);"># Linux/Mac</span>
+sha256sum suspicious_file.doc
+
+<span style="color: var(--text-muted);"># Then search hash on VirusTotal</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="impact">
+        <h2>Impact Assessment</h2>
+
+        <h3>Key Questions</h3>
+        <ul class="checklist">
+          <li><strong>How many users received the email?</strong></li>
+          <li><strong>Did anyone click URLs?</strong> Check proxy logs</li>
+          <li><strong>Did anyone open attachments?</strong> Check EDR</li>
+          <li><strong>Did anyone enter credentials?</strong> Check for form submissions</li>
+          <li><strong>Any malware executed?</strong> Check EDR alerts</li>
+        </ul>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find who clicked phishing URL</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> PhishingDomain = <span class="st">"malicious-site.com"</span>;
+UrlClickEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> Url <span class="kw">has</span> PhishingDomain
+| <span class="kw">project</span> TimeGenerated, AccountUpn, Url, 
+    UrlChain, IsClickedThrough, ThreatTypes
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Find all recipients of phishing email</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> SenderEmail = <span class="st">"attacker@phishing.com"</span>;
+<span class="kw">let</span> SubjectLine = <span class="st">"Urgent: Password Reset Required"</span>;
+EmailEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> SenderFromAddress =~ SenderEmail
+    <span class="kw">or</span> Subject <span class="kw">has</span> SubjectLine
+| <span class="kw">project</span> TimeGenerated, RecipientEmailAddress,
+    SenderFromAddress, Subject, DeliveryAction
+| <span class="kw">summarize</span> Recipients = <span class="fn">make_set</span>(RecipientEmailAddress)</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Immediate Actions</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li><strong>Block sender/domain</strong> at email gateway</li>
+                <li><strong>Block URLs</strong> at proxy/firewall</li>
+                <li><strong>Purge emails</strong> from all mailboxes</li>
+                <li><strong>Add IOCs</strong> to block lists</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">If Users Clicked</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Identify all users who clicked</li>
+                <li>Check if credentials were entered</li>
+                <li>Force password reset for affected users</li>
+                <li>Revoke sessions</li>
+                <li>Check for follow-on activity</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">If Attachment Opened</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Isolate endpoint immediately</li>
+                <li>Run full EDR scan</li>
+                <li>Check for malware execution</li>
+                <li>Look for persistence mechanisms</li>
+                <li>May need to reimage if compromised</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">If Credentials Compromised</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Reset password immediately</li>
+                <li>Revoke all sessions</li>
+                <li>Review sign-in logs for abuse</li>
+                <li>Check for inbox rules created</li>
+                <li>Check for data access/exfiltration</li>
+                <li>Re-register MFA if needed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h3>Email Purge (Microsoft 365)</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Purge phishing emails from all mailboxes</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># Connect to Security & Compliance PowerShell</span>
+Connect-IPPSSession
+
+<span class="cm"># Search for phishing emails</span>
+$Search = New-ComplianceSearch -Name "PhishingPurge" `
+    -ExchangeLocation All `
+    -ContentMatchQuery 'from:attacker@phishing.com AND subject:"Urgent"'
+
+<span class="cm"># Start search</span>
+Start-ComplianceSearch -Identity $Search.Identity
+
+<span class="cm"># After search completes, purge (soft delete)</span>
+New-ComplianceSearchAction -SearchName "PhishingPurge" -Purge -PurgeType SoftDelete</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Always check headers for authentication failures first</li>
+          <li>Never visit suspicious URLs directly—use sandboxes</li>
+          <li>Defang URLs when documenting (hxxp, [.])</li>
+          <li>Check proxy/EDR to see who clicked or opened</li>
+          <li>If credentials entered: reset password + revoke sessions</li>
+          <li>If attachment opened: isolate endpoint immediately</li>
+          <li>Purge emails from all mailboxes, not just reporter</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="email-auth.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SPF/DKIM/DMARC</span>
+          </a>
+          <a href="bec-attacks.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">BEC Attacks</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alert Triage | SOC Analyst Guide</title>
+  <meta name="description" content="Systematic approach to alert prioritization, initial assessment, rapid classification, and triage methodology for SOC analysts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link active"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Quick Links</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Event ID Reference</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Alert Triage</span>
+        </nav>
+        <h1>Alert Triage</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 1.6</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Triage Overview</a></li>
+          <li><a href="#process">5-Step Triage Process</a></li>
+          <li><a href="#classification">Alert Classification</a></li>
+          <li><a href="#prioritization">Prioritization Framework</a></li>
+          <li><a href="#decision-tree">Decision Tree</a></li>
+          <li><a href="#common-patterns">Common Alert Patterns</a></li>
+          <li><a href="#documentation">Triage Documentation</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Triage Overview</h2>
+        <p>
+          Alert triage is the systematic process of evaluating and prioritizing security alerts to determine which 
+          require immediate attention, which can wait, and which are false positives. Effective triage is the 
+          cornerstone of SOC operations—it ensures critical threats are addressed quickly while managing alert fatigue.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            The Goal of Triage
+          </div>
+          <p style="margin: 0;">
+            Make a rapid, accurate decision about an alert: Is this a true threat requiring action, a false positive, 
+            or something that needs deeper investigation? The key is speed with accuracy.
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">5-10 min</div>
+            <div class="stat-label">Target triage time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">70-80%</div>
+            <div class="stat-label">Typical FP rate (untuned)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Alerts need documentation</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="process">
+        <h2>5-Step Triage Process</h2>
+        <p>
+          Follow this structured approach for every alert. Consistency is key—even experienced analysts 
+          can miss critical details when they skip steps.
+        </p>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3 style="color: var(--accent-cyan);">Step 1: Read & Understand the Alert</h3>
+          <p>Before doing anything else, thoroughly read what the alert is telling you.</p>
+          
+          <ul class="checklist">
+            <li>What detection rule/signature triggered this alert?</li>
+            <li>What is the alert trying to detect? (Read the description)</li>
+            <li>What severity/confidence level was assigned?</li>
+            <li>What is the timestamp? Is this recent or old?</li>
+            <li>What are the key entities? (User, host, IP, file, process)</li>
+          </ul>
+
+          <div class="callout callout-tip">
+            <div class="callout-title">Pro Tip</div>
+            <p style="margin: 0;">If you don't understand what the alert is detecting, look it up in your wiki or MITRE ATT&CK before proceeding. You can't properly triage what you don't understand.</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-green);">
+          <h3 style="color: var(--accent-green);">Step 2: Gather Context</h3>
+          <p>Collect additional information about the entities involved in the alert.</p>
+
+          <h4>For Users:</h4>
+          <ul>
+            <li>What is their role/department? (HR, IT admin, executive, contractor?)</li>
+            <li>Is this normal for their job function?</li>
+            <li>Have they been involved in recent alerts?</li>
+            <li>Are they on a watchlist or recently reported something?</li>
+          </ul>
+
+          <h4>For Hosts/Devices:</h4>
+          <ul>
+            <li>What type of system? (Workstation, server, DC, jump server?)</li>
+            <li>Who uses this system?</li>
+            <li>What is its criticality/sensitivity?</li>
+            <li>Is it compliant? (Patched, AV updated, etc.)</li>
+          </ul>
+
+          <h4>For IPs/Domains:</h4>
+          <ul>
+            <li>Is this internal or external?</li>
+            <li>What is the geolocation?</li>
+            <li>What is the reputation? (Check VirusTotal, AbuseIPDB)</li>
+            <li>Is it on known threat intel lists?</li>
+          </ul>
+
+          <h4>For Files/Hashes:</h4>
+          <ul>
+            <li>Is the file signed? By whom?</li>
+            <li>What is the VirusTotal score?</li>
+            <li>Has it been seen in the environment before?</li>
+            <li>What is the file path? (System directory vs. user temp folder)</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-orange);">
+          <h3 style="color: var(--accent-orange);">Step 3: Check for Related Activity</h3>
+          <p>One alert rarely tells the whole story. Look for correlated events.</p>
+
+          <ul>
+            <li>Are there other alerts for the same user/host in the past 24-48 hours?</li>
+            <li>What other activity occurred on this host around the same time?</li>
+            <li>Are other hosts communicating with the same external IP?</li>
+            <li>Is this part of a larger campaign or pattern?</li>
+          </ul>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-lang">KQL</span>
+              <span class="query-title">Check related alerts for host</span>
+            </div>
+            <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">48h</span>)
+| <span class="kw">where</span> CompromisedEntity == <span class="st">"HOSTNAME"</span> 
+    <span class="kw">or</span> Entities <span class="kw">contains</span> <span class="st">"HOSTNAME"</span>
+| <span class="kw">project</span> TimeGenerated, AlertName, Severity, Status
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-purple);">
+          <h3 style="color: var(--accent-purple);">Step 4: Make a Determination</h3>
+          <p>Based on your analysis, classify the alert and decide on action.</p>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Classification</th>
+                  <th>Meaning</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="priority-badge priority-p1">True Positive</span></td>
+                  <td>Real malicious activity confirmed</td>
+                  <td>Create incident, escalate, begin response</td>
+                </tr>
+                <tr>
+                  <td><span class="priority-badge priority-p3">Suspicious</span></td>
+                  <td>Potentially malicious, needs more investigation</td>
+                  <td>Escalate to L2 for deeper analysis</td>
+                </tr>
+                <tr>
+                  <td><span class="priority-badge priority-p4">False Positive</span></td>
+                  <td>Alert triggered but activity is benign</td>
+                  <td>Close with documentation, consider tuning</td>
+                </tr>
+                <tr>
+                  <td style="background: var(--bg-tertiary);">Benign True Positive</td>
+                  <td>Real activity detected but authorized</td>
+                  <td>Close, document exception, consider exclusion</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-red);">
+          <h3 style="color: var(--accent-red);">Step 5: Document & Act</h3>
+          <p>Every alert needs documentation regardless of outcome.</p>
+
+          <h4>Documentation Requirements:</h4>
+          <ul>
+            <li>Summary of the alert and what triggered it</li>
+            <li>Investigation steps taken</li>
+            <li>Evidence/findings from your analysis</li>
+            <li>Classification decision with justification</li>
+            <li>Actions taken or recommended</li>
+          </ul>
+
+          <h4>Based on Classification:</h4>
+          <ul>
+            <li><strong>True Positive:</strong> Create incident ticket, escalate, initiate response playbook</li>
+            <li><strong>Suspicious:</strong> Escalate to L2 with findings, document what you've already checked</li>
+            <li><strong>False Positive:</strong> Close alert, document root cause, submit tuning request if pattern repeats</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="classification">
+        <h2>Alert Classification</h2>
+        
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">True Positive (TP)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Definition:</strong> The alert correctly identified malicious or unauthorized activity.</p>
+              <p><strong>Examples:</strong></p>
+              <ul>
+                <li>Malware detected and confirmed to be malicious via sandbox/VT</li>
+                <li>Successful brute force with subsequent suspicious activity</li>
+                <li>Data exfiltration to known malicious infrastructure</li>
+                <li>Lateral movement indicators with confirmed compromise</li>
+              </ul>
+              <p><strong>Action:</strong> Immediate incident response—containment, investigation, remediation</p>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Benign True Positive (BTP)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Definition:</strong> The alert correctly identified the activity, but it's authorized/expected.</p>
+              <p><strong>Examples:</strong></p>
+              <ul>
+                <li>Penetration test activity (authorized)</li>
+                <li>IT admin using legitimate tools that trigger detections</li>
+                <li>Security tool scanning that triggers IDS alerts</li>
+                <li>Approved exception/deviation from policy</li>
+              </ul>
+              <p><strong>Action:</strong> Close alert, document authorization, consider exclusion rule</p>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">False Positive (FP)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Definition:</strong> The alert incorrectly flagged benign activity as malicious.</p>
+              <p><strong>Examples:</strong></p>
+              <ul>
+                <li>Legitimate software flagged as malware</li>
+                <li>Normal admin activity matching attack patterns</li>
+                <li>Misconfigured detection rule</li>
+                <li>Environmental noise (backup jobs, inventory scans)</li>
+              </ul>
+              <p><strong>Action:</strong> Close alert, document reason, submit tuning request for repeat FPs</p>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">False Negative (FN)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Definition:</strong> Malicious activity occurred but no alert was generated.</p>
+              <p><strong>Examples:</strong></p>
+              <ul>
+                <li>Attack technique not covered by detection rules</li>
+                <li>Logs not being collected from compromised system</li>
+                <li>Detection rule threshold too high</li>
+                <li>Evasion technique bypassed security controls</li>
+              </ul>
+              <p><strong>Action:</strong> Document gap, create detection rule request, review coverage</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="prioritization">
+        <h2>Prioritization Framework</h2>
+        <p>
+          When facing multiple alerts, prioritize based on these factors. The goal is to address the 
+          most critical and time-sensitive alerts first.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Criteria</th>
+                <th>Response Time</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">P1 Critical</span></td>
+                <td>Active threat, high-value target, confirmed compromise</td>
+                <td>&lt; 15 minutes</td>
+                <td>Active ransomware, data exfiltration in progress, DC compromise</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">P2 High</span></td>
+                <td>Confirmed malicious activity, significant risk</td>
+                <td>&lt; 1 hour</td>
+                <td>Confirmed malware, successful phishing, account takeover</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">P3 Medium</span></td>
+                <td>Suspicious activity, potential threat</td>
+                <td>&lt; 4 hours</td>
+                <td>Unusual login patterns, policy violations, suspicious process</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">P4 Low</span></td>
+                <td>Informational, minor policy violation</td>
+                <td>&lt; 24 hours</td>
+                <td>Single failed login, low-risk policy deviation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Prioritization Factors</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Asset Criticality</h4>
+            <ul>
+              <li>Domain Controller</li>
+              <li>Executive endpoint</li>
+              <li>Financial systems</li>
+              <li>Production servers</li>
+              <li>PII/sensitive data stores</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Attack Stage</h4>
+            <ul>
+              <li>Active C2 communication</li>
+              <li>Lateral movement</li>
+              <li>Data exfiltration</li>
+              <li>Privilege escalation</li>
+              <li>Initial access/delivery</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Alert Confidence</h4>
+            <ul>
+              <li>Multiple correlated alerts</li>
+              <li>High-fidelity detection rule</li>
+              <li>Matched threat intel IOC</li>
+              <li>EDR behavioral detection</li>
+              <li>Single low-confidence alert</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="decision-tree">
+        <h2>Triage Decision Tree</h2>
+        <p>Use this simplified decision flow when triaging alerts:</p>
+
+        <div class="flowchart">
+          <div class="flow-step">
+            <div class="flow-node decision">Is this a known false positive pattern?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node action" style="background: rgba(0, 255, 136, 0.2);">YES: Close as FP, document pattern</div>
+          </div>
+          <div class="flow-step" style="margin-left: 40px;">
+            <span style="color: var(--text-muted);">↓ NO</span>
+          </div>
+          <div class="flow-step">
+            <div class="flow-node decision">Is the entity (user/host) high-value or critical?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node action" style="background: rgba(255, 51, 102, 0.2);">YES: Prioritize immediately</div>
+          </div>
+          <div class="flow-step" style="margin-left: 40px;">
+            <span style="color: var(--text-muted);">↓ NO</span>
+          </div>
+          <div class="flow-step">
+            <div class="flow-node decision">Are there multiple correlated alerts?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node action" style="background: rgba(255, 107, 53, 0.2);">YES: Increase priority, investigate chain</div>
+          </div>
+          <div class="flow-step" style="margin-left: 40px;">
+            <span style="color: var(--text-muted);">↓ NO</span>
+          </div>
+          <div class="flow-step">
+            <div class="flow-node decision">Is IOC confirmed malicious (VT, Intel)?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node action" style="background: rgba(255, 51, 102, 0.2);">YES: True Positive, initiate response</div>
+          </div>
+          <div class="flow-step" style="margin-left: 40px;">
+            <span style="color: var(--text-muted);">↓ NO/UNKNOWN</span>
+          </div>
+          <div class="flow-step">
+            <div class="flow-node decision">Does activity match known benign pattern?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node action" style="background: rgba(0, 255, 136, 0.2);">YES: Close as FP/BTP with documentation</div>
+          </div>
+          <div class="flow-step" style="margin-left: 40px;">
+            <span style="color: var(--text-muted);">↓ NO/UNSURE</span>
+          </div>
+          <div class="flow-step">
+            <div class="flow-node endpoint">Escalate to L2 for deeper investigation</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="common-patterns">
+        <h2>Common Alert Patterns</h2>
+        
+        <div class="tabs">
+          <div class="tab-buttons">
+            <button class="tab-btn active">Common FPs</button>
+            <button class="tab-btn">Red Flags (TPs)</button>
+            <button class="tab-btn">Gray Areas</button>
+          </div>
+          
+          <div class="tab-content active">
+            <h4>Common False Positive Patterns</h4>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Alert Type</th>
+                    <th>Common FP Cause</th>
+                    <th>How to Verify</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>PowerShell encoded command</td>
+                    <td>SCCM, Intune, legitimate admin scripts</td>
+                    <td>Check parent process, scheduled task source</td>
+                  </tr>
+                  <tr>
+                    <td>Suspicious process injection</td>
+                    <td>Security tools, AV, DLP agents</td>
+                    <td>Check if injecting process is known security tool</td>
+                  </tr>
+                  <tr>
+                    <td>LSASS access</td>
+                    <td>Credential Guard, security software</td>
+                    <td>Check accessing process digital signature</td>
+                  </tr>
+                  <tr>
+                    <td>Impossible travel</td>
+                    <td>VPN, proxy, mobile hotspot</td>
+                    <td>Check if IPs are known VPN/proxy services</td>
+                  </tr>
+                  <tr>
+                    <td>Multiple failed logins</td>
+                    <td>Service account password change, cached creds</td>
+                    <td>Check if followed by successful login, service status</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="tab-content">
+            <h4>Red Flags - Likely True Positives</h4>
+            <div class="callout callout-danger">
+              <div class="callout-title">High Priority Indicators</div>
+              <ul style="margin: 0;">
+                <li>Encoded PowerShell from Office application (Word, Excel)</li>
+                <li>Process spawning from suspicious parent (outlook.exe → cmd.exe)</li>
+                <li>Communication with known C2 infrastructure</li>
+                <li>Credential dumping tool detected (mimikatz, procdump on lsass)</li>
+                <li>Ransomware file extension changes or ransom note creation</li>
+                <li>Large data transfers to new external destinations</li>
+                <li>Multiple failed logins followed by success from new location</li>
+                <li>Scheduled task or service creation by non-admin</li>
+                <li>Domain admin account used from workstation</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="tab-content">
+            <h4>Gray Areas - Need Investigation</h4>
+            <p>These require additional context to determine if they're malicious:</p>
+            <ul>
+              <li><strong>Remote access tool (RMM) detected:</strong> Could be IT support or attacker persistence</li>
+              <li><strong>Archive file with password:</strong> Could be legitimate or data staging</li>
+              <li><strong>USB mass storage:</strong> Depends on policy and user role</li>
+              <li><strong>Cloud storage upload:</strong> Business need or exfiltration?</li>
+              <li><strong>After-hours activity:</strong> Dedicated employee or compromised account?</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="documentation">
+        <h2>Triage Documentation</h2>
+        <p>Every triage decision must be documented. Good documentation enables knowledge sharing, 
+        supports escalation, and provides audit trails.</p>
+
+        <div class="card">
+          <h4>Triage Note Template</h4>
+          <div class="terminal">
+            <div class="terminal-header">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+            </div>
+            <div class="terminal-body">
+<span class="terminal-output">## Alert Summary
+Alert Name: [Name of detection rule]
+Timestamp: [When alert fired]
+Severity: [Original severity]
+
+## Affected Entities
+User: [username] - [role/department]
+Host: [hostname] - [type: workstation/server]
+IP/Domain: [if applicable]
+File/Hash: [if applicable]
+
+## Investigation Steps
+1. [What you checked first]
+2. [Second check with findings]
+3. [Additional context gathered]
+
+## Findings
+- [Key finding 1]
+- [Key finding 2]
+- [Reputation check results]
+
+## Classification
+[True Positive / False Positive / Benign TP / Escalate]
+Confidence: [High/Medium/Low]
+
+## Justification
+[Why you made this determination]
+
+## Actions Taken
+- [Action 1]
+- [Action 2]
+
+## Analyst: [Your name] | Time Spent: [X minutes]</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Documentation Anti-Patterns
+          </div>
+          <ul style="margin: 0;">
+            <li><strong>Don't:</strong> "Checked, looks fine, closing" - No justification</li>
+            <li><strong>Don't:</strong> "FP" - No investigation documented</li>
+            <li><strong>Don't:</strong> Leave blank notes on closed alerts</li>
+            <li><strong>Do:</strong> Document your reasoning even for obvious FPs</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Key Takeaways
+        </div>
+        <ul style="margin: 0;">
+          <li>Follow the 5-step process consistently: Read → Context → Correlate → Decide → Document</li>
+          <li>Prioritize based on asset criticality, attack stage, and alert confidence</li>
+          <li>Know common FP patterns but verify—attackers can mimic legitimate activity</li>
+          <li>When in doubt, escalate with your findings rather than closing prematurely</li>
+          <li>Documentation is not optional—every alert needs recorded justification</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="shift-handoff.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Shift Handoff</span>
+          </a>
+          <a href="investigation-methodology.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Investigation Methodology</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

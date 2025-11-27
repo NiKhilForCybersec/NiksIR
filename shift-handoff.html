@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shift Handoff | SOC Analyst Guide</title>
+  <meta name="description" content="SOC shift handoff procedures: what to communicate, handoff templates, and ensuring continuity between shifts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link active"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Shift Handoff</span>
+        </nav>
+        <h1>Shift Handoff Procedures</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 1.5</span>
+          <span class="meta-item">~8 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#importance">Why Handoffs Matter</a></li>
+          <li><a href="#components">Handoff Components</a></li>
+          <li><a href="#process">Handoff Process</a></li>
+          <li><a href="#template">Handoff Template</a></li>
+          <li><a href="#tips">Best Practices</a></li>
+        </ul>
+      </div>
+
+      <section id="importance">
+        <h2>Why Handoffs Matter</h2>
+        <p>
+          Effective shift handoffs ensure continuity of operations and prevent threats from falling 
+          through the cracks during transitions. A poor handoff can result in missed alerts, delayed 
+          response, or duplicate work.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Without Good Handoffs</h4>
+            <ul>
+              <li>Active incidents get dropped</li>
+              <li>Alerts sit unaddressed</li>
+              <li>Context is lost</li>
+              <li>Duplicate investigations</li>
+              <li>SLA breaches</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">With Good Handoffs</h4>
+            <ul>
+              <li>Seamless incident continuation</li>
+              <li>No gaps in coverage</li>
+              <li>Full context transferred</li>
+              <li>Efficient use of time</li>
+              <li>SLAs maintained</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="components">
+        <h2>Handoff Components</h2>
+        <p>Every shift handoff should cover these areas:</p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">1. Active Incidents</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Any incidents currently being worked or awaiting action:</p>
+              <ul>
+                <li><strong>Incident ID and Priority</strong></li>
+                <li><strong>Current Status:</strong> Investigation, containment, remediation, waiting</li>
+                <li><strong>Summary:</strong> What happened, what's been done</li>
+                <li><strong>Next Steps:</strong> What needs to happen next</li>
+                <li><strong>Blockers:</strong> Anything preventing progress</li>
+                <li><strong>Key Contacts:</strong> Who's involved (IT, business, external)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">2. Alert Queue Status</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Number of alerts pending review</li>
+                <li>Oldest alert age</li>
+                <li>Any high-priority alerts requiring immediate attention</li>
+                <li>Any alerts that have been looked at but need more work</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">3. Ongoing Campaigns/Threats</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Active phishing campaigns targeting the organization</li>
+                <li>Known threats in the wild relevant to our environment</li>
+                <li>IOCs being actively monitored</li>
+                <li>Threat intelligence advisories</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">4. System Status</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Any security tools with issues (SIEM, EDR, email gateway)</li>
+                <li>Planned maintenance windows</li>
+                <li>Known log gaps or ingestion issues</li>
+                <li>Any infrastructure issues affecting SOC operations</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">5. Notable Items</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Important communications from management</li>
+                <li>Policy or procedure changes</li>
+                <li>Staffing notes (who's on call, who's out)</li>
+                <li>Anything unusual that incoming shift should know</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="process">
+        <h2>Handoff Process</h2>
+
+        <div class="card">
+          <h3>Standard Handoff Flow</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">-30 min</div>
+              <div class="timeline-title">Outgoing: Prepare Handoff</div>
+              <div class="timeline-desc">Document active incidents, queue status, and notable items</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">-15 min</div>
+              <div class="timeline-title">Overlap Begins</div>
+              <div class="timeline-desc">Incoming shift arrives, reviews handoff document</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">0 min</div>
+              <div class="timeline-title">Verbal Handoff</div>
+              <div class="timeline-desc">Walk through active incidents and critical items together</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">+10 min</div>
+              <div class="timeline-title">Q&A</div>
+              <div class="timeline-desc">Incoming shift asks questions, clarifies details</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">+15 min</div>
+              <div class="timeline-title">Handoff Complete</div>
+              <div class="timeline-desc">Incoming shift assumes responsibility, outgoing departs</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Overlap Period</div>
+          <p style="margin: 0;">
+            Schedule at least 15-30 minutes of overlap between shifts. This allows for proper 
+            verbal handoff and questions. Never do a "relay race" handoff with no overlap.
+          </p>
+        </div>
+      </section>
+
+      <section id="template">
+        <h2>Handoff Template</h2>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">shift_handoff_template.md</span>
+          </div>
+          <div class="terminal-body">
+<pre>## SOC Shift Handoff
+**Date:** 2024-01-15
+**Outgoing Shift:** Day (A. Smith, B. Jones)
+**Incoming Shift:** Evening (C. Lee, D. Wilson)
+**Time:** 15:00 - 15:30 UTC
+
+---
+
+### 🔴 Active Incidents
+
+**INC-2024-0142** | P2 High | Malware
+- Status: Containment complete, eradication in progress
+- Summary: Emotet infection on WKSTN-PC042, user clicked phishing link
+- Actions Taken: Host isolated, user password reset
+- Next Steps: Complete AV scan, verify clean, return to network
+- Blockers: None
+- Owner: Transitioning to incoming shift
+
+**INC-2024-0139** | P3 Medium | Suspicious Traffic
+- Status: Waiting for data
+- Summary: Unusual outbound traffic from SRV-DB01
+- Next Steps: Waiting for packet capture from network team (Ticket NW-456)
+- Blockers: Network team response - follow up if no response by 18:00
+
+---
+
+### 📋 Alert Queue
+
+- Total Pending: 8 alerts
+- Oldest Alert: 45 minutes (Medium severity)
+- P1/P2 Pending: 0
+- Notes: Normal volume, no backlog concerns
+
+---
+
+### ⚠️ Active Threats/Campaigns
+
+- Phishing campaign targeting Finance department still active
+  - Subject lines containing "Invoice" from external domains
+  - Extra scrutiny on Finance user alerts
+- No new threat intel advisories
+
+---
+
+### 🔧 System Status
+
+- All systems operational
+- Planned maintenance: Sentinel rule update at 18:00 UTC
+  - Expected brief alert spike during deployment
+- VPN issues reported by remote users - IT aware, not security related
+
+---
+
+### 📝 Notable Items
+
+- SOC Lead OOO tomorrow, escalate to Security Manager if needed
+- New detection rule for Cobalt Strike went live today
+  - May see increased alerts, tuning expected
+- Reminder: Monthly metrics due Friday
+
+---
+
+### 👥 On-Call
+
+- L3 On-Call: M. Garcia (555-1234)
+- IR Team: Standard rotation
+
+---
+
+**Handoff Completed:** 15:25 UTC
+**Outgoing Signature:** A. Smith
+**Incoming Signature:** C. Lee</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="tips">
+        <h2>Best Practices</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Do</th>
+                <th>Don't</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>✅ Document throughout your shift</td>
+                <td>❌ Rush handoff documentation at the end</td>
+              </tr>
+              <tr>
+                <td>✅ Include both written and verbal handoff</td>
+                <td>❌ Rely only on written notes</td>
+              </tr>
+              <tr>
+                <td>✅ Highlight blockers and time-sensitive items</td>
+                <td>❌ Assume incoming shift will figure it out</td>
+              </tr>
+              <tr>
+                <td>✅ Confirm understanding before leaving</td>
+                <td>❌ Leave before incoming shift has questions answered</td>
+              </tr>
+              <tr>
+                <td>✅ Update ticket statuses before handoff</td>
+                <td>❌ Leave tickets in inconsistent states</td>
+              </tr>
+              <tr>
+                <td>✅ Be reachable briefly after handoff if needed</td>
+                <td>❌ Disappear immediately with open issues</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">P1 Incident Handoffs</div>
+          <p style="margin: 0;">
+            For critical incidents, consider whether a handoff is appropriate or if the current analyst 
+            should continue. Changing analysts mid-crisis can lose momentum. Consult with leadership 
+            on major incident handoff decisions.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Handoffs are critical for 24/7 coverage continuity</li>
+          <li>Cover: active incidents, queue status, threats, systems, notable items</li>
+          <li>Always include both written documentation and verbal walkthrough</li>
+          <li>Schedule overlap time between shifts</li>
+          <li>Document throughout your shift, not just at the end</li>
+          <li>Confirm the incoming shift understands before leaving</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="soc-metrics.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SOC Metrics</span>
+          </a>
+          <a href="alert-triage.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Alert Triage</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

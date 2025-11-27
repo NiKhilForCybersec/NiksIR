@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azure Security | SOC Analyst Guide</title>
+  <meta name="description" content="Azure cloud security monitoring: activity logs, Microsoft Defender for Cloud, and investigating Azure threats.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link active"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🟠</span> AWS Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#cloud">Cloud Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Azure Security</span>
+        </nav>
+        <h1>Azure Security Monitoring</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 6.2</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#logs">Azure Logs</a></li>
+          <li><a href="#defender">Defender for Cloud</a></li>
+          <li><a href="#threats">Common Threats</a></li>
+          <li><a href="#investigation">Investigation</a></li>
+        </ul>
+      </div>
+
+      <section id="logs">
+        <h2>Azure Log Sources</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Log Type</th>
+                <th>Content</th>
+                <th>Sentinel Table</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Activity Log</strong></td>
+                <td>Control plane operations (create, delete, modify resources)</td>
+                <td>AzureActivity</td>
+              </tr>
+              <tr>
+                <td><strong>Sign-in Logs</strong></td>
+                <td>Azure AD authentication</td>
+                <td>SigninLogs</td>
+              </tr>
+              <tr>
+                <td><strong>Audit Logs</strong></td>
+                <td>Azure AD changes (users, groups, apps)</td>
+                <td>AuditLogs</td>
+              </tr>
+              <tr>
+                <td><strong>Resource Logs</strong></td>
+                <td>Data plane operations (VM access, storage read/write)</td>
+                <td>Varies by resource</td>
+              </tr>
+              <tr>
+                <td><strong>NSG Flow Logs</strong></td>
+                <td>Network traffic through NSGs</td>
+                <td>AzureNetworkAnalytics_CL</td>
+              </tr>
+              <tr>
+                <td><strong>Defender Alerts</strong></td>
+                <td>Security alerts from Defender for Cloud</td>
+                <td>SecurityAlert</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Activity Log Key Fields</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Caller</strong></td>
+                <td>Who performed the action (user or service principal)</td>
+              </tr>
+              <tr>
+                <td><strong>OperationNameValue</strong></td>
+                <td>What action was performed</td>
+              </tr>
+              <tr>
+                <td><strong>ResourceGroup</strong></td>
+                <td>Resource group affected</td>
+              </tr>
+              <tr>
+                <td><strong>Resource</strong></td>
+                <td>Specific resource affected</td>
+              </tr>
+              <tr>
+                <td><strong>ActivityStatusValue</strong></td>
+                <td>Success, Failed, Started</td>
+              </tr>
+              <tr>
+                <td><strong>CallerIpAddress</strong></td>
+                <td>IP address of caller</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="defender">
+        <h2>Microsoft Defender for Cloud</h2>
+        <p>
+          Defender for Cloud provides security posture management and threat protection 
+          for Azure, hybrid, and multi-cloud workloads.
+        </p>
+
+        <h3>Defender Plans</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Defender for Servers</h4>
+            <ul>
+              <li>VM threat detection</li>
+              <li>Vulnerability assessment</li>
+              <li>File integrity monitoring</li>
+              <li>Adaptive application controls</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Defender for Storage</h4>
+            <ul>
+              <li>Malware upload detection</li>
+              <li>Suspicious access patterns</li>
+              <li>Data exfiltration alerts</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Defender for Key Vault</h4>
+            <ul>
+              <li>Unusual access patterns</li>
+              <li>High-volume operations</li>
+              <li>Access from suspicious IPs</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Defender for Resource Manager</h4>
+            <ul>
+              <li>Suspicious management operations</li>
+              <li>Lateral movement detection</li>
+              <li>Persistence mechanisms</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Alert Severity Levels</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Meaning</th>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="color: var(--accent-red);"><strong>High</strong></span></td>
+                <td>Likely active attack or high-confidence threat</td>
+                <td>Immediate investigation</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-orange);"><strong>Medium</strong></span></td>
+                <td>Suspicious activity, potential threat</td>
+                <td>Investigate within 24 hours</td>
+              </tr>
+              <tr>
+                <td><span style="color: var(--accent-yellow);"><strong>Low</strong></span></td>
+                <td>Minor anomaly or informational</td>
+                <td>Review as time permits</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="threats">
+        <h2>Common Azure Threats</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Credential Compromise</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Stolen credentials used to access Azure resources.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Logins from unusual locations</li>
+                <li>Activity from anonymous IPs (Tor, VPN)</li>
+                <li>Impossible travel</li>
+                <li>Access to resources outside normal scope</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Crypto Mining</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Attackers spin up VMs for cryptocurrency mining.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Unexpected VM deployments (especially GPU instances)</li>
+                <li>High CPU utilization on new VMs</li>
+                <li>Deployments in unusual regions</li>
+                <li>Large numbers of similar VMs</li>
+              </ul>
+              <h4>Impact:</h4> High compute costs, potential breach indicator
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Storage Exposure</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Misconfigured storage accounts exposing sensitive data.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Storage account set to public access</li>
+                <li>Blob containers with anonymous read</li>
+                <li>Unusual download patterns</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Privilege Escalation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Attacker escalates from limited to Owner/Contributor.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Role assignment changes</li>
+                <li>New service principal with high privileges</li>
+                <li>Subscription-level role assignments</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Resource Hijacking</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Modifying existing resources for malicious purposes.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>NSG rules modified to allow inbound access</li>
+                <li>Public IPs added to private resources</li>
+                <li>Firewall rules disabled</li>
+                <li>Diagnostic settings removed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">VM creations (detect crypto mining)</span>
+          </div>
+          <div class="query-body">
+<code>AzureActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> OperationNameValue == <span class="st">"MICROSOFT.COMPUTE/VIRTUALMACHINES/WRITE"</span>
+| <span class="kw">where</span> ActivityStatusValue == <span class="st">"Success"</span>
+| <span class="kw">project</span> TimeGenerated, Caller, ResourceGroup, 
+    Resource, CallerIpAddress, SubscriptionId
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Role assignments (privilege escalation)</span>
+          </div>
+          <div class="query-body">
+<code>AzureActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> OperationNameValue <span class="kw">has</span> <span class="st">"MICROSOFT.AUTHORIZATION/ROLEASSIGNMENTS/WRITE"</span>
+| <span class="kw">where</span> ActivityStatusValue == <span class="st">"Success"</span>
+| <span class="kw">extend</span> Props = <span class="fn">parse_json</span>(Properties)
+| <span class="kw">extend</span> RoleDefinitionId = <span class="fn">tostring</span>(Props.requestbody)
+| <span class="kw">project</span> TimeGenerated, Caller, CallerIpAddress, 
+    ResourceGroup, Resource, RoleDefinitionId</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">NSG rule modifications</span>
+          </div>
+          <div class="query-body">
+<code>AzureActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> OperationNameValue <span class="kw">has</span> <span class="st">"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS"</span>
+| <span class="kw">where</span> ActivityStatusValue == <span class="st">"Success"</span>
+| <span class="kw">project</span> TimeGenerated, Caller, OperationNameValue,
+    ResourceGroup, Resource, CallerIpAddress</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Key Vault access anomalies</span>
+          </div>
+          <div class="query-body">
+<code>AzureDiagnostics
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResourceType == <span class="st">"VAULTS"</span>
+| <span class="kw">where</span> OperationName <span class="kw">has_any</span> (<span class="st">"SecretGet"</span>, <span class="st">"SecretList"</span>, <span class="st">"KeyGet"</span>)
+| <span class="kw">summarize</span> AccessCount = <span class="fn">count</span>() <span class="kw">by</span> 
+    CallerIPAddress, identity_claim_upn_s, Resource
+| <span class="kw">order by</span> AccessCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Defender for Cloud alerts</span>
+          </div>
+          <div class="query-body">
+<code>SecurityAlert
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ProviderName == <span class="st">"Azure Security Center"</span>
+| <span class="kw">project</span> TimeGenerated, AlertName, AlertSeverity,
+    Description, RemediationSteps, 
+    ExtendedProperties, ResourceId
+| <span class="kw">order by</span> AlertSeverity</code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>AzureActivity log tracks all control plane operations</li>
+          <li>VM creations in unusual regions may indicate crypto mining</li>
+          <li>Role assignment changes are high-value alerts</li>
+          <li>NSG modifications can expose internal resources</li>
+          <li>Key Vault access should be monitored for anomalies</li>
+          <li>Defender for Cloud provides threat detection across services</li>
+          <li>Always check CallerIpAddress for unusual locations</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="cloud-overview.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Cloud Overview</span>
+          </a>
+          <a href="aws-security.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">AWS Security</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

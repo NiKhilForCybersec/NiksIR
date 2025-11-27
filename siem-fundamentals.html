@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIEM Fundamentals | SOC Analyst Guide</title>
+  <meta name="description" content="Understanding SIEM architecture, data collection, parsing, normalization, correlation, and alerting for SOC analysts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link active"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🎯</span> Detection Use Cases</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL for Sentinel</a>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> Splunk Overview</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Logs</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">🐧</span> Linux Logs</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Quick Links</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Event ID Reference</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>SIEM Fundamentals</span>
+        </nav>
+        <h1>SIEM Fundamentals</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 3.1</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#what-is-siem">What is SIEM?</a></li>
+          <li><a href="#architecture">SIEM Architecture</a></li>
+          <li><a href="#data-flow">Data Flow Pipeline</a></li>
+          <li><a href="#correlation">Correlation & Detection</a></li>
+          <li><a href="#alerting">Alerting & Thresholds</a></li>
+          <li><a href="#retention">Storage & Retention</a></li>
+        </ul>
+      </div>
+
+      <section id="what-is-siem">
+        <h2>What is SIEM?</h2>
+        <p>
+          Security Information and Event Management (SIEM) is the central nervous system of a SOC. It collects, 
+          aggregates, and analyzes log data from across the enterprise to detect security threats, support 
+          investigations, and meet compliance requirements.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">SIEM Core Functions</div>
+          <p style="margin: 0;"><strong>Collect → Parse → Normalize → Correlate → Alert → Store</strong></p>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Security Information (SI)</h4>
+            <p>Long-term storage, analysis, and reporting of log data for compliance, forensics, and trend analysis.</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Event Management (EM)</h4>
+            <p>Real-time monitoring, correlation, and alerting on security events for immediate threat detection.</p>
+          </div>
+        </div>
+
+        <h3>Why SIEM Matters</h3>
+        <ul>
+          <li><strong>Centralized Visibility:</strong> Single pane of glass across all security data sources</li>
+          <li><strong>Threat Detection:</strong> Correlation rules identify attacks that span multiple systems</li>
+          <li><strong>Incident Investigation:</strong> Rapid search and analysis during security incidents</li>
+          <li><strong>Compliance:</strong> Log retention and reporting for regulatory requirements</li>
+          <li><strong>Forensics:</strong> Historical data for post-incident analysis</li>
+        </ul>
+      </section>
+
+      <section id="architecture">
+        <h2>SIEM Architecture</h2>
+        <p>Understanding SIEM architecture helps analysts know where data comes from and how it's processed.</p>
+
+        <div class="card">
+          <h3>Typical SIEM Components</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node action">
+                <strong>Data Sources</strong><br>
+                <small>Firewalls, Servers, Endpoints, Cloud</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node action">
+                <strong>Collectors/Agents</strong><br>
+                <small>Gather & forward logs</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node decision">
+                <strong>Indexers/Processors</strong><br>
+                <small>Parse, normalize, enrich</small>
+              </div>
+            </div>
+            <div class="flow-step" style="margin-top: 1rem;">
+              <div class="flow-arrow" style="visibility: hidden;">→</div>
+              <div class="flow-arrow" style="visibility: hidden;">→</div>
+              <div class="flow-arrow">↓</div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-node endpoint">
+                <strong>Analyst Console</strong><br>
+                <small>Search, investigate, respond</small>
+              </div>
+              <div class="flow-arrow">←</div>
+              <div class="flow-node action">
+                <strong>Alert Engine</strong><br>
+                <small>Rules, correlation, ML</small>
+              </div>
+              <div class="flow-arrow">←</div>
+              <div class="flow-node action">
+                <strong>Storage</strong><br>
+                <small>Hot, warm, cold tiers</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Data Collection Methods</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Description</th>
+                <th>Use Cases</th>
+                <th>Pros/Cons</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Agent-Based</strong></td>
+                <td>Software installed on endpoint collects and forwards logs</td>
+                <td>Windows Event Logs, application logs, EDR data</td>
+                <td>✓ Reliable, detailed | ✗ Requires deployment</td>
+              </tr>
+              <tr>
+                <td><strong>Syslog</strong></td>
+                <td>Standard protocol for network log transmission</td>
+                <td>Network devices, Linux servers, firewalls</td>
+                <td>✓ Universal, no agent | ✗ UDP can lose data</td>
+              </tr>
+              <tr>
+                <td><strong>API</strong></td>
+                <td>Pull logs via REST API or webhooks</td>
+                <td>Cloud services, SaaS applications</td>
+                <td>✓ Structured data | ✗ Rate limits, auth complexity</td>
+              </tr>
+              <tr>
+                <td><strong>File-Based</strong></td>
+                <td>Read logs from files or network shares</td>
+                <td>Legacy apps, batch processing</td>
+                <td>✓ Simple | ✗ Latency, not real-time</td>
+              </tr>
+              <tr>
+                <td><strong>Database</strong></td>
+                <td>Query databases for audit logs</td>
+                <td>Application databases, audit tables</td>
+                <td>✓ Rich data | ✗ Performance impact</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="data-flow">
+        <h2>Data Flow Pipeline</h2>
+        
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">1. Collection</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Raw logs are gathered from data sources across the environment.</p>
+              <h4>Key Data Sources for SOC:</h4>
+              <ul>
+                <li><strong>Endpoints:</strong> Windows Event Logs, Sysmon, EDR telemetry</li>
+                <li><strong>Network:</strong> Firewall, IDS/IPS, proxy, DNS, VPN</li>
+                <li><strong>Identity:</strong> Active Directory, Azure AD, authentication systems</li>
+                <li><strong>Cloud:</strong> AWS CloudTrail, Azure Activity Logs, M365 audit logs</li>
+                <li><strong>Applications:</strong> Web servers, databases, custom apps</li>
+                <li><strong>Security Tools:</strong> AV, DLP, email gateway, CASB</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">2. Parsing</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Raw log data is broken down into structured fields.</p>
+              <div class="terminal">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                </div>
+                <div class="terminal-body">
+<span class="terminal-output"># Raw Log
+Jan 15 10:23:45 webserver sshd[12345]: Failed password for admin from 192.168.1.100 port 22 ssh2
+
+# Parsed Fields
+{
+  "timestamp": "2024-01-15T10:23:45",
+  "host": "webserver",
+  "process": "sshd",
+  "pid": 12345,
+  "event_type": "authentication_failure",
+  "user": "admin",
+  "source_ip": "192.168.1.100",
+  "port": 22,
+  "protocol": "ssh2"
+}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">3. Normalization</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Different log formats are mapped to a common schema for consistent analysis.</p>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Source</th>
+                      <th>Original Field</th>
+                      <th>Normalized Field</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Windows</td>
+                      <td>IpAddress</td>
+                      <td rowspan="3" style="vertical-align: middle;"><code>src_ip</code></td>
+                    </tr>
+                    <tr>
+                      <td>Firewall</td>
+                      <td>srcaddr</td>
+                    </tr>
+                    <tr>
+                      <td>Linux</td>
+                      <td>SRC</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>Common schemas include: OCSF (Open Cybersecurity Schema Framework), ECS (Elastic Common Schema), CIM (Splunk Common Information Model)</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">4. Enrichment</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Additional context is added to logs to improve analysis.</p>
+              <h4>Common Enrichment Types:</h4>
+              <ul>
+                <li><strong>GeoIP:</strong> Add location data to IP addresses</li>
+                <li><strong>Asset Information:</strong> Add hostname, owner, criticality from CMDB</li>
+                <li><strong>User Context:</strong> Add department, role, manager from HR systems</li>
+                <li><strong>Threat Intelligence:</strong> Flag known malicious IPs, domains, hashes</li>
+                <li><strong>DNS Resolution:</strong> Add hostname for IP or IP for hostname</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">5. Indexing & Storage</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Processed logs are indexed for fast searching and stored for retention.</p>
+              <ul>
+                <li><strong>Hot Storage:</strong> Recent data (days-weeks), fast SSD, expensive</li>
+                <li><strong>Warm Storage:</strong> Medium-term (weeks-months), slower, moderate cost</li>
+                <li><strong>Cold/Archive:</strong> Long-term (months-years), slowest, cheapest</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="correlation">
+        <h2>Correlation & Detection</h2>
+        <p>Correlation is where SIEM transforms raw logs into actionable security alerts.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Single-Event Rules</h4>
+            <p>Alert on individual events matching criteria.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">Example: Alert when malware detected by AV</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Threshold Rules</h4>
+            <p>Alert when count exceeds threshold in time window.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">Example: >10 failed logins in 5 minutes</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Sequence Rules</h4>
+            <p>Alert on specific sequence of events.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">Example: Failed logins → successful login → sensitive file access</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-purple);">Anomaly Detection</h4>
+            <p>ML-based detection of deviation from baseline.</p>
+            <p class="text-muted" style="font-size: 0.85rem;">Example: User accessing 10x normal number of files</p>
+          </div>
+        </div>
+
+        <h3>Correlation Rule Components</h3>
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+          </div>
+          <div class="terminal-body">
+<span class="terminal-output">Rule: Brute Force Attack Detection
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Data Source:    Authentication logs
+Condition:      Failed login count > 10
+Grouping:       Per source IP, per target user
+Time Window:    5 minutes
+Severity:       High
+Response:       Create alert, notify SOC
+
+Correlation Logic:
+  IF (event_type = "authentication_failure")
+  AND (count(events) > 10)
+  WITHIN (5 minutes)
+  GROUP BY (source_ip, target_user)
+  THEN alert("Potential Brute Force Attack")</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="alerting">
+        <h2>Alerting & Thresholds</h2>
+        
+        <h3>Alert Severity Levels</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Criteria</th>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="priority-badge priority-p1">Critical</span></td>
+                <td>Confirmed active threat, critical system impact</td>
+                <td>Immediate investigation, potential IR activation</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p2">High</span></td>
+                <td>Likely malicious activity, significant risk</td>
+                <td>Investigate within 30 minutes</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p3">Medium</span></td>
+                <td>Suspicious activity, potential threat</td>
+                <td>Investigate within SLA (typically 2-4 hours)</td>
+              </tr>
+              <tr>
+                <td><span class="priority-badge priority-p4">Low</span></td>
+                <td>Informational, minor policy violation</td>
+                <td>Review during normal operations</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Tuning Best Practices</h3>
+        <div class="callout callout-tip">
+          <div class="callout-title">Reducing Alert Fatigue</div>
+          <ul style="margin: 0;">
+            <li>Start with conservative thresholds and tighten based on data</li>
+            <li>Create exceptions for known legitimate activity</li>
+            <li>Use asset criticality to adjust severity</li>
+            <li>Regularly review and retire low-value alerts</li>
+            <li>Track false positive rates per rule</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="retention">
+        <h2>Storage & Retention</h2>
+        
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Type</th>
+                <th>Typical Retention</th>
+                <th>Compliance Drivers</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Security Alerts</td>
+                <td>1-3 years</td>
+                <td>Incident investigation, legal</td>
+              </tr>
+              <tr>
+                <td>Authentication Logs</td>
+                <td>1-2 years</td>
+                <td>PCI DSS, SOX, HIPAA</td>
+              </tr>
+              <tr>
+                <td>Firewall Logs</td>
+                <td>90 days - 1 year</td>
+                <td>PCI DSS, forensics</td>
+              </tr>
+              <tr>
+                <td>DNS Logs</td>
+                <td>30-90 days</td>
+                <td>Threat hunting, forensics</td>
+              </tr>
+              <tr>
+                <td>Full Packet Capture</td>
+                <td>7-30 days</td>
+                <td>Deep forensics (storage intensive)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Storage Cost Considerations</div>
+          <p style="margin: 0;">
+            SIEM costs often scale with data volume (GB/day ingested). Work with your team to understand 
+            which logs provide security value versus noise. Not all logs need real-time indexing—some can 
+            go to cold storage for compliance only.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>SIEM centralizes security data from across the enterprise for detection and investigation</li>
+          <li>Data flows through: Collection → Parsing → Normalization → Enrichment → Indexing</li>
+          <li>Correlation rules transform raw logs into actionable security alerts</li>
+          <li>Alert tuning is ongoing—balance detection coverage with alert fatigue</li>
+          <li>Retention policies balance security needs, compliance, and cost</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html#siem" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SIEM Section</span>
+          </a>
+          <a href="alert-creation.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Detection Use Cases</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

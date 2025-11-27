@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOC Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Understanding the Security Operations Center mission, structure, operational models, and how SOC integrates with the broader organization.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link active"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> ITSM Overview</a>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🔄</span> Ticket Lifecycle</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation Management</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL for Sentinel</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Logs</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Quick Links</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Event ID Reference</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>SOC Overview</span>
+        </nav>
+        <h1>SOC Overview</h1>
+        <div class="page-meta">
+          <span class="meta-item">
+            <span class="tier-badge tier-all">All Tiers</span>
+          </span>
+          <span class="meta-item">Section 1.1</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <!-- Table of Contents -->
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#mission">SOC Mission & Purpose</a></li>
+          <li><a href="#functions">Core SOC Functions</a></li>
+          <li><a href="#models">Operational Models</a></li>
+          <li><a href="#structure">Team Structure</a></li>
+          <li><a href="#tools">Technology Stack</a></li>
+          <li><a href="#integration">Organizational Integration</a></li>
+        </ul>
+      </div>
+
+      <!-- Content -->
+      <section id="mission">
+        <h2>SOC Mission & Purpose</h2>
+        <p>
+          The Security Operations Center (SOC) serves as the central hub for an organization's cybersecurity monitoring, 
+          detection, and response capabilities. Operating as the first line of defense, the SOC provides continuous 
+          surveillance of the organization's digital infrastructure to identify, analyze, and respond to security threats 
+          in real-time.
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            SOC Mission Statement
+          </div>
+          <p style="margin: 0;">
+            To protect the organization by continuously monitoring, detecting, analyzing, and responding to cybersecurity 
+            incidents using the optimal combination of technology, processes, and people.
+          </p>
+        </div>
+
+        <h3>Primary Objectives</h3>
+        <p>The SOC exists to achieve several critical security objectives that align with the organization's risk management strategy:</p>
+        
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title" style="margin: 0;">SOC Objectives</h4>
+          </div>
+          <ul>
+            <li><strong>Continuous Monitoring:</strong> 24/7 surveillance of networks, endpoints, servers, databases, applications, and other systems for suspicious activity</li>
+            <li><strong>Threat Detection:</strong> Identify potential security incidents through log analysis, correlation rules, behavioral analytics, and threat intelligence</li>
+            <li><strong>Incident Response:</strong> Investigate and respond to confirmed security incidents following established procedures and playbooks</li>
+            <li><strong>Threat Intelligence:</strong> Collect, process, and operationalize threat intelligence to improve detection and prevention capabilities</li>
+            <li><strong>Vulnerability Management:</strong> Support identification and tracking of vulnerabilities across the environment</li>
+            <li><strong>Compliance Support:</strong> Maintain audit trails, generate reports, and support regulatory compliance requirements</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="functions">
+        <h2>Core SOC Functions</h2>
+        <p>
+          A mature SOC performs multiple functions that work together to provide comprehensive security coverage. 
+          Understanding these functions helps analysts see how their daily work contributes to the bigger picture.
+        </p>
+
+        <div class="tabs">
+          <div class="tab-buttons">
+            <button class="tab-btn active">Monitoring</button>
+            <button class="tab-btn">Detection</button>
+            <button class="tab-btn">Response</button>
+            <button class="tab-btn">Intelligence</button>
+          </div>
+          
+          <div class="tab-content active">
+            <h4>Security Monitoring</h4>
+            <p>Continuous observation of security events across the technology landscape.</p>
+            <ul>
+              <li>Real-time log collection and aggregation from all security-relevant sources</li>
+              <li>Dashboard monitoring for high-priority alerts and system health</li>
+              <li>Baseline establishment and anomaly identification</li>
+              <li>Performance monitoring of security controls and tools</li>
+              <li>Alert queue management and prioritization</li>
+            </ul>
+            <div class="callout callout-tip">
+              <div class="callout-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Pro Tip
+              </div>
+              <p style="margin: 0;">Effective monitoring isn't about watching every alert—it's about tuning your view to surface truly meaningful events while reducing noise.</p>
+            </div>
+          </div>
+          
+          <div class="tab-content">
+            <h4>Threat Detection</h4>
+            <p>Identifying malicious activity and potential security incidents.</p>
+            <ul>
+              <li><strong>Signature-based Detection:</strong> Known IOCs, malware signatures, attack patterns</li>
+              <li><strong>Behavioral Analysis:</strong> Anomalies from established baselines</li>
+              <li><strong>Correlation Rules:</strong> Multi-source event correlation for complex attacks</li>
+              <li><strong>Threat Hunting:</strong> Proactive search for undetected threats</li>
+              <li><strong>Machine Learning:</strong> Automated anomaly detection and pattern recognition</li>
+            </ul>
+          </div>
+          
+          <div class="tab-content">
+            <h4>Incident Response</h4>
+            <p>Structured approach to handling confirmed security incidents.</p>
+            <ul>
+              <li><strong>Triage:</strong> Initial assessment and severity classification</li>
+              <li><strong>Investigation:</strong> Deep-dive analysis to understand scope and impact</li>
+              <li><strong>Containment:</strong> Limiting damage and preventing spread</li>
+              <li><strong>Eradication:</strong> Removing threat actors and malicious artifacts</li>
+              <li><strong>Recovery:</strong> Restoring systems to normal operations</li>
+              <li><strong>Post-Incident:</strong> Lessons learned and improvement actions</li>
+            </ul>
+          </div>
+          
+          <div class="tab-content">
+            <h4>Threat Intelligence</h4>
+            <p>Leveraging external and internal intelligence to improve security posture.</p>
+            <ul>
+              <li>Integration of threat feeds (commercial, open-source, ISAC)</li>
+              <li>IOC management and automated blocking</li>
+              <li>Adversary tracking and TTP analysis</li>
+              <li>Intelligence report creation and distribution</li>
+              <li>Internal threat intelligence from investigations</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="models">
+        <h2>Operational Models</h2>
+        <p>
+          Organizations implement SOC capabilities using different operational models based on their size, 
+          budget, security maturity, and strategic priorities.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Description</th>
+                <th>Best For</th>
+                <th>Considerations</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>In-House SOC</strong></td>
+                <td>Fully staffed and operated by internal employees</td>
+                <td>Large enterprises, regulated industries, organizations with mature security programs</td>
+                <td>Highest control but requires significant investment in people, process, and technology</td>
+              </tr>
+              <tr>
+                <td><strong>Outsourced (MSSP)</strong></td>
+                <td>Security monitoring and response handled by third-party provider</td>
+                <td>Small-medium businesses, organizations lacking security expertise</td>
+                <td>Cost-effective but may have less context about business-specific risks</td>
+              </tr>
+              <tr>
+                <td><strong>Hybrid / Co-Managed</strong></td>
+                <td>Combination of internal staff and external provider</td>
+                <td>Organizations seeking 24/7 coverage without full internal staffing</td>
+                <td>Balances control with cost; requires clear role delineation</td>
+              </tr>
+              <tr>
+                <td><strong>Virtual SOC</strong></td>
+                <td>Distributed team without dedicated physical facility</td>
+                <td>Geographically dispersed organizations, remote-first companies</td>
+                <td>Flexible but requires strong communication and coordination tools</td>
+              </tr>
+              <tr>
+                <td><strong>MDR (Managed Detection & Response)</strong></td>
+                <td>Vendor-provided detection and response using their technology</td>
+                <td>Organizations wanting turnkey solution with response capabilities</td>
+                <td>Rapid deployment but may require technology lock-in</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Important Consideration
+          </div>
+          <p style="margin: 0;">
+            Regardless of model, the organization retains ultimate responsibility for security. 
+            Even with outsourced SOC functions, internal stakeholders must maintain oversight and governance.
+          </p>
+        </div>
+      </section>
+
+      <section id="structure">
+        <h2>Team Structure</h2>
+        <p>
+          A typical SOC follows a tiered structure that enables efficient handling of alerts while ensuring 
+          complex incidents receive appropriate expertise.
+        </p>
+
+        <div class="card">
+          <h4 style="color: var(--tier-l1);">Tier 1: Alert Analyst</h4>
+          <p>First line of defense, handling initial alert triage and basic investigation.</p>
+          <ul>
+            <li>Monitor alert queues and dashboards</li>
+            <li>Perform initial triage and classification</li>
+            <li>Execute documented response procedures</li>
+            <li>Escalate complex issues to Tier 2</li>
+            <li>Create and update tickets</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h4 style="color: var(--tier-l2);">Tier 2: Incident Responder</h4>
+          <p>Experienced analysts handling escalated incidents and deeper investigations.</p>
+          <ul>
+            <li>Investigate escalated incidents</li>
+            <li>Perform advanced analysis and correlation</li>
+            <li>Execute containment and remediation actions</li>
+            <li>Develop and refine detection rules</li>
+            <li>Mentor Tier 1 analysts</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h4 style="color: var(--tier-l3);">Tier 3: Threat Hunter / Expert</h4>
+          <p>Senior specialists focused on advanced threats and proactive hunting.</p>
+          <ul>
+            <li>Proactive threat hunting</li>
+            <li>Malware analysis and reverse engineering</li>
+            <li>Advanced forensics</li>
+            <li>Threat intelligence analysis</li>
+            <li>Tool and process development</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h4 style="color: var(--tier-lead);">SOC Manager / Lead</h4>
+          <p>Leadership responsible for SOC operations and team management.</p>
+          <ul>
+            <li>Team management and development</li>
+            <li>Process improvement and metrics</li>
+            <li>Stakeholder communication</li>
+            <li>Budget and resource planning</li>
+            <li>Strategic planning</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="tools">
+        <h2>Technology Stack</h2>
+        <p>
+          The SOC relies on an integrated technology stack to enable effective security operations. 
+          Understanding these tools and their roles is essential for every analyst.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 class="card-title">SIEM</h4>
+            <p class="text-muted">Security Information & Event Management</p>
+            <p>Central platform for log collection, correlation, and alerting. Examples: Microsoft Sentinel, Splunk, IBM QRadar, Elastic Security.</p>
+          </div>
+          <div class="card">
+            <h4 class="card-title">EDR/XDR</h4>
+            <p class="text-muted">Endpoint Detection & Response</p>
+            <p>Endpoint visibility, threat detection, and response capabilities. Examples: Microsoft Defender for Endpoint, CrowdStrike, SentinelOne.</p>
+          </div>
+          <div class="card">
+            <h4 class="card-title">SOAR</h4>
+            <p class="text-muted">Security Orchestration & Response</p>
+            <p>Workflow automation, case management, and tool integration. Examples: Microsoft Sentinel (built-in), Palo Alto XSOAR, Splunk SOAR.</p>
+          </div>
+          <div class="card">
+            <h4 class="card-title">TIP</h4>
+            <p class="text-muted">Threat Intelligence Platform</p>
+            <p>Threat feed aggregation, IOC management, and intelligence sharing. Examples: MISP, Anomali, Recorded Future.</p>
+          </div>
+          <div class="card">
+            <h4 class="card-title">Network Security</h4>
+            <p class="text-muted">Firewall, IDS/IPS, NDR</p>
+            <p>Network traffic monitoring and protection. Examples: Palo Alto, Fortinet, Zeek, Darktrace.</p>
+          </div>
+          <div class="card">
+            <h4 class="card-title">Ticketing / ITSM</h4>
+            <p class="text-muted">Case & Workflow Management</p>
+            <p>Incident tracking, SLA management, and documentation. Examples: ServiceNow, Jira, TheHive.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="integration">
+        <h2>Organizational Integration</h2>
+        <p>
+          The SOC doesn't operate in isolation. Effective security operations require close collaboration 
+          with multiple teams across the organization.
+        </p>
+
+        <div class="accordion">
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">IT Operations</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Collaboration Points:</strong></p>
+              <ul>
+                <li>System patching and vulnerability remediation</li>
+                <li>Change management coordination</li>
+                <li>Infrastructure support during incidents</li>
+                <li>Asset inventory and configuration management</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network Operations (NOC)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Collaboration Points:</strong></p>
+              <ul>
+                <li>Network traffic analysis and blocking</li>
+                <li>Firewall rule changes</li>
+                <li>Network isolation during incidents</li>
+                <li>Performance vs. security trade-offs</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Identity & Access Management (IAM)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Collaboration Points:</strong></p>
+              <ul>
+                <li>Account lockouts and password resets</li>
+                <li>Privileged access investigations</li>
+                <li>Access reviews and anomaly investigation</li>
+                <li>MFA bypass and authentication issues</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Legal & Compliance</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Collaboration Points:</strong></p>
+              <ul>
+                <li>Data breach notification requirements</li>
+                <li>Evidence preservation for legal matters</li>
+                <li>Regulatory reporting obligations</li>
+                <li>Law enforcement engagement</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Human Resources</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>Collaboration Points:</strong></p>
+              <ul>
+                <li>Insider threat investigations</li>
+                <li>Employee termination procedures</li>
+                <li>Security awareness training</li>
+                <li>Policy violation handling</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Takeaways -->
+      <div class="callout callout-success">
+        <div class="callout-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Key Takeaways
+        </div>
+        <ul style="margin: 0;">
+          <li>The SOC is the organization's security nerve center for monitoring, detection, and response</li>
+          <li>Different operational models suit different organizational needs and maturity levels</li>
+          <li>The tiered structure (L1/L2/L3) enables efficient handling from basic alerts to advanced threats</li>
+          <li>Effective SOC operations depend on integrated technology and cross-functional collaboration</li>
+        </ul>
+      </div>
+
+      <!-- Footer Navigation -->
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="../index.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Home</span>
+          </a>
+          <a href="soc-roles.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SOC Roles & Tiers</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alert Creation | SOC Analyst Guide</title>
+  <meta name="description" content="SIEM alert creation: detection rule development, KQL analytics, threshold tuning, and alert documentation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🔷</span> Sentinel Overview</a>
+          <a href="alert-creation.html" class="nav-link active"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Alert Creation</span>
+        </nav>
+        <h1>Alert Creation</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 3.8</span>
+          <span class="meta-item">~20 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#principles">Detection Principles</a></li>
+          <li><a href="#types">Alert Types</a></li>
+          <li><a href="#development">Rule Development</a></li>
+          <li><a href="#examples">Detection Examples</a></li>
+          <li><a href="#documentation">Alert Documentation</a></li>
+          <li><a href="#testing">Testing and Validation</a></li>
+        </ul>
+      </div>
+
+      <section id="principles">
+        <h2>Detection Principles</h2>
+        <p>
+          Good detection rules balance sensitivity (catching threats) with specificity 
+          (avoiding false positives). The goal is actionable alerts that analysts can 
+          investigate effectively.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Detection Goals</h4>
+            <ul>
+              <li>Detect real threats (true positives)</li>
+              <li>Minimize noise (false positives)</li>
+              <li>Provide actionable context</li>
+              <li>Enable efficient investigation</li>
+              <li>Cover attack techniques (MITRE)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Detection Challenges</h4>
+            <ul>
+              <li>Attackers blend with normal activity</li>
+              <li>Environment-specific baselines</li>
+              <li>Log availability and quality</li>
+              <li>Performance/cost constraints</li>
+              <li>Evolving attack techniques</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Detection Quality Metrics</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Definition</th>
+                <th>Target</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>True Positive Rate</strong></td>
+                <td>% of real threats detected</td>
+                <td>As high as possible</td>
+              </tr>
+              <tr>
+                <td><strong>False Positive Rate</strong></td>
+                <td>% of alerts that aren't threats</td>
+                <td>< 20% ideal, < 50% acceptable</td>
+              </tr>
+              <tr>
+                <td><strong>Alert Volume</strong></td>
+                <td>Alerts generated per day</td>
+                <td>Manageable by team capacity</td>
+              </tr>
+              <tr>
+                <td><strong>Mean Time to Triage</strong></td>
+                <td>Time to determine TP/FP</td>
+                <td>Minutes, not hours</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="types">
+        <h2>Alert Types</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Signature-Based</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Match specific known indicators or patterns.</p>
+              <h4>Examples:</h4>
+              <ul>
+                <li>Known malicious IP address</li>
+                <li>Specific malware hash</li>
+                <li>Known attack tool command line</li>
+              </ul>
+              <h4>Pros:</h4> Low false positives for known threats<br>
+              <h4>Cons:</h4> Misses new/modified attacks
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Threshold-Based</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Alert when count exceeds defined threshold.</p>
+              <h4>Examples:</h4>
+              <ul>
+                <li>Failed logins > 10 in 5 minutes</li>
+                <li>File deletions > 100 in 1 hour</li>
+                <li>Outbound connections to new IPs > 50/day</li>
+              </ul>
+              <h4>Pros:</h4> Catches volume-based attacks<br>
+              <h4>Cons:</h4> Threshold tuning is environment-specific
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Behavioral/Anomaly</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Detect deviations from established baseline.</p>
+              <h4>Examples:</h4>
+              <ul>
+                <li>User accessing resources never accessed before</li>
+                <li>Process making network connections it normally doesn't</li>
+                <li>Login from new location/device</li>
+              </ul>
+              <h4>Pros:</h4> Catches unknown threats<br>
+              <h4>Cons:</h4> Requires good baseline, higher false positives
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Correlation-Based</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Alert when multiple conditions occur together.</p>
+              <h4>Examples:</h4>
+              <ul>
+                <li>Failed login + successful login from different IP</li>
+                <li>Suspicious email + macro execution</li>
+                <li>Privilege escalation + data access</li>
+              </ul>
+              <h4>Pros:</h4> High fidelity, catches attack chains<br>
+              <h4>Cons:</h4> More complex to develop and maintain
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="development">
+        <h2>Rule Development Process</h2>
+
+        <div class="card">
+          <h3>Development Workflow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>1. Identify Need</strong><br>
+                <small>Gap analysis, threat intel</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>2. Research</strong><br>
+                <small>Attack technique, logs needed</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>3. Develop Query</strong><br>
+                <small>Write and test detection</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>4. Tune & Deploy</strong><br>
+                <small>Reduce FPs, enable rule</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Step 1: Identify Detection Need</h3>
+        <ul>
+          <li>Review MITRE ATT&CK coverage gaps</li>
+          <li>Threat intelligence on active campaigns</li>
+          <li>Post-incident lessons learned</li>
+          <li>Regulatory/compliance requirements</li>
+          <li>Red team/penetration test findings</li>
+        </ul>
+
+        <h3>Step 2: Research the Attack</h3>
+        <ul class="checklist">
+          <li>What MITRE technique(s) does this cover?</li>
+          <li>What does the attack look like in logs?</li>
+          <li>What log sources are required?</li>
+          <li>What legitimate activity looks similar?</li>
+          <li>Are there existing detection rules to reference?</li>
+        </ul>
+
+        <h3>Step 3: Write the Detection Query</h3>
+        <div class="callout callout-tip">
+          <div class="callout-title">Query Best Practices</div>
+          <ul style="margin: 0;">
+            <li>Start broad, then narrow with filters</li>
+            <li>Test against historical data first</li>
+            <li>Include relevant context in output</li>
+            <li>Use comments to explain logic</li>
+            <li>Consider performance (filter early)</li>
+          </ul>
+        </div>
+
+        <h3>Step 4: Tune and Deploy</h3>
+        <ul>
+          <li>Run in "audit mode" before alerting</li>
+          <li>Review sample results for false positives</li>
+          <li>Add exclusions for known legitimate activity</li>
+          <li>Set appropriate severity and priority</li>
+          <li>Enable alerting and monitor</li>
+        </ul>
+      </section>
+
+      <section id="examples">
+        <h2>Detection Examples</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Brute Force Detection (Threshold)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// T1110.001 - Password Guessing</span>
+<span class="cm">// Alert: Multiple failed logins followed by success</span>
+SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> EventID <span class="kw">in</span> (<span class="nu">4625</span>, <span class="nu">4624</span>)
+| <span class="kw">summarize</span> 
+    FailedCount = <span class="fn">countif</span>(EventID == <span class="nu">4625</span>),
+    SuccessCount = <span class="fn">countif</span>(EventID == <span class="nu">4624</span>),
+    SuccessTime = <span class="fn">maxif</span>(TimeGenerated, EventID == <span class="nu">4624</span>)
+    <span class="kw">by</span> TargetUserName, IpAddress, bin(TimeGenerated, <span class="nu">15m</span>)
+| <span class="kw">where</span> FailedCount >= <span class="nu">5</span> <span class="kw">and</span> SuccessCount >= <span class="nu">1</span>
+| <span class="kw">project</span> TimeGenerated, TargetUserName, IpAddress, 
+    FailedCount, SuccessTime</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Suspicious PowerShell (Behavioral)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// T1059.001 - PowerShell</span>
+<span class="cm">// Alert: PowerShell with suspicious flags</span>
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> FileName =~ <span class="st">"powershell.exe"</span>
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (
+    <span class="st">"-enc"</span>, <span class="st">"-encodedcommand"</span>,
+    <span class="st">"-nop"</span>, <span class="st">"-noprofile"</span>,
+    <span class="st">"-w hidden"</span>, <span class="st">"-windowstyle hidden"</span>,
+    <span class="st">"bypass"</span>, <span class="st">"downloadstring"</span>,
+    <span class="st">"invoke-expression"</span>, <span class="st">"iex"</span>
+)
+<span class="cm">// Exclude known legitimate</span>
+| <span class="kw">where</span> InitiatingProcessFileName !<span class="kw">in~</span> (
+    <span class="st">"sccm.exe"</span>, <span class="st">"intune.exe"</span>  <span class="cm">// Add your exclusions</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    ProcessCommandLine, InitiatingProcessFileName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">New Service Installation (Correlation)</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// T1543.003 - Windows Service</span>
+<span class="cm">// Alert: New service with suspicious characteristics</span>
+SecurityEvent
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> EventID == <span class="nu">7045</span>  <span class="cm">// Service installed</span>
+| <span class="kw">extend</span> ServiceName = <span class="fn">tostring</span>(EventData.ServiceName)
+| <span class="kw">extend</span> ServicePath = <span class="fn">tostring</span>(EventData.ImagePath)
+| <span class="kw">where</span> 
+    <span class="cm">// Suspicious paths</span>
+    ServicePath <span class="kw">has_any</span> (<span class="st">"temp"</span>, <span class="st">"appdata"</span>, <span class="st">"public"</span>)
+    <span class="kw">or</span>
+    <span class="cm">// Command execution in service</span>
+    ServicePath <span class="kw">has_any</span> (<span class="st">"cmd"</span>, <span class="st">"powershell"</span>, <span class="st">"wscript"</span>)
+| <span class="kw">project</span> TimeGenerated, Computer, ServiceName, 
+    ServicePath, SubjectUserName</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="documentation">
+        <h2>Alert Documentation</h2>
+
+        <h3>Detection Rule Template</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Rule Name</strong></td>
+                <td>Descriptive name for the detection</td>
+              </tr>
+              <tr>
+                <td><strong>Description</strong></td>
+                <td>What the rule detects and why it matters</td>
+              </tr>
+              <tr>
+                <td><strong>MITRE ATT&CK</strong></td>
+                <td>Technique IDs covered</td>
+              </tr>
+              <tr>
+                <td><strong>Severity</strong></td>
+                <td>Low/Medium/High/Critical</td>
+              </tr>
+              <tr>
+                <td><strong>Data Sources</strong></td>
+                <td>Required log sources</td>
+              </tr>
+              <tr>
+                <td><strong>Query Logic</strong></td>
+                <td>The detection query with comments</td>
+              </tr>
+              <tr>
+                <td><strong>False Positive Notes</strong></td>
+                <td>Known benign triggers, how to identify</td>
+              </tr>
+              <tr>
+                <td><strong>Investigation Steps</strong></td>
+                <td>What analyst should do when alert fires</td>
+              </tr>
+              <tr>
+                <td><strong>Response Actions</strong></td>
+                <td>Recommended response if confirmed</td>
+              </tr>
+              <tr>
+                <td><strong>Owner</strong></td>
+                <td>Who maintains this rule</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="testing">
+        <h2>Testing and Validation</h2>
+
+        <h3>Validation Methods</h3>
+        <ul class="checklist">
+          <li><strong>Historical testing:</strong> Run query against past data</li>
+          <li><strong>Atomic Red Team:</strong> Execute simulated attacks</li>
+          <li><strong>Purple team exercises:</strong> Coordinated attack simulation</li>
+          <li><strong>Production monitoring:</strong> Track FP rate after deployment</li>
+        </ul>
+
+        <h3>Pre-Deployment Checklist</h3>
+        <ul class="checklist">
+          <li>Query returns expected results for known attacks</li>
+          <li>False positive rate is acceptable (reviewed samples)</li>
+          <li>Performance is acceptable (query time reasonable)</li>
+          <li>Documentation is complete</li>
+          <li>Runbook/investigation steps are defined</li>
+          <li>Severity and priority are appropriate</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Good alerts balance detection with false positive management</li>
+          <li>Test against historical data before enabling</li>
+          <li>Document everything—why, how, investigation steps</li>
+          <li>Start broad, then tune to reduce noise</li>
+          <li>Map detections to MITRE ATT&CK for coverage visibility</li>
+          <li>Include context in alert output for faster triage</li>
+          <li>Continuously tune based on analyst feedback</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="sentinel-queries.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Sentinel Queries</span>
+          </a>
+          <a href="siem-tuning.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SIEM Tuning</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

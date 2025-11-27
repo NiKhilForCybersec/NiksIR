@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDR Deep Dive | SOC Analyst Guide</title>
+  <meta name="description" content="Deep dive into EDR architecture: telemetry collection, detection mechanisms, behavioral analysis, and evasion techniques.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔍</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link active"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> MDE Queries</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#edr">EDR/XDR</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>EDR Deep Dive</span>
+        </nav>
+        <h1>EDR Deep Dive</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 4.2</span>
+          <span class="meta-item">~25 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#architecture">EDR Architecture</a></li>
+          <li><a href="#telemetry">Telemetry Sources</a></li>
+          <li><a href="#detection">Detection Mechanisms</a></li>
+          <li><a href="#behaviors">Behavioral Detection</a></li>
+          <li><a href="#evasion">Evasion Awareness</a></li>
+          <li><a href="#tuning">Alert Tuning</a></li>
+        </ul>
+      </div>
+
+      <section id="architecture">
+        <h2>EDR Architecture</h2>
+        <p>
+          Understanding how EDR works under the hood helps you interpret alerts, 
+          identify blind spots, and investigate more effectively.
+        </p>
+
+        <div class="card">
+          <h3>EDR Data Flow</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Kernel Driver</strong><br>
+                <small>OS-level hooks</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>User-Mode Agent</strong><br>
+                <small>Processing & filtering</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Cloud Backend</strong><br>
+                <small>Analytics & detection</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Console</strong><br>
+                <small>Alerts & response</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Component Responsibilities</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Function</th>
+                <th>Key Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Kernel Driver</strong></td>
+                <td>Hooks into OS to capture events</td>
+                <td>Deepest visibility, highest privilege, hardest to evade</td>
+              </tr>
+              <tr>
+                <td><strong>User-Mode Agent</strong></td>
+                <td>Processes events, local detection</td>
+                <td>Filters noise, local blocking, offline capability</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud Analytics</strong></td>
+                <td>ML models, threat intel, correlation</td>
+                <td>Cross-customer intelligence, advanced detection</td>
+              </tr>
+              <tr>
+                <td><strong>SIEM Integration</strong></td>
+                <td>Forward events for correlation</td>
+                <td>Combine with other data sources</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Kernel vs User Mode</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>Kernel Mode Hooks</h4>
+            <ul>
+              <li>Minifilter drivers (file operations)</li>
+              <li>Callback routines (process/thread creation)</li>
+              <li>ETW providers (Event Tracing for Windows)</li>
+              <li>Network filter drivers</li>
+            </ul>
+            <p><strong>Advantage:</strong> Can't be bypassed by user-mode malware</p>
+          </div>
+          <div class="card">
+            <h4>User Mode Hooks</h4>
+            <ul>
+              <li>API hooking (ntdll.dll, kernel32.dll)</li>
+              <li>DLL injection for monitoring</li>
+              <li>Event log consumption</li>
+              <li>WMI subscriptions</li>
+            </ul>
+            <p><strong>Limitation:</strong> Can be bypassed by direct syscalls</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="telemetry">
+        <h2>Telemetry Sources</h2>
+        <p>
+          EDR collects telemetry from multiple sources. Understanding what's collected 
+          helps you know what you can and can't see.
+        </p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Process Telemetry</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>What's Captured:</h4>
+              <ul>
+                <li><strong>Process creation:</strong> PID, parent PID, command line, user, timestamp</li>
+                <li><strong>Process termination:</strong> Exit code, duration</li>
+                <li><strong>Process tree:</strong> Parent-child relationships</li>
+                <li><strong>Image metadata:</strong> Hash, signature, version info, path</li>
+                <li><strong>Token information:</strong> Privileges, integrity level</li>
+              </ul>
+              <h4>Detection Value:</h4>
+              <p>Process trees reveal attack chains. Suspicious parent-child relationships 
+              (Word spawning PowerShell) are key indicators.</p>
+              <h4>Blind Spots:</h4>
+              <ul>
+                <li>Process hollowing may show legitimate process name</li>
+                <li>Short-lived processes may be missed if sampling-based</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">File Telemetry</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>What's Captured:</h4>
+              <ul>
+                <li><strong>File creation/modification/deletion:</strong> Path, timestamp, process</li>
+                <li><strong>File reads:</strong> Often sampled, not exhaustive</li>
+                <li><strong>File hashes:</strong> SHA256, SHA1, MD5</li>
+                <li><strong>File metadata:</strong> Size, attributes, owner</li>
+                <li><strong>Alternate data streams:</strong> Hidden data in NTFS</li>
+              </ul>
+              <h4>Detection Value:</h4>
+              <p>Malware drops, persistence mechanisms, staging files, exfiltration preparation.</p>
+              <h4>Blind Spots:</h4>
+              <ul>
+                <li>Memory-only malware leaves no file artifacts</li>
+                <li>High-volume file operations may be sampled</li>
+                <li>Encrypted containers hide content</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network Telemetry</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>What's Captured:</h4>
+              <ul>
+                <li><strong>Connection events:</strong> Source/dest IP, ports, protocol</li>
+                <li><strong>DNS queries:</strong> Queried domains, response IPs</li>
+                <li><strong>Process attribution:</strong> Which process made the connection</li>
+                <li><strong>Data volume:</strong> Bytes sent/received</li>
+                <li><strong>URL/Host headers:</strong> For HTTP/HTTPS (if inspected)</li>
+              </ul>
+              <h4>Detection Value:</h4>
+              <p>C2 communication, beaconing patterns, data exfiltration, lateral movement.</p>
+              <h4>Blind Spots:</h4>
+              <ul>
+                <li>Encrypted traffic content (without SSL inspection)</li>
+                <li>DNS over HTTPS may bypass DNS logging</li>
+                <li>Traffic through legitimate services (cloud, CDN)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Registry Telemetry</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>What's Captured:</h4>
+              <ul>
+                <li><strong>Key/value operations:</strong> Create, modify, delete</li>
+                <li><strong>Persistence locations:</strong> Run keys, services, scheduled tasks</li>
+                <li><strong>Security settings:</strong> Firewall, Defender, UAC changes</li>
+              </ul>
+              <h4>Key Locations Monitored:</h4>
+              <ul>
+                <li>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run</li>
+                <li>HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run</li>
+                <li>HKLM\SYSTEM\CurrentControlSet\Services</li>
+                <li>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Memory Telemetry</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>What's Captured:</h4>
+              <ul>
+                <li><strong>Memory allocations:</strong> RWX (Read-Write-Execute) regions</li>
+                <li><strong>Process injection:</strong> Cross-process memory writes</li>
+                <li><strong>Module loading:</strong> DLLs loaded into processes</li>
+                <li><strong>Memory scanning:</strong> Pattern matching for known malware</li>
+              </ul>
+              <h4>Detection Value:</h4>
+              <p>Fileless malware, process injection, reflective DLL loading, shellcode.</p>
+              <h4>Advanced Techniques Detected:</h4>
+              <ul>
+                <li>Process hollowing</li>
+                <li>DLL injection</li>
+                <li>Thread hijacking</li>
+                <li>APC injection</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Mechanisms</h2>
+
+        <h3>Detection Layers</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Layer</th>
+                <th>Technique</th>
+                <th>Strengths</th>
+                <th>Weaknesses</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Signatures</strong></td>
+                <td>Hash matching, YARA rules, byte patterns</td>
+                <td>Fast, low false positives for known threats</td>
+                <td>Easily bypassed by modification</td>
+              </tr>
+              <tr>
+                <td><strong>Heuristics</strong></td>
+                <td>Static analysis of file properties</td>
+                <td>Catches variants, doesn't need exact match</td>
+                <td>Higher false positives</td>
+              </tr>
+              <tr>
+                <td><strong>Behavioral</strong></td>
+                <td>Runtime behavior analysis</td>
+                <td>Catches novel attacks, hard to evade</td>
+                <td>Requires execution, may miss fast attacks</td>
+              </tr>
+              <tr>
+                <td><strong>ML/AI</strong></td>
+                <td>Machine learning models</td>
+                <td>Finds patterns humans miss</td>
+                <td>Black box, can be fooled</td>
+              </tr>
+              <tr>
+                <td><strong>Threat Intel</strong></td>
+                <td>IOC matching, reputation</td>
+                <td>Known bad actors caught quickly</td>
+                <td>Only works for known threats</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Detection Pipeline</h3>
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Event Occurs</strong><br>
+                <small>Process/File/Network</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Local Analysis</strong><br>
+                <small>Signatures, heuristics</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Cloud Analysis</strong><br>
+                <small>ML, threat intel, sandbox</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Verdict</strong><br>
+                <small>Allow/Block/Alert</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="behaviors">
+        <h2>Behavioral Detection</h2>
+        <p>
+          Behavioral detection looks at what processes DO, not what they ARE. 
+          This catches novel malware that signatures miss.
+        </p>
+
+        <h3>Common Behavioral Indicators</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Suspicious Process Chains</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <h4>Examples:</h4>
+              <ul>
+                <li><strong>Office → cmd/PowerShell:</strong> Macro execution</li>
+                <li><strong>Browser → cmd/PowerShell:</strong> Drive-by download</li>
+                <li><strong>WMI → PowerShell:</strong> Lateral movement</li>
+                <li><strong>Services → cmd:</strong> Service exploitation</li>
+                <li><strong>Explorer → rundll32:</strong> User-initiated LOLBin</li>
+              </ul>
+              <h4>Why It Works:</h4>
+              <p>Legitimate software rarely spawns command interpreters. 
+              When Word launches PowerShell, something is wrong.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Defense Evasion Behaviors</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Disabling Windows Defender</li>
+                <li>Clearing event logs</li>
+                <li>Timestomping files</li>
+                <li>Process injection</li>
+                <li>Masquerading (renamed executables)</li>
+                <li>Indicator removal</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Credential Access Behaviors</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>LSASS memory access</li>
+                <li>SAM database access</li>
+                <li>Credential file access (browser, SSH keys)</li>
+                <li>Kerberos ticket manipulation</li>
+                <li>DCSync replication requests</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Persistence Behaviors</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Registry Run key modification</li>
+                <li>Scheduled task creation</li>
+                <li>Service installation</li>
+                <li>WMI event subscription</li>
+                <li>Startup folder modification</li>
+                <li>DLL search order hijacking</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Discovery Behaviors</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Net commands (net user, net group, net share)</li>
+                <li>System information gathering (systeminfo, hostname)</li>
+                <li>Network enumeration (arp, netstat, route)</li>
+                <li>AD enumeration (nltest, dsquery)</li>
+                <li>File system enumeration</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h3>MITRE ATT&CK Mapping</h3>
+        <p>
+          EDR detections typically map to MITRE ATT&CK techniques. Understanding 
+          this mapping helps you assess coverage and identify gaps.
+        </p>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tactic</th>
+                <th>Common Techniques Detected</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Execution</strong></td>
+                <td>T1059 (Command Interpreter), T1204 (User Execution)</td>
+              </tr>
+              <tr>
+                <td><strong>Persistence</strong></td>
+                <td>T1547 (Boot/Logon Autostart), T1053 (Scheduled Task)</td>
+              </tr>
+              <tr>
+                <td><strong>Privilege Escalation</strong></td>
+                <td>T1055 (Process Injection), T1134 (Access Token Manipulation)</td>
+              </tr>
+              <tr>
+                <td><strong>Defense Evasion</strong></td>
+                <td>T1562 (Impair Defenses), T1070 (Indicator Removal)</td>
+              </tr>
+              <tr>
+                <td><strong>Credential Access</strong></td>
+                <td>T1003 (OS Credential Dumping), T1558 (Steal Kerberos Tickets)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="evasion">
+        <h2>Evasion Awareness</h2>
+        <p>
+          Understanding how attackers evade EDR helps you investigate alerts 
+          more effectively and recognize sophisticated attacks.
+        </p>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Why This Matters</div>
+          <p style="margin: 0;">
+            When investigating alerts, consider: What DIDN'T the EDR see? 
+            An attacker who knows EDR blind spots may have done more than what's visible.
+          </p>
+        </div>
+
+        <h3>Common Evasion Techniques</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Technique</th>
+                <th>How It Works</th>
+                <th>Investigation Tip</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Direct Syscalls</strong></td>
+                <td>Bypass user-mode API hooks by calling kernel directly</td>
+                <td>Look for processes with unusual syscall patterns</td>
+              </tr>
+              <tr>
+                <td><strong>Unhooking</strong></td>
+                <td>Remove EDR hooks from ntdll.dll</td>
+                <td>Memory forensics can reveal unhooked DLLs</td>
+              </tr>
+              <tr>
+                <td><strong>Process Hollowing</strong></td>
+                <td>Replace legitimate process memory with malware</td>
+                <td>Compare on-disk vs in-memory image</td>
+              </tr>
+              <tr>
+                <td><strong>Parent PID Spoofing</strong></td>
+                <td>Make malware appear spawned by legitimate parent</td>
+                <td>Check for timing anomalies in process tree</td>
+              </tr>
+              <tr>
+                <td><strong>Timestomping</strong></td>
+                <td>Modify file timestamps to blend in</td>
+                <td>Compare $MFT timestamps vs $STANDARD_INFO</td>
+              </tr>
+              <tr>
+                <td><strong>Living off the Land</strong></td>
+                <td>Use legitimate tools (LOLBins) for malicious purposes</td>
+                <td>Context matters: why is certutil downloading?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>LOLBins (Living off the Land Binaries)</h3>
+        <p>Legitimate Windows binaries commonly abused by attackers:</p>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Binary</th>
+                <th>Legitimate Use</th>
+                <th>Malicious Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>certutil.exe</strong></td>
+                <td>Certificate management</td>
+                <td>Download files, decode base64</td>
+              </tr>
+              <tr>
+                <td><strong>mshta.exe</strong></td>
+                <td>Run HTA applications</td>
+                <td>Execute scripts, bypass AppLocker</td>
+              </tr>
+              <tr>
+                <td><strong>regsvr32.exe</strong></td>
+                <td>Register COM objects</td>
+                <td>Execute scripts via /s /u /i</td>
+              </tr>
+              <tr>
+                <td><strong>rundll32.exe</strong></td>
+                <td>Run DLL functions</td>
+                <td>Execute arbitrary code</td>
+              </tr>
+              <tr>
+                <td><strong>bitsadmin.exe</strong></td>
+                <td>Background file transfers</td>
+                <td>Download files, persist jobs</td>
+              </tr>
+              <tr>
+                <td><strong>wmic.exe</strong></td>
+                <td>WMI queries</td>
+                <td>Remote execution, reconnaissance</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tuning">
+        <h2>Alert Tuning</h2>
+        <p>
+          Effective EDR requires tuning to reduce false positives while maintaining 
+          detection of real threats.
+        </p>
+
+        <h3>Tuning Strategies</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>When to Use</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Exclude by path</strong></td>
+                <td>Known good software location</td>
+                <td>Attackers may drop malware there</td>
+              </tr>
+              <tr>
+                <td><strong>Exclude by hash</strong></td>
+                <td>Specific known-good file</td>
+                <td>Lowest risk, very specific</td>
+              </tr>
+              <tr>
+                <td><strong>Exclude by signer</strong></td>
+                <td>Trusted vendor software</td>
+                <td>Signed malware, supply chain attacks</td>
+              </tr>
+              <tr>
+                <td><strong>Suppress alert</strong></td>
+                <td>Alert is valid but not actionable</td>
+                <td>May miss related malicious activity</td>
+              </tr>
+              <tr>
+                <td><strong>Reduce severity</strong></td>
+                <td>Alert is noisy but worth keeping</td>
+                <td>May be deprioritized when real</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Tuning Best Practices</h3>
+        <ul class="checklist">
+          <li><strong>Document every exclusion</strong> - Why, when, who approved</li>
+          <li><strong>Review exclusions periodically</strong> - Are they still needed?</li>
+          <li><strong>Use narrowest scope possible</strong> - Hash > signer > path</li>
+          <li><strong>Test before deploying</strong> - Validate in limited scope first</li>
+          <li><strong>Monitor excluded items</strong> - Watch for abuse of exclusions</li>
+          <li><strong>Never exclude temp folders</strong> - Common malware location</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>EDR uses kernel drivers + user-mode agents for comprehensive visibility</li>
+          <li>Process telemetry (parent-child chains) is most valuable for detection</li>
+          <li>Behavioral detection catches novel malware that signatures miss</li>
+          <li>LOLBins (certutil, mshta, rundll32) are commonly abused—context matters</li>
+          <li>Attackers evade EDR via direct syscalls, unhooking, process hollowing</li>
+          <li>When investigating, consider what EDR might NOT have seen</li>
+          <li>Tune with narrow exclusions and document everything</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="edr-fundamentals.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">EDR Fundamentals</span>
+          </a>
+          <a href="mde-overview.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">MDE Overview</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

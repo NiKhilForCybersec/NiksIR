@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero Trust | SOC Analyst Guide</title>
+  <meta name="description" content="Zero Trust security model: principles, architecture, monitoring, and SOC implications for never trust, always verify.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewalls</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="zero-trust.html" class="nav-link active"><span class="nav-link-icon">🔐</span> Zero Trust</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Zero Trust</span>
+        </nav>
+        <h1>Zero Trust Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 5.9</span>
+          <span class="meta-item">~16 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#principles">Zero Trust Principles</a></li>
+          <li><a href="#pillars">Zero Trust Pillars</a></li>
+          <li><a href="#architecture">Architecture Components</a></li>
+          <li><a href="#monitoring">SOC Monitoring</a></li>
+          <li><a href="#investigation">Investigation Approach</a></li>
+        </ul>
+      </div>
+
+      <section id="principles">
+        <h2>Zero Trust Principles</h2>
+        <p>
+          Zero Trust is a security model based on "never trust, always verify." 
+          Unlike traditional perimeter security, Zero Trust assumes breach and 
+          verifies every access request regardless of source.
+        </p>
+
+        <div class="card">
+          <h3>Core Principles</h3>
+          <div class="card-grid">
+            <div class="card">
+              <h4>Never Trust, Always Verify</h4>
+              <p>Every access request must be authenticated and authorized, 
+              regardless of network location.</p>
+            </div>
+            <div class="card">
+              <h4>Assume Breach</h4>
+              <p>Design systems expecting attackers are already inside. 
+              Minimize blast radius of compromise.</p>
+            </div>
+            <div class="card">
+              <h4>Least Privilege Access</h4>
+              <p>Grant minimum permissions needed. Use just-in-time and 
+              just-enough-access.</p>
+            </div>
+            <div class="card">
+              <h4>Verify Explicitly</h4>
+              <p>Make decisions based on all available data: identity, 
+              device, location, behavior.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Traditional vs Zero Trust</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Aspect</th>
+                <th>Traditional (Perimeter)</th>
+                <th>Zero Trust</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Trust Model</strong></td>
+                <td>Trust inside, verify outside</td>
+                <td>Never trust, always verify</td>
+              </tr>
+              <tr>
+                <td><strong>Network Access</strong></td>
+                <td>VPN grants full network access</td>
+                <td>Per-application access only</td>
+              </tr>
+              <tr>
+                <td><strong>Authentication</strong></td>
+                <td>Once at perimeter</td>
+                <td>Continuous, per-resource</td>
+              </tr>
+              <tr>
+                <td><strong>Lateral Movement</strong></td>
+                <td>Easy once inside</td>
+                <td>Severely restricted</td>
+              </tr>
+              <tr>
+                <td><strong>Device Trust</strong></td>
+                <td>Corporate network = trusted</td>
+                <td>Device health verified</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="pillars">
+        <h2>Zero Trust Pillars</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Identity</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Strong identity is the foundation of Zero Trust.</p>
+              <h4>Key Controls:</h4>
+              <ul>
+                <li>Multi-factor authentication (phishing-resistant preferred)</li>
+                <li>Single sign-on (SSO)</li>
+                <li>Conditional access policies</li>
+                <li>Identity protection and risk detection</li>
+                <li>Privileged identity management</li>
+              </ul>
+              <h4>SOC Relevance:</h4>
+              <p>Monitor sign-in logs, identity protection alerts, MFA challenges, 
+              and impossible travel detections.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Devices</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Verify device health and compliance before granting access.</p>
+              <h4>Key Controls:</h4>
+              <ul>
+                <li>Device registration and management (MDM/MAM)</li>
+                <li>Compliance policies (encryption, patching)</li>
+                <li>Health attestation</li>
+                <li>EDR/XDR deployment</li>
+              </ul>
+              <h4>SOC Relevance:</h4>
+              <p>Monitor device compliance status, EDR alerts, and 
+              access attempts from non-compliant devices.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Network segmentation and encrypted communications.</p>
+              <h4>Key Controls:</h4>
+              <ul>
+                <li>Micro-segmentation</li>
+                <li>Software-defined perimeter</li>
+                <li>Encrypted traffic (TLS everywhere)</li>
+                <li>Network access control</li>
+              </ul>
+              <h4>SOC Relevance:</h4>
+              <p>Monitor for lateral movement attempts, segment violations, 
+              and unusual network patterns.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Applications</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Secure access to applications without exposing the network.</p>
+              <h4>Key Controls:</h4>
+              <ul>
+                <li>Application proxy / ZTNA</li>
+                <li>Per-app authorization</li>
+                <li>Session controls</li>
+                <li>Cloud app security (CASB)</li>
+              </ul>
+              <h4>SOC Relevance:</h4>
+              <p>Monitor application access, unusual usage patterns, 
+              and data exfiltration indicators.</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Data</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Protect data regardless of where it resides.</p>
+              <h4>Key Controls:</h4>
+              <ul>
+                <li>Data classification and labeling</li>
+                <li>Data loss prevention (DLP)</li>
+                <li>Encryption at rest and in transit</li>
+                <li>Rights management</li>
+              </ul>
+              <h4>SOC Relevance:</h4>
+              <p>Monitor DLP alerts, sensitive data access, and 
+              potential exfiltration.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>Architecture Components</h2>
+
+        <h3>Key Technologies</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Function</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Identity Provider (IdP)</strong></td>
+                <td>Authenticate users, SSO</td>
+                <td>Azure AD, Okta, Ping</td>
+              </tr>
+              <tr>
+                <td><strong>Conditional Access</strong></td>
+                <td>Policy-based access decisions</td>
+                <td>Azure AD CA, Okta Policies</td>
+              </tr>
+              <tr>
+                <td><strong>ZTNA/SDP</strong></td>
+                <td>Secure app access without VPN</td>
+                <td>Zscaler, Cloudflare Access</td>
+              </tr>
+              <tr>
+                <td><strong>MDM/UEM</strong></td>
+                <td>Device management and compliance</td>
+                <td>Intune, Jamf, Workspace ONE</td>
+              </tr>
+              <tr>
+                <td><strong>CASB</strong></td>
+                <td>Cloud app security broker</td>
+                <td>Microsoft Defender for Cloud Apps</td>
+              </tr>
+              <tr>
+                <td><strong>PAM</strong></td>
+                <td>Privileged access management</td>
+                <td>CyberArk, BeyondTrust</td>
+              </tr>
+              <tr>
+                <td><strong>SIEM/XDR</strong></td>
+                <td>Visibility and detection</td>
+                <td>Sentinel, Splunk, CrowdStrike</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Conditional Access Decision Flow</h3>
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Access Request</strong><br>
+                <small>User + Device + App</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Signal Collection</strong><br>
+                <small>Identity, device, location, risk</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Policy Evaluation</strong><br>
+                <small>Conditional Access rules</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Decision</strong><br>
+                <small>Allow/Block/MFA/Limited</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>SOC Monitoring in Zero Trust</h2>
+
+        <h3>What Changes for SOC</h3>
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-green);">
+            <h4>New Visibility</h4>
+            <ul>
+              <li>Every access request logged</li>
+              <li>Continuous authentication events</li>
+              <li>Device compliance status</li>
+              <li>Per-app access patterns</li>
+              <li>Risk scores for users/devices</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-orange);">
+            <h4>New Challenges</h4>
+            <ul>
+              <li>Higher volume of auth events</li>
+              <li>More complex log sources</li>
+              <li>Policy-based detections needed</li>
+              <li>Baseline per-user/per-app</li>
+              <li>False positives from legitimate blocks</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Key Alerts in Zero Trust</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Alert</th>
+                <th>Indicates</th>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Conditional Access block</td>
+                <td>Policy prevented risky access</td>
+                <td>Review if legitimate, investigate if unusual</td>
+              </tr>
+              <tr>
+                <td>Device compliance failure</td>
+                <td>Device doesn't meet security requirements</td>
+                <td>May indicate compromise or misconfiguration</td>
+              </tr>
+              <tr>
+                <td>Risky sign-in detected</td>
+                <td>Identity protection triggered</td>
+                <td>Investigate, may require password reset</td>
+              </tr>
+              <tr>
+                <td>MFA bypass attempt</td>
+                <td>Attacker trying to avoid MFA</td>
+                <td>High priority investigation</td>
+              </tr>
+              <tr>
+                <td>Unusual application access</td>
+                <td>User accessing apps they don't normally use</td>
+                <td>Verify with user or manager</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Approach</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Conditional Access blocks investigation</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ConditionalAccessStatus == <span class="st">"failure"</span>
+| <span class="kw">summarize</span> 
+    BlockCount = <span class="fn">count</span>(),
+    Apps = <span class="fn">make_set</span>(AppDisplayName),
+    Locations = <span class="fn">make_set</span>(Location)
+    <span class="kw">by</span> UserPrincipalName, ResultType, IPAddress
+| <span class="kw">where</span> BlockCount > <span class="nu">5</span>
+| <span class="kw">order by</span> BlockCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Access from non-compliant devices</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> DeviceDetail.isCompliant == <span class="kw">false</span>
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>  <span class="cm">// Successful despite non-compliance</span>
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, 
+    AppDisplayName, DeviceDetail, IPAddress,
+    ConditionalAccessPolicies
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Zero Trust = "never trust, always verify" regardless of network location</li>
+          <li>Every access decision based on identity + device + location + behavior</li>
+          <li>Assume breach—design to minimize blast radius</li>
+          <li>SOC gets more visibility but also more alert volume</li>
+          <li>Conditional Access blocks are preventive—investigate patterns</li>
+          <li>Device compliance is critical—non-compliant = potentially compromised</li>
+          <li>Lateral movement should be very difficult in Zero Trust environment</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="ids-ips.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">IDS/IPS</span>
+          </a>
+          <a href="network-fundamentals.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Network Fundamentals</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

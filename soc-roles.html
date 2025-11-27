@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOC Roles & Tiers | SOC Analyst Guide</title>
+  <meta name="description" content="Detailed breakdown of SOC analyst tiers (L1, L2, L3), responsibilities, career progression, and team structure.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link active"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills Matrix</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Quick Links</div>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Event ID Reference</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#foundations">SOC Foundations</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>SOC Roles & Tiers</span>
+        </nav>
+        <h1>SOC Roles & Tiers</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 1.2</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#tier-structure">Tiered Structure Overview</a></li>
+          <li><a href="#tier1">Tier 1: Alert Analyst</a></li>
+          <li><a href="#tier2">Tier 2: Incident Responder</a></li>
+          <li><a href="#tier3">Tier 3: Threat Hunter</a></li>
+          <li><a href="#leadership">SOC Leadership</a></li>
+          <li><a href="#progression">Career Progression</a></li>
+        </ul>
+      </div>
+
+      <section id="tier-structure">
+        <h2>Tiered Structure Overview</h2>
+        <p>
+          The SOC tiered structure is designed to efficiently handle the volume and complexity of security alerts. 
+          Each tier has distinct responsibilities, with escalation paths ensuring the right expertise addresses each situation.
+        </p>
+
+        <div class="card">
+          <h4>Why Tiers Matter</h4>
+          <ul>
+            <li><strong>Efficiency:</strong> Simple alerts resolved quickly at lower tiers, freeing experts for complex work</li>
+            <li><strong>Skill Development:</strong> Clear progression path for career growth</li>
+            <li><strong>Cost Optimization:</strong> Appropriate resource allocation based on task complexity</li>
+            <li><strong>Quality Assurance:</strong> Multiple review levels for critical incidents</li>
+          </ul>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" style="color: var(--tier-l1);">70-80%</div>
+            <div class="stat-label">Alerts handled at L1</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color: var(--tier-l2);">15-25%</div>
+            <div class="stat-label">Escalated to L2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color: var(--tier-l3);">5-10%</div>
+            <div class="stat-label">Require L3/Expert</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tier1">
+        <h2>Tier 1: Alert Analyst</h2>
+        <p>
+          Tier 1 analysts are the first line of defense, continuously monitoring alert queues and performing 
+          initial triage. This role is ideal for those entering the cybersecurity field, providing hands-on 
+          experience with a wide variety of security events.
+        </p>
+
+        <div class="card" style="border-left: 4px solid var(--tier-l1);">
+          <div class="card-header">
+            <h4 class="card-title" style="margin: 0; color: var(--tier-l1);">
+              <span class="tier-badge tier-l1">L1</span> Alert Analyst
+            </h4>
+            <span class="text-muted">0-2 years experience</span>
+          </div>
+          
+          <h4>Primary Responsibilities</h4>
+          <ul>
+            <li>Monitor security dashboards and alert queues during shift</li>
+            <li>Perform initial triage: gather context, assess severity, determine if alert is valid</li>
+            <li>Execute documented runbooks and standard operating procedures</li>
+            <li>Create, update, and close security tickets with proper documentation</li>
+            <li>Escalate unresolved or high-severity alerts to Tier 2</li>
+            <li>Perform basic enrichment using available tools (VirusTotal, AbuseIPDB, etc.)</li>
+            <li>Communicate with end users when needed (phishing reports, suspicious activity)</li>
+          </ul>
+
+          <h4>Daily Activities</h4>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Activity</th>
+                  <th>Time Allocation</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Alert Monitoring & Triage</td>
+                  <td>50-60%</td>
+                  <td>Primary focus of the role</td>
+                </tr>
+                <tr>
+                  <td>Ticket Management</td>
+                  <td>15-20%</td>
+                  <td>Documentation is critical</td>
+                </tr>
+                <tr>
+                  <td>Basic Investigation</td>
+                  <td>15-20%</td>
+                  <td>Following documented procedures</td>
+                </tr>
+                <tr>
+                  <td>Shift Handoff</td>
+                  <td>5-10%</td>
+                  <td>Start and end of shift</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Tools Commonly Used</h4>
+          <p>SIEM (primary), Ticketing system, EDR console (view mode), Email security portal, IOC lookup tools, Internal wiki/knowledge base</p>
+
+          <div class="callout callout-tip">
+            <div class="callout-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+              Success at L1
+            </div>
+            <p style="margin: 0;">Master the runbooks, ask questions when unsure, document everything thoroughly, and focus on building pattern recognition through exposure to diverse alerts.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tier2">
+        <h2>Tier 2: Incident Responder</h2>
+        <p>
+          Tier 2 analysts handle escalated incidents requiring deeper investigation. They possess broader 
+          technical knowledge, can operate with less structured guidance, and often contribute to improving 
+          detection capabilities.
+        </p>
+
+        <div class="card" style="border-left: 4px solid var(--tier-l2);">
+          <div class="card-header">
+            <h4 class="card-title" style="margin: 0; color: var(--tier-l2);">
+              <span class="tier-badge tier-l2">L2</span> Incident Responder
+            </h4>
+            <span class="text-muted">2-5 years experience</span>
+          </div>
+          
+          <h4>Primary Responsibilities</h4>
+          <ul>
+            <li>Investigate escalated incidents requiring advanced analysis</li>
+            <li>Perform deep-dive log analysis across multiple data sources</li>
+            <li>Execute containment actions (isolate hosts, block IPs, disable accounts)</li>
+            <li>Correlate events across SIEM, EDR, and network logs</li>
+            <li>Develop and tune detection rules to improve alert quality</li>
+            <li>Create new runbooks based on novel attack patterns</li>
+            <li>Mentor and train Tier 1 analysts</li>
+            <li>Participate in incident response for significant events</li>
+          </ul>
+
+          <h4>Advanced Capabilities</h4>
+          <div class="card-grid">
+            <div class="card">
+              <h4>Investigation</h4>
+              <ul>
+                <li>Multi-source correlation</li>
+                <li>Timeline reconstruction</li>
+                <li>Scope determination</li>
+                <li>Root cause analysis</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h4>Response</h4>
+              <ul>
+                <li>Device isolation</li>
+                <li>Account containment</li>
+                <li>Evidence preservation</li>
+                <li>Remediation guidance</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h4>Engineering</h4>
+              <ul>
+                <li>Detection rule creation</li>
+                <li>Alert tuning</li>
+                <li>Playbook development</li>
+                <li>Process improvement</li>
+              </ul>
+            </div>
+          </div>
+
+          <h4>Escalation Triggers to L3</h4>
+          <ul>
+            <li>Suspected APT activity or sophisticated threat actor</li>
+            <li>Incidents requiring malware reverse engineering</li>
+            <li>Complex forensic analysis needs</li>
+            <li>Novel attack techniques not covered by existing procedures</li>
+            <li>Executive or high-value target involvement</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="tier3">
+        <h2>Tier 3: Threat Hunter / Expert</h2>
+        <p>
+          Tier 3 represents the most technically skilled analysts, focusing on proactive threat hunting, 
+          advanced forensics, and handling the most complex security incidents.
+        </p>
+
+        <div class="card" style="border-left: 4px solid var(--tier-l3);">
+          <div class="card-header">
+            <h4 class="card-title" style="margin: 0; color: var(--tier-l3);">
+              <span class="tier-badge tier-l3">L3</span> Threat Hunter / Senior Analyst
+            </h4>
+            <span class="text-muted">5+ years experience</span>
+          </div>
+          
+          <h4>Primary Responsibilities</h4>
+          <ul>
+            <li>Proactive threat hunting based on intelligence and hypotheses</li>
+            <li>Malware analysis and reverse engineering</li>
+            <li>Digital forensics (memory, disk, network)</li>
+            <li>Threat intelligence analysis and operationalization</li>
+            <li>Lead incident response for major security events</li>
+            <li>Develop advanced detection content and analytics</li>
+            <li>Security tool evaluation and implementation</li>
+            <li>Research emerging threats and attack techniques</li>
+          </ul>
+
+          <h4>Specialization Areas</h4>
+          <div class="tabs">
+            <div class="tab-buttons">
+              <button class="tab-btn active">Threat Hunting</button>
+              <button class="tab-btn">Forensics</button>
+              <button class="tab-btn">Malware Analysis</button>
+              <button class="tab-btn">Threat Intel</button>
+            </div>
+            
+            <div class="tab-content active">
+              <h4>Threat Hunting Focus</h4>
+              <ul>
+                <li>Hypothesis-driven hunting campaigns</li>
+                <li>Behavioral analysis and anomaly detection</li>
+                <li>ATT&CK-based hunting methodologies</li>
+                <li>Custom analytics development</li>
+                <li>Hunt-to-detection pipeline</li>
+              </ul>
+            </div>
+            
+            <div class="tab-content">
+              <h4>Digital Forensics Focus</h4>
+              <ul>
+                <li>Memory acquisition and analysis</li>
+                <li>Disk imaging and analysis</li>
+                <li>Network traffic forensics</li>
+                <li>Timeline creation and analysis</li>
+                <li>Evidence chain of custody</li>
+              </ul>
+            </div>
+            
+            <div class="tab-content">
+              <h4>Malware Analysis Focus</h4>
+              <ul>
+                <li>Static analysis techniques</li>
+                <li>Dynamic analysis and sandboxing</li>
+                <li>Reverse engineering</li>
+                <li>IOC extraction</li>
+                <li>YARA rule development</li>
+              </ul>
+            </div>
+            
+            <div class="tab-content">
+              <h4>Threat Intelligence Focus</h4>
+              <ul>
+                <li>Intelligence collection and processing</li>
+                <li>Adversary tracking and profiling</li>
+                <li>Strategic threat reporting</li>
+                <li>Intelligence sharing and ISAC participation</li>
+                <li>Dark web monitoring</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="leadership">
+        <h2>SOC Leadership</h2>
+        
+        <div class="card" style="border-left: 4px solid var(--tier-lead);">
+          <div class="card-header">
+            <h4 class="card-title" style="margin: 0; color: var(--tier-lead);">
+              <span class="tier-badge tier-lead">Lead</span> SOC Manager / Director
+            </h4>
+          </div>
+          
+          <h4>Key Responsibilities</h4>
+          <ul>
+            <li><strong>Team Management:</strong> Hiring, training, performance reviews, career development</li>
+            <li><strong>Operations:</strong> Shift scheduling, coverage planning, workload distribution</li>
+            <li><strong>Process:</strong> SOP development, process improvement, quality assurance</li>
+            <li><strong>Metrics:</strong> KPI tracking, reporting, trend analysis</li>
+            <li><strong>Stakeholders:</strong> Executive reporting, cross-team coordination</li>
+            <li><strong>Budget:</strong> Tool procurement, training budget, resource planning</li>
+            <li><strong>Strategy:</strong> Capability roadmap, maturity improvement</li>
+          </ul>
+
+          <h4>Other Leadership Roles</h4>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Focus Area</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Shift Lead</strong></td>
+                  <td>Real-time operational decisions, escalation point during shift</td>
+                </tr>
+                <tr>
+                  <td><strong>Detection Engineer</strong></td>
+                  <td>Rule development, tuning, use case implementation</td>
+                </tr>
+                <tr>
+                  <td><strong>IR Lead</strong></td>
+                  <td>Major incident coordination, IR program management</td>
+                </tr>
+                <tr>
+                  <td><strong>Threat Intel Lead</strong></td>
+                  <td>Intelligence program, threat reporting, adversary tracking</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="progression">
+        <h2>Career Progression</h2>
+        <p>
+          Understanding the career path helps analysts set goals and identify skills to develop. 
+          Progression isn't always linear—lateral moves to specialize are valuable.
+        </p>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">Year 0-2</div>
+            <div class="timeline-title">Tier 1 Alert Analyst</div>
+            <div class="timeline-desc">Build foundation: tools proficiency, process adherence, pattern recognition</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Year 2-4</div>
+            <div class="timeline-title">Tier 2 Incident Responder</div>
+            <div class="timeline-desc">Develop depth: advanced investigation, response actions, detection engineering</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Year 4-6</div>
+            <div class="timeline-title">Senior Analyst / Specialist</div>
+            <div class="timeline-desc">Specialize: threat hunting, forensics, malware analysis, or threat intel</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Year 6+</div>
+            <div class="timeline-title">Lead / Management</div>
+            <div class="timeline-desc">Leadership track: team lead, SOC manager, or principal technical role</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            Career Development Tips
+          </div>
+          <ul style="margin: 0;">
+            <li>Pursue relevant certifications (Security+, CySA+, GCIH, GCFA)</li>
+            <li>Build home lab for hands-on practice</li>
+            <li>Contribute to detection rule development</li>
+            <li>Document interesting cases for knowledge sharing</li>
+            <li>Participate in CTFs and security communities</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Key Takeaways
+        </div>
+        <ul style="margin: 0;">
+          <li>Tier structure enables efficient alert handling with appropriate expertise at each level</li>
+          <li>L1 focuses on volume and speed; L2 on depth and response; L3 on advanced threats and hunting</li>
+          <li>Clear escalation criteria ensure incidents receive appropriate attention</li>
+          <li>Career progression offers both technical specialist and management tracks</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="soc-overview.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">SOC Overview</span>
+          </a>
+          <a href="analyst-skills.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Analyst Skills Matrix</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

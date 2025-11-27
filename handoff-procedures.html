@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handoff Procedures | SOC Analyst Guide</title>
+  <meta name="description" content="SOC shift handoff procedures: structured handoffs, documentation requirements, and continuity practices.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">⬆️</span> Escalation</a>
+          <a href="handoff-procedures.html" class="nav-link active"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#itsm">Ticketing & ITSM</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Handoff Procedures</span>
+        </nav>
+        <h1>Handoff Procedures</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 2.6</span>
+          <span class="meta-item">~10 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#importance">Why Handoffs Matter</a></li>
+          <li><a href="#process">Handoff Process</a></li>
+          <li><a href="#template">Handoff Template</a></li>
+          <li><a href="#best-practices">Best Practices</a></li>
+        </ul>
+      </div>
+
+      <section id="importance">
+        <h2>Why Handoffs Matter</h2>
+        <p>
+          Shift handoffs ensure continuity of operations. Poor handoffs lead to 
+          dropped incidents, duplicated work, missed context, and SLA breaches.
+        </p>
+
+        <div class="card-grid">
+          <div class="card" style="border-left: 4px solid var(--accent-red);">
+            <h4>Poor Handoff Consequences</h4>
+            <ul>
+              <li>Active incidents forgotten</li>
+              <li>Investigation context lost</li>
+              <li>Same work done twice</li>
+              <li>SLA breaches</li>
+              <li>Stakeholders left waiting</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-green);">
+            <h4>Good Handoff Benefits</h4>
+            <ul>
+              <li>Seamless continuity</li>
+              <li>Context preserved</li>
+              <li>Clear ownership</li>
+              <li>No surprises</li>
+              <li>Professional operation</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="process">
+        <h2>Handoff Process</h2>
+
+        <h3>Outgoing Shift Responsibilities</h3>
+        <ol>
+          <li><strong>Update all tickets:</strong> Current status, next steps documented</li>
+          <li><strong>Prepare handoff notes:</strong> Complete template</li>
+          <li><strong>Identify priorities:</strong> What needs immediate attention</li>
+          <li><strong>Verbal briefing:</strong> Walk through with incoming shift</li>
+          <li><strong>Transfer ownership:</strong> Reassign tickets as needed</li>
+        </ol>
+
+        <h3>Incoming Shift Responsibilities</h3>
+        <ol>
+          <li><strong>Arrive prepared:</strong> Allow time for handoff</li>
+          <li><strong>Review handoff notes:</strong> Read before verbal briefing</li>
+          <li><strong>Ask questions:</strong> Clarify anything unclear</li>
+          <li><strong>Accept ownership:</strong> Acknowledge assigned tickets</li>
+          <li><strong>Check queue:</strong> Review current alert status</li>
+        </ol>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Overlap Time</div>
+          <p style="margin: 0;">
+            Schedule 15-30 minutes of shift overlap for proper handoffs. 
+            Handoffs conducted via notes alone without verbal briefing lose 
+            critical context.
+          </p>
+        </div>
+      </section>
+
+      <section id="template">
+        <h2>Handoff Template</h2>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span style="margin-left: 1rem; color: var(--text-muted);">Shift Handoff</span>
+          </div>
+          <div class="terminal-body">
+<pre><strong>SHIFT HANDOFF</strong>
+Date: [Date]
+Outgoing: [Name] | Incoming: [Name]
+
+<strong>═══ ACTIVE INCIDENTS ═══</strong>
+
+<strong>[INC-001] Malware Detection - P2</strong>
+Status: Containment complete, awaiting user response
+Owner: [Incoming analyst]
+Next Step: Follow up with user at 10am if no response
+Context: Device isolated, malware quarantined, need to 
+confirm user wasn't targeted
+
+<strong>[INC-002] Phishing Campaign - P3</strong>
+Status: Investigation in progress
+Owner: [Incoming analyst]
+Next Step: Complete email trace, identify all recipients
+Context: 15 users clicked link, 3 entered credentials
+
+<strong>═══ PENDING ITEMS ═══</strong>
+
+• Waiting on IT to confirm patch status for CVE-2024-XXXX
+• L3 reviewing suspicious binary from INC-001
+• Change request pending for new detection rule
+
+<strong>═══ HEADS UP ═══</strong>
+
+• Scheduled maintenance tonight 2-4am (reduced alerting)
+• New phishing simulation starting tomorrow
+• VIP user [name] traveling internationally this week
+
+<strong>═══ QUEUE STATUS ═══</strong>
+
+Open Alerts: 12
+Oldest Alert: 45 min
+SLA Status: All green</pre>
+          </div>
+        </div>
+
+        <h3>Key Elements</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Element</th>
+                <th>Include</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Active Incidents</strong></td>
+                <td>ID, priority, status, owner, next step, context</td>
+              </tr>
+              <tr>
+                <td><strong>Pending Items</strong></td>
+                <td>Anything awaiting response or follow-up</td>
+              </tr>
+              <tr>
+                <td><strong>Heads Up</strong></td>
+                <td>Upcoming events, changes, things to watch</td>
+              </tr>
+              <tr>
+                <td><strong>Queue Status</strong></td>
+                <td>Alert volume, age, SLA health</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="best-practices">
+        <h2>Best Practices</h2>
+
+        <ul class="checklist">
+          <li><strong>Document throughout shift:</strong> Don't scramble at end</li>
+          <li><strong>Be specific:</strong> "Follow up at 10am" not "follow up later"</li>
+          <li><strong>Include context:</strong> Why things matter, not just what</li>
+          <li><strong>Highlight blockers:</strong> What's preventing progress</li>
+          <li><strong>Note stakeholder expectations:</strong> Who's waiting for updates</li>
+          <li><strong>Verbal + written:</strong> Never rely on just one</li>
+          <li><strong>Confirm understanding:</strong> Incoming shift acknowledges</li>
+        </ul>
+
+        <h3>During Active Incidents</h3>
+        <p>
+          Major incidents require enhanced handoffs:
+        </p>
+        <ul>
+          <li>Extended overlap time</li>
+          <li>Detailed timeline review</li>
+          <li>Introduction to incident commander</li>
+          <li>Access to war room / bridge</li>
+          <li>Clear role assignment</li>
+        </ul>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Good handoffs ensure operational continuity</li>
+          <li>Both outgoing and incoming have responsibilities</li>
+          <li>Use structured template for consistency</li>
+          <li>Include context, not just status</li>
+          <li>Verbal briefing + written notes together</li>
+          <li>Major incidents need enhanced handoff procedures</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="status-reporting.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Status Reporting</span>
+          </a>
+          <a href="sla-management.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">SLA Management</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS Security | SOC Analyst Guide</title>
+  <meta name="description" content="DNS security for SOC analysts: DNS-based attacks, log analysis, threat detection, and investigation techniques.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewalls</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🛡️</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy & Web Filtering</a>
+          <a href="dns-security.html" class="nav-link active"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>DNS Security</span>
+        </nav>
+        <h1>DNS Security</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">Section 5.5</span>
+          <span class="meta-item">~12 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#why">Why DNS Matters</a></li>
+          <li><a href="#basics">DNS Basics</a></li>
+          <li><a href="#attacks">DNS-Based Attacks</a></li>
+          <li><a href="#detection">Detection Techniques</a></li>
+          <li><a href="#investigation">Investigation Approach</a></li>
+          <li><a href="#protection">DNS Protection</a></li>
+        </ul>
+      </div>
+
+      <section id="why">
+        <h2>Why DNS Matters for Security</h2>
+        <p>
+          DNS is one of the most valuable log sources for threat detection. Nearly all network 
+          activity—legitimate and malicious—requires DNS resolution.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">91%</div>
+            <div class="stat-label">of malware uses DNS for C2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">of network activity needs DNS</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">Often</div>
+            <div class="stat-label">unmonitored in many orgs</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">DNS is Gold</div>
+          <p style="margin: 0;">
+            Attackers must resolve domain names to communicate with C2 servers. Even if they 
+            encrypt traffic, the DNS query is often visible. DNS logs provide early warning 
+            of compromise before payload delivery or data exfiltration.
+          </p>
+        </div>
+      </section>
+
+      <section id="basics">
+        <h2>DNS Basics</h2>
+
+        <h3>DNS Query Flow</h3>
+        <div class="card">
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Client</strong><br>
+                <small>Needs IP for domain</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Local Resolver</strong><br>
+                <small>Cache check</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Recursive DNS</strong><br>
+                <small>Company/ISP DNS</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Authoritative DNS</strong><br>
+                <small>Domain's nameserver</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Common Record Types</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Purpose</th>
+                <th>Security Relevance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>A</strong></td>
+                <td>Domain → IPv4 address</td>
+                <td>Most common, C2 resolution</td>
+              </tr>
+              <tr>
+                <td><strong>AAAA</strong></td>
+                <td>Domain → IPv6 address</td>
+                <td>Same as A, for IPv6</td>
+              </tr>
+              <tr>
+                <td><strong>CNAME</strong></td>
+                <td>Alias to another domain</td>
+                <td>CDN usage, domain fronting</td>
+              </tr>
+              <tr>
+                <td><strong>MX</strong></td>
+                <td>Mail server for domain</td>
+                <td>Email infrastructure</td>
+              </tr>
+              <tr>
+                <td><strong>TXT</strong></td>
+                <td>Text records (SPF, DKIM)</td>
+                <td>Data exfiltration, C2 commands</td>
+              </tr>
+              <tr>
+                <td><strong>NS</strong></td>
+                <td>Nameserver for domain</td>
+                <td>DNS hijacking detection</td>
+              </tr>
+              <tr>
+                <td><strong>PTR</strong></td>
+                <td>IP → Domain (reverse)</td>
+                <td>Verification, attribution</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="attacks">
+        <h2>DNS-Based Attacks</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">C2 Over DNS</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Malware resolves attacker-controlled domains to receive commands or report status.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Queries to newly registered domains</li>
+                <li>Queries to domains with low reputation</li>
+                <li>Regular beacon pattern (e.g., every 60 seconds)</li>
+                <li>Single host querying unique domain</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">DNS Tunneling</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Encoding data in DNS queries/responses to exfiltrate data or bypass firewalls.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Very long subdomain names (encoded data)</li>
+                <li>High volume of TXT record queries</li>
+                <li>Unusual query frequency to single domain</li>
+                <li>High entropy in subdomain strings</li>
+              </ul>
+              <div class="terminal" style="margin-top: 1rem;">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                  <span style="margin-left: 1rem; color: var(--text-muted);">DNS Tunneling Example</span>
+                </div>
+                <div class="terminal-body">
+<pre># Normal query:
+www.example.com
+
+# Tunneling query (data encoded in subdomain):
+dGhpcyBpcyBzZWNyZXQgZGF0YQ.tunnel.evil.com</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Domain Generation Algorithms (DGA)</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Malware generates pseudo-random domains to find active C2 servers.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Many NXDOMAIN responses (domain doesn't exist)</li>
+                <li>Random-looking domain names</li>
+                <li>High query volume in short time</li>
+                <li>Pattern: consonant-heavy, no real words</li>
+              </ul>
+              <div class="terminal" style="margin-top: 1rem;">
+                <div class="terminal-header">
+                  <span class="terminal-dot red"></span>
+                  <span class="terminal-dot yellow"></span>
+                  <span class="terminal-dot green"></span>
+                  <span style="margin-left: 1rem; color: var(--text-muted);">DGA Examples</span>
+                </div>
+                <div class="terminal-body">
+<pre>xjkwqplmn.com
+bvrtghzxc.net
+qwfpgjluy.org
+mnbvcxzas.com</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">DNS Hijacking</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Redirecting DNS queries to attacker-controlled servers.</p>
+              <h4>Types:</h4>
+              <ul>
+                <li><strong>Local:</strong> Malware modifies host file or DNS settings</li>
+                <li><strong>Router:</strong> Compromised router redirects DNS</li>
+                <li><strong>Registrar:</strong> Domain registration hijacked</li>
+                <li><strong>ISP-level:</strong> DNS responses modified in transit</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Fast Flux</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Rapidly changing IP addresses for a domain to evade blocking.</p>
+              <h4>Indicators:</h4>
+              <ul>
+                <li>Very low TTL values (seconds)</li>
+                <li>Same domain resolves to many different IPs</li>
+                <li>IPs from diverse geographic locations</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Techniques</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect DNS tunneling (long subdomains)</span>
+          </div>
+          <div class="query-body">
+<code>DnsEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">extend</span> SubdomainLength = <span class="fn">strlen</span>(<span class="fn">tostring</span>(<span class="fn">split</span>(Name, <span class="st">"."</span>)[<span class="nu">0</span>]))
+| <span class="kw">where</span> SubdomainLength > <span class="nu">30</span>
+| <span class="kw">summarize</span> QueryCount = <span class="fn">count</span>() <span class="kw">by</span> ClientIP, Name
+| <span class="kw">where</span> QueryCount > <span class="nu">5</span>
+| <span class="kw">order by</span> SubdomainLength <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect DGA patterns (high NXDOMAIN rate)</span>
+          </div>
+          <div class="query-body">
+<code>DnsEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">summarize</span> 
+    TotalQueries = <span class="fn">count</span>(),
+    NXDomainCount = <span class="fn">countif</span>(ResultCode == <span class="st">"NXDOMAIN"</span>)
+    <span class="kw">by</span> ClientIP, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">extend</span> NXDomainRatio = NXDomainCount * <span class="nu">100.0</span> / TotalQueries
+| <span class="kw">where</span> NXDomainRatio > <span class="nu">50</span> <span class="kw">and</span> NXDomainCount > <span class="nu">100</span>
+| <span class="kw">order by</span> NXDomainCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect beaconing pattern</span>
+          </div>
+          <div class="query-body">
+<code>DnsEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">summarize</span> QueryTimes = <span class="fn">make_list</span>(TimeGenerated) <span class="kw">by</span> ClientIP, Name
+| <span class="kw">where</span> <span class="fn">array_length</span>(QueryTimes) > <span class="nu">20</span>
+| <span class="kw">extend</span> Intervals = <span class="fn">series_diff</span>(QueryTimes)
+<span class="cm">// Look for consistent intervals (beaconing)</span>
+| <span class="kw">project</span> ClientIP, Name, QueryCount = <span class="fn">array_length</span>(QueryTimes)</code>
+          </div>
+        </div>
+
+        <h3>Detection Indicators Summary</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th>Suggests</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Long subdomain (>30 chars)</td>
+                <td>DNS tunneling</td>
+              </tr>
+              <tr>
+                <td>High NXDOMAIN rate (>50%)</td>
+                <td>DGA activity</td>
+              </tr>
+              <tr>
+                <td>High TXT query volume</td>
+                <td>Tunneling or C2</td>
+              </tr>
+              <tr>
+                <td>Regular query intervals</td>
+                <td>Beaconing/C2</td>
+              </tr>
+              <tr>
+                <td>Newly registered domain</td>
+                <td>Malicious infrastructure</td>
+              </tr>
+              <tr>
+                <td>Query only from one host</td>
+                <td>Targeted C2</td>
+              </tr>
+              <tr>
+                <td>Low TTL values</td>
+                <td>Fast flux</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Approach</h2>
+
+        <ul class="checklist">
+          <li><strong>Identify the querying host:</strong> Which internal IP made the query?</li>
+          <li><strong>Check domain reputation:</strong> VirusTotal, URLhaus, threat intel feeds</li>
+          <li><strong>Review query pattern:</strong> Frequency, timing, volume</li>
+          <li><strong>Check domain age:</strong> Newly registered domains are suspicious</li>
+          <li><strong>Examine subdomain:</strong> Is it random/encoded? Normal structure?</li>
+          <li><strong>Correlate with endpoint:</strong> What process made the connection?</li>
+          <li><strong>Check for resolution:</strong> Did query succeed? What IP returned?</li>
+          <li><strong>Look for follow-on traffic:</strong> Did host connect to resolved IP?</li>
+        </ul>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Pivot from DNS</div>
+          <p style="margin: 0;">
+            Use DNS queries as a starting point, then pivot to EDR to see what process made the 
+            network connection. This connects network activity to process activity.
+          </p>
+        </div>
+      </section>
+
+      <section id="protection">
+        <h2>DNS Protection Solutions</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Solution</th>
+                <th>What It Does</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>DNS Filtering</strong></td>
+                <td>Block malicious/unwanted domains</td>
+                <td>Cisco Umbrella, Zscaler, Infoblox</td>
+              </tr>
+              <tr>
+                <td><strong>DNS Sinkholing</strong></td>
+                <td>Redirect malicious domains to safe IP</td>
+                <td>Internal sinkhole, vendor service</td>
+              </tr>
+              <tr>
+                <td><strong>DNSSEC</strong></td>
+                <td>Cryptographic validation of responses</td>
+                <td>Prevents response spoofing</td>
+              </tr>
+              <tr>
+                <td><strong>DoH/DoT</strong></td>
+                <td>Encrypted DNS queries</td>
+                <td>Privacy, but reduces visibility</td>
+              </tr>
+              <tr>
+                <td><strong>DNS Logging</strong></td>
+                <td>Record all queries for analysis</td>
+                <td>Windows DNS, BIND, Infoblox</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">DoH/DoT Challenge</div>
+          <p style="margin: 0;">
+            DNS-over-HTTPS (DoH) encrypts DNS queries, improving privacy but reducing SOC visibility. 
+            Consider blocking external DoH providers and using internal encrypted DNS to maintain visibility.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>DNS is critical for threat detection—most malware uses DNS</li>
+          <li>Watch for: long subdomains, high NXDOMAIN, beaconing patterns</li>
+          <li>DGA produces random-looking domains with high failure rates</li>
+          <li>DNS tunneling encodes data in subdomain strings</li>
+          <li>Always check domain reputation and registration date</li>
+          <li>Pivot from DNS to endpoint data for full context</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="proxy-analysis.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Proxy & Web Filtering</span>
+          </a>
+          <a href="traffic-analysis.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Traffic Analysis</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

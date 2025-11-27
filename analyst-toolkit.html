@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyst Toolkit | SOC Analyst Guide</title>
+  <meta name="description" content="Essential tools, scripts, and resources for SOC analysts: command-line utilities, investigation tools, and quick references.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">📋</span> Windows Event IDs</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">💻</span> KQL Cheatsheet</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Ports & Protocols</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔍</span> IOC Lookup Tools</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🎯</span> MITRE ATT&CK</a>
+          <a href="analyst-toolkit.html" class="nav-link active"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#reference">Reference</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Analyst Toolkit</span>
+        </nav>
+        <h1>🧰 Analyst Toolkit</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-all">All Tiers</span></span>
+          <span class="meta-item">REF-06</span>
+          <span class="meta-item">Bookmark This Page</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Categories
+        </div>
+        <ul class="toc-list">
+          <li><a href="#powershell">PowerShell Commands</a></li>
+          <li><a href="#linux">Linux Commands</a></li>
+          <li><a href="#network">Network Tools</a></li>
+          <li><a href="#decode">Encoding/Decoding</a></li>
+          <li><a href="#regex">Regex Patterns</a></li>
+          <li><a href="#resources">Learning Resources</a></li>
+        </ul>
+      </div>
+
+      <section id="powershell">
+        <h2>PowerShell Commands</h2>
+        <p>Useful PowerShell commands for Windows investigation and administration.</p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">System Information</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">Get system info</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Basic system information</span>
+Get-ComputerInfo | Select-Object CsName, WindowsVersion, OsArchitecture
+
+<span class="cm"># Logged-in users</span>
+Get-WmiObject -Class Win32_ComputerSystem | Select-Object UserName
+
+<span class="cm"># Last boot time</span>
+Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object LastBootUpTime
+
+<span class="cm"># Installed hotfixes</span>
+Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First <span class="nu">10</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Process Investigation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">Process analysis</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># List all processes with path</span>
+Get-Process | Select-Object Name, Id, Path | Sort-Object Name
+
+<span class="cm"># Find process by name</span>
+Get-Process -Name <span class="st">"powershell"</span> | Select-Object *
+
+<span class="cm"># Get process with command line (requires elevation)</span>
+Get-WmiObject Win32_Process | Select-Object Name, ProcessId, CommandLine
+
+<span class="cm"># Find processes by parent</span>
+Get-WmiObject Win32_Process | Where-Object {$_.ParentProcessId -eq <span class="nu">1234</span>}
+
+<span class="cm"># Check process network connections</span>
+Get-NetTCPConnection -OwningProcess (Get-Process -Name <span class="st">"chrome"</span>).Id</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Network Investigation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">Network analysis</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Active TCP connections</span>
+Get-NetTCPConnection -State Established | 
+    Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess
+
+<span class="cm"># DNS cache</span>
+Get-DnsClientCache | Select-Object Entry, Data
+
+<span class="cm"># ARP table</span>
+Get-NetNeighbor
+
+<span class="cm"># Listening ports</span>
+Get-NetTCPConnection -State Listen | Select-Object LocalPort, OwningProcess
+
+<span class="cm"># Network adapters</span>
+Get-NetAdapter | Select-Object Name, Status, MacAddress</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">User & Account</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">User investigation</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Local users</span>
+Get-LocalUser | Select-Object Name, Enabled, LastLogon
+
+<span class="cm"># Local admins</span>
+Get-LocalGroupMember -Group <span class="st">"Administrators"</span>
+
+<span class="cm"># Current user sessions</span>
+query user
+
+<span class="cm"># AD user info (requires RSAT)</span>
+Get-ADUser -Identity <span class="st">"jsmith"</span> -Properties *
+
+<span class="cm"># Recent logon events (requires elevation)</span>
+Get-WinEvent -FilterHashtable @{LogName=<span class="st">'Security'</span>;ID=<span class="nu">4624</span>} -MaxEvents <span class="nu">20</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Persistence Checks</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">Check persistence locations</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Scheduled tasks</span>
+Get-ScheduledTask | Where-Object {$_.State -ne <span class="st">"Disabled"</span>} | 
+    Select-Object TaskName, TaskPath, State
+
+<span class="cm"># Startup programs (registry)</span>
+Get-ItemProperty -Path <span class="st">"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"</span>
+Get-ItemProperty -Path <span class="st">"HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"</span>
+
+<span class="cm"># Services</span>
+Get-Service | Where-Object {$_.StartType -eq <span class="st">"Automatic"</span>} | 
+    Select-Object Name, DisplayName, Status
+
+<span class="cm"># Startup folder contents</span>
+Get-ChildItem <span class="st">"$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">File Investigation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">File analysis</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Get file hash</span>
+Get-FileHash -Path <span class="st">"C:\suspect.exe"</span> -Algorithm SHA256
+
+<span class="cm"># File details</span>
+Get-Item <span class="st">"C:\suspect.exe"</span> | Select-Object *
+
+<span class="cm"># Find recently modified files</span>
+Get-ChildItem -Path <span class="st">"C:\Users"</span> -Recurse -File | 
+    Where-Object {$_.LastWriteTime -gt (Get-Date).AddDays(-<span class="nu">1</span>)}
+
+<span class="cm"># Check file signature</span>
+Get-AuthenticodeSignature -FilePath <span class="st">"C:\suspect.exe"</span>
+
+<span class="cm"># Find files by extension</span>
+Get-ChildItem -Path <span class="st">"C:\"</span> -Recurse -Include *.ps1,*.bat,*.vbs -ErrorAction SilentlyContinue</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="linux">
+        <h2>Linux Commands</h2>
+        <p>Essential Linux commands for investigation and analysis.</p>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Process & Network</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">Bash</span>
+                  <span class="query-title">Process and network investigation</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># List all processes with full command</span>
+ps auxww
+
+<span class="cm"># Process tree</span>
+pstree -p
+
+<span class="cm"># Network connections</span>
+netstat -tulpn
+ss -tulpn
+
+<span class="cm"># Established connections</span>
+netstat -an | grep ESTABLISHED
+
+<span class="cm"># Process using specific port</span>
+lsof -i :<span class="nu">443</span>
+
+<span class="cm"># All network connections for process</span>
+lsof -i -P -n | grep <span class="st">"processname"</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">User & Auth</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">Bash</span>
+                  <span class="query-title">User investigation</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Currently logged in users</span>
+who
+w
+
+<span class="cm"># Last logins</span>
+last
+lastlog
+
+<span class="cm"># Failed login attempts</span>
+lastb
+grep <span class="st">"Failed password"</span> /var/log/auth.log
+
+<span class="cm"># User accounts</span>
+cat /etc/passwd
+
+<span class="cm"># Sudo users</span>
+grep <span class="st">"sudo"</span> /etc/group</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Log Analysis</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">Bash</span>
+                  <span class="query-title">Log searching</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Search logs for pattern</span>
+grep -r <span class="st">"error"</span> /var/log/
+
+<span class="cm"># Follow log in real-time</span>
+tail -f /var/log/syslog
+
+<span class="cm"># Search with context</span>
+grep -B <span class="nu">5</span> -A <span class="nu">5</span> <span class="st">"pattern"</span> /var/log/auth.log
+
+<span class="cm"># Count occurrences</span>
+grep -c <span class="st">"Failed password"</span> /var/log/auth.log
+
+<span class="cm"># Unique IPs from log</span>
+grep -oE <span class="st">"\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"</span> /var/log/auth.log | sort -u</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="network">
+        <h2>Network Tools</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Purpose</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>nslookup</code></td>
+                <td>DNS lookup</td>
+                <td><code>nslookup domain.com</code></td>
+              </tr>
+              <tr>
+                <td><code>dig</code></td>
+                <td>DNS query (detailed)</td>
+                <td><code>dig domain.com ANY</code></td>
+              </tr>
+              <tr>
+                <td><code>whois</code></td>
+                <td>Domain registration info</td>
+                <td><code>whois domain.com</code></td>
+              </tr>
+              <tr>
+                <td><code>ping</code></td>
+                <td>Test connectivity</td>
+                <td><code>ping -c 4 8.8.8.8</code></td>
+              </tr>
+              <tr>
+                <td><code>traceroute</code></td>
+                <td>Network path</td>
+                <td><code>traceroute domain.com</code></td>
+              </tr>
+              <tr>
+                <td><code>curl</code></td>
+                <td>HTTP requests</td>
+                <td><code>curl -I https://domain.com</code></td>
+              </tr>
+              <tr>
+                <td><code>tcpdump</code></td>
+                <td>Packet capture</td>
+                <td><code>tcpdump -i eth0 port 443</code></td>
+              </tr>
+              <tr>
+                <td><code>nmap</code></td>
+                <td>Port scanning</td>
+                <td><code>nmap -sV target</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="decode">
+        <h2>Encoding/Decoding</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Base64</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">Base64 decode (PowerShell)</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Decode base64 string</span>
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(<span class="st">"SGVsbG8gV29ybGQ="</span>))
+
+<span class="cm"># Decode PowerShell encoded command</span>
+[System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String(<span class="st">"encoded_string"</span>))</code>
+                </div>
+              </div>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">Bash</span>
+                  <span class="query-title">Base64 decode (Linux)</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># Decode base64</span>
+echo <span class="st">"SGVsbG8gV29ybGQ="</span> | base64 -d
+
+<span class="cm"># Decode from file</span>
+base64 -d encoded.txt</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">URL Encoding</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">URL decode</span>
+                </div>
+                <div class="query-body">
+<code><span class="cm"># URL decode</span>
+[System.Web.HttpUtility]::UrlDecode(<span class="st">"%3Cscript%3Ealert(1)%3C/script%3E"</span>)</code>
+                </div>
+              </div>
+              <p class="text-muted">Common encodings: %20=space, %3C=&lt;, %3E=&gt;, %22=", %27='</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Hash Generation</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">PowerShell</span>
+                  <span class="query-title">Generate file hashes</span>
+                </div>
+                <div class="query-body">
+<code>Get-FileHash -Path <span class="st">"file.exe"</span> -Algorithm MD5
+Get-FileHash -Path <span class="st">"file.exe"</span> -Algorithm SHA1
+Get-FileHash -Path <span class="st">"file.exe"</span> -Algorithm SHA256</code>
+                </div>
+              </div>
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">Bash</span>
+                  <span class="query-title">Generate file hashes (Linux)</span>
+                </div>
+                <div class="query-body">
+<code>md5sum file.exe
+sha1sum file.exe
+sha256sum file.exe</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="regex">
+        <h2>Useful Regex Patterns</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>Matches</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b</code></td>
+                <td>IPv4 address</td>
+              </tr>
+              <tr>
+                <td><code>[a-fA-F0-9]{32}</code></td>
+                <td>MD5 hash</td>
+              </tr>
+              <tr>
+                <td><code>[a-fA-F0-9]{40}</code></td>
+                <td>SHA1 hash</td>
+              </tr>
+              <tr>
+                <td><code>[a-fA-F0-9]{64}</code></td>
+                <td>SHA256 hash</td>
+              </tr>
+              <tr>
+                <td><code>[\w.-]+@[\w.-]+\.\w+</code></td>
+                <td>Email address</td>
+              </tr>
+              <tr>
+                <td><code>https?://[^\s]+</code></td>
+                <td>URL</td>
+              </tr>
+              <tr>
+                <td><code>([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}</code></td>
+                <td>Domain name</td>
+              </tr>
+              <tr>
+                <td><code>([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}</code></td>
+                <td>MAC address</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="resources">
+        <h2>Learning Resources</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-cyan);">Training Platforms</h4>
+            <ul>
+              <li><a href="https://tryhackme.com" target="_blank">TryHackMe</a></li>
+              <li><a href="https://www.hackthebox.com" target="_blank">HackTheBox</a></li>
+              <li><a href="https://cyberdefenders.org" target="_blank">CyberDefenders</a></li>
+              <li><a href="https://letsdefend.io" target="_blank">LetsDefend</a></li>
+              <li><a href="https://blueteamlabs.online" target="_blank">Blue Team Labs</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Documentation</h4>
+            <ul>
+              <li><a href="https://attack.mitre.org" target="_blank">MITRE ATT&CK</a></li>
+              <li><a href="https://learn.microsoft.com/security" target="_blank">Microsoft Security Docs</a></li>
+              <li><a href="https://docs.splunk.com" target="_blank">Splunk Docs</a></li>
+              <li><a href="https://www.sans.org/reading-room" target="_blank">SANS Reading Room</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Communities</h4>
+            <ul>
+              <li><a href="https://www.reddit.com/r/blueteamsec" target="_blank">r/blueteamsec</a></li>
+              <li><a href="https://infosec.exchange" target="_blank">Infosec Exchange (Mastodon)</a></li>
+              <li><a href="https://discord.gg/security" target="_blank">Security Discord servers</a></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Toolkit Tips</div>
+        <ul style="margin: 0;">
+          <li>Bookmark this page for quick reference during investigations</li>
+          <li>Practice commands in a lab environment first</li>
+          <li>Build your own snippets library over time</li>
+          <li>Always verify commands before running on production systems</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="mitre-reference.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">MITRE ATT&CK</span>
+          </a>
+          <a href="../index.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Home →</span>
+            <span class="footer-link-title">SOC Analyst Guide</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

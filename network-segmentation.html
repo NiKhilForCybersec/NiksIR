@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Segmentation | SOC Analyst Guide</title>
+  <meta name="description" content="Network segmentation: VLANs, micro-segmentation, monitoring lateral movement, and segmentation bypass detection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewalls</a>
+          <a href="network-segmentation.html" class="nav-link active"><span class="nav-link-icon">🔀</span> Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🔐</span> Zero Trust</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#network">Network Security</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Network Segmentation</span>
+        </nav>
+        <h1>Network Segmentation</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">Section 5.10</span>
+          <span class="meta-item">~14 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          On This Page
+        </div>
+        <ul class="toc-list">
+          <li><a href="#overview">Segmentation Overview</a></li>
+          <li><a href="#types">Segmentation Types</a></li>
+          <li><a href="#zones">Common Network Zones</a></li>
+          <li><a href="#monitoring">Security Monitoring</a></li>
+          <li><a href="#bypass">Detecting Bypass</a></li>
+        </ul>
+      </div>
+
+      <section id="overview">
+        <h2>Segmentation Overview</h2>
+        <p>
+          Network segmentation divides the network into isolated zones to limit 
+          lateral movement and contain breaches. Proper segmentation means 
+          compromising one system doesn't give access to the entire network.
+        </p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4>Why Segmentation Matters</h4>
+            <ul>
+              <li>Limits blast radius of breaches</li>
+              <li>Slows attacker lateral movement</li>
+              <li>Protects sensitive assets</li>
+              <li>Enables focused monitoring</li>
+              <li>Supports compliance requirements</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>SOC Benefits</h4>
+            <ul>
+              <li>Cross-zone traffic is suspicious</li>
+              <li>Clearer baselines per zone</li>
+              <li>Easier containment during incidents</li>
+              <li>High-fidelity alerts on zone violations</li>
+              <li>Reduced attack surface to monitor</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="types">
+        <h2>Segmentation Types</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>How It Works</th>
+                <th>Granularity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>VLAN</strong></td>
+                <td>Layer 2 separation via switch configuration</td>
+                <td>Subnet/broadcast domain</td>
+              </tr>
+              <tr>
+                <td><strong>Firewall Zones</strong></td>
+                <td>Layer 3/4 filtering between segments</td>
+                <td>Network/subnet level</td>
+              </tr>
+              <tr>
+                <td><strong>Micro-segmentation</strong></td>
+                <td>Software-defined per-workload policies</td>
+                <td>Individual workload/VM</td>
+              </tr>
+              <tr>
+                <td><strong>Air Gap</strong></td>
+                <td>Physical separation, no connectivity</td>
+                <td>Complete isolation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Micro-segmentation</h3>
+        <div class="callout callout-info">
+          <div class="callout-title">Software-Defined Segmentation</div>
+          <p style="margin: 0;">
+            Micro-segmentation applies security policies at the workload level, 
+            not just network boundaries. Even systems on the same VLAN can be 
+            isolated from each other. Key for Zero Trust and cloud environments.
+          </p>
+        </div>
+      </section>
+
+      <section id="zones">
+        <h2>Common Network Zones</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Purpose</th>
+                <th>Security Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>DMZ</strong></td>
+                <td>Public-facing services (web, email)</td>
+                <td>Untrusted / Semi-trusted</td>
+              </tr>
+              <tr>
+                <td><strong>Corporate/User</strong></td>
+                <td>Employee workstations</td>
+                <td>Trusted (internal)</td>
+              </tr>
+              <tr>
+                <td><strong>Server/Datacenter</strong></td>
+                <td>Internal applications, databases</td>
+                <td>Restricted</td>
+              </tr>
+              <tr>
+                <td><strong>PCI/Cardholder</strong></td>
+                <td>Payment card processing</td>
+                <td>Highly Restricted</td>
+              </tr>
+              <tr>
+                <td><strong>Management</strong></td>
+                <td>Network devices, admin access</td>
+                <td>Highly Restricted</td>
+              </tr>
+              <tr>
+                <td><strong>Guest</strong></td>
+                <td>Visitor WiFi, BYOD</td>
+                <td>Untrusted</td>
+              </tr>
+              <tr>
+                <td><strong>OT/ICS</strong></td>
+                <td>Industrial control systems</td>
+                <td>Air-gapped/Highly Restricted</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Expected Traffic Flows</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>From → To</th>
+                <th>Expected?</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>User → DMZ</td>
+                <td><span style="color: var(--accent-green);">Yes</span></td>
+                <td>Users access web apps</td>
+              </tr>
+              <tr>
+                <td>User → Server</td>
+                <td><span style="color: var(--accent-green);">Yes</span></td>
+                <td>Internal app access</td>
+              </tr>
+              <tr>
+                <td>User → User</td>
+                <td><span style="color: var(--accent-orange);">Rarely</span></td>
+                <td>P2P usually suspicious</td>
+              </tr>
+              <tr>
+                <td>DMZ → Server</td>
+                <td><span style="color: var(--accent-yellow);">Limited</span></td>
+                <td>Only specific app flows</td>
+              </tr>
+              <tr>
+                <td>DMZ → User</td>
+                <td><span style="color: var(--accent-red);">No</span></td>
+                <td>Likely attack</td>
+              </tr>
+              <tr>
+                <td>Guest → Corporate</td>
+                <td><span style="color: var(--accent-red);">No</span></td>
+                <td>Segmentation violation</td>
+              </tr>
+              <tr>
+                <td>Any → Management</td>
+                <td><span style="color: var(--accent-orange);">Admin only</span></td>
+                <td>Jump box required</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="monitoring">
+        <h2>Security Monitoring</h2>
+
+        <h3>High-Value Detections</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Detection</th>
+                <th>Indicates</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Cross-zone traffic denied</td>
+                <td>Attempted lateral movement</td>
+                <td><span style="color: var(--accent-orange);">Medium</span></td>
+              </tr>
+              <tr>
+                <td>Unexpected zone-to-zone allowed</td>
+                <td>Possible misconfig or bypass</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+              </tr>
+              <tr>
+                <td>Workstation-to-workstation</td>
+                <td>Lateral movement</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+              </tr>
+              <tr>
+                <td>Server initiating to user zone</td>
+                <td>Compromised server, C2</td>
+                <td><span style="color: var(--accent-red);">High</span></td>
+              </tr>
+              <tr>
+                <td>DMZ reaching internal DB</td>
+                <td>Web app compromise</td>
+                <td><span style="color: var(--accent-red);">Critical</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Cross-zone traffic detection</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm">// Define zone IP ranges</span>
+<span class="kw">let</span> UserZone = <span class="kw">dynamic</span>([<span class="st">"10.1.0.0/16"</span>]);
+<span class="kw">let</span> ServerZone = <span class="kw">dynamic</span>([<span class="st">"10.2.0.0/16"</span>]);
+<span class="kw">let</span> DMZ = <span class="kw">dynamic</span>([<span class="st">"10.3.0.0/24"</span>]);
+
+<span class="cm">// Find user-to-user traffic (lateral movement)</span>
+NetworkConnectionEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> <span class="fn">ipv4_is_in_any_range</span>(SourceIP, UserZone)
+| <span class="kw">where</span> <span class="fn">ipv4_is_in_any_range</span>(DestinationIP, UserZone)
+| <span class="kw">where</span> SourceIP != DestinationIP
+| <span class="kw">summarize</span> ConnectionCount = <span class="fn">count</span>() 
+    <span class="kw">by</span> SourceIP, DestinationIP, DestinationPort
+| <span class="kw">where</span> ConnectionCount > <span class="nu">5</span>
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="bypass">
+        <h2>Detecting Segmentation Bypass</h2>
+
+        <h3>Bypass Techniques</h3>
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Dual-Homed Systems</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Systems with NICs in multiple zones can bridge segments.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Inventory systems with multiple IPs</li>
+                <li>Alert on traffic routing through workstations</li>
+                <li>Monitor for IP forwarding enabled</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Tunneling</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Attackers tunnel through allowed protocols (DNS, HTTP, SSH).</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>DNS tunneling (large queries, high volume)</li>
+                <li>SSH tunneling (long sessions, unusual ports)</li>
+                <li>HTTP tunneling (beaconing patterns)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Compromised Jump Boxes</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Legitimate cross-zone systems become pivot points.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Unusual commands on jump boxes</li>
+                <li>Jump box accessing unexpected destinations</li>
+                <li>File transfers through jump boxes</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Firewall Misconfiguration</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Overly permissive rules allow unintended traffic.</p>
+              <h4>Detection:</h4>
+              <ul>
+                <li>Regular firewall rule audits</li>
+                <li>Alert on "any-any" rules</li>
+                <li>Monitor for rule changes</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Key Takeaways</div>
+        <ul style="margin: 0;">
+          <li>Segmentation limits blast radius and slows attackers</li>
+          <li>Cross-zone traffic should be limited and monitored</li>
+          <li>Workstation-to-workstation traffic is usually suspicious</li>
+          <li>DMZ should never directly access internal databases</li>
+          <li>Watch for tunneling to bypass segmentation</li>
+          <li>Jump boxes are high-value targets—monitor closely</li>
+          <li>Micro-segmentation enables Zero Trust at workload level</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="firewall-basics.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Firewall Basics</span>
+          </a>
+          <a href="zero-trust.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Zero Trust</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

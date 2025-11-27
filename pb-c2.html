@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C2 Detection Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Response playbook for Command and Control detection: C2 techniques, network indicators, and investigation approaches.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-c2.html" class="nav-link active"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>C2 Detection</span>
+        </nav>
+        <h1>📡 C2 Detection Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l2">L2</span> <span class="tier-badge tier-l3">L3</span></span>
+          <span class="meta-item">PB-10</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-red);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">Beaconing detected, suspicious outbound traffic, TI match</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p1">P1 Critical</span></p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Response SLA</strong>
+            <p style="margin: 0;">Response: 15 min | Containment: 1 hour</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation</strong>
+            <p style="margin: 0;">Immediate escalation to IR team</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-danger">
+        <div class="callout-title">⚠️ Active Compromise</div>
+        <p style="margin: 0;">
+          C2 communication indicates an attacker has an active foothold and can execute commands 
+          on your systems. This is a critical finding requiring immediate containment.
+        </p>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#what">What is C2?</a></li>
+          <li><a href="#channels">C2 Channels</a></li>
+          <li><a href="#indicators">Detection Indicators</a></li>
+          <li><a href="#investigation">Investigation Steps</a></li>
+          <li><a href="#containment">Containment</a></li>
+          <li><a href="#hunting">Hunting Queries</a></li>
+        </ul>
+      </div>
+
+      <section id="what">
+        <h2>What is C2?</h2>
+        <p>
+          Command and Control (C2 or C&C) is the communication channel between an attacker and 
+          compromised systems. It allows attackers to send commands, receive data, and maintain 
+          persistent access.
+        </p>
+
+        <div class="card">
+          <h3>C2 in the Attack Lifecycle</h3>
+          <div class="flowchart">
+            <div class="flow-step">
+              <div class="flow-node">
+                <strong>Initial Access</strong><br>
+                <small>Phishing, exploit</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Execution</strong><br>
+                <small>Malware runs</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node" style="border-color: var(--accent-red); background: rgba(255,51,102,0.1);">
+                <strong>C2 Established</strong><br>
+                <small>Callback to attacker</small>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <strong>Actions on Objective</strong><br>
+                <small>Steal data, deploy ransomware</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-title">Why C2 Detection Matters</div>
+          <p style="margin: 0;">
+            Detecting C2 is your opportunity to stop an attack before the attacker achieves their 
+            objective. Once C2 is established, the attacker can do anything—but they haven't done 
+            it yet if you catch them early.
+          </p>
+        </div>
+      </section>
+
+      <section id="channels">
+        <h2>Common C2 Channels</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>How It Works</th>
+                <th>Detection Challenge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HTTP/HTTPS</strong></td>
+                <td>Commands over web traffic, blends with browsing</td>
+                <td>Looks like normal web traffic</td>
+              </tr>
+              <tr>
+                <td><strong>DNS</strong></td>
+                <td>Commands encoded in DNS queries/responses</td>
+                <td>DNS rarely blocked or inspected</td>
+              </tr>
+              <tr>
+                <td><strong>Cloud Services</strong></td>
+                <td>Dropbox, OneDrive, Slack, Discord as C2</td>
+                <td>Legitimate services, encrypted</td>
+              </tr>
+              <tr>
+                <td><strong>Domain Fronting</strong></td>
+                <td>Hide C2 behind CDN (Cloudflare, Azure)</td>
+                <td>Appears as traffic to legitimate CDN</td>
+              </tr>
+              <tr>
+                <td><strong>Custom Protocol</strong></td>
+                <td>Proprietary binary protocol</td>
+                <td>Unknown signatures</td>
+              </tr>
+              <tr>
+                <td><strong>Email</strong></td>
+                <td>Commands via email drafts or messages</td>
+                <td>Blends with normal email</td>
+              </tr>
+              <tr>
+                <td><strong>Social Media</strong></td>
+                <td>Twitter, Telegram for commands</td>
+                <td>Encrypted, legitimate platforms</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Popular C2 Frameworks</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Commercial/Leaked</h4>
+            <ul>
+              <li><strong>Cobalt Strike</strong> - Most common</li>
+              <li><strong>Brute Ratel</strong> - Newer, evasive</li>
+              <li><strong>Metasploit</strong> - Open source</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Open Source</h4>
+            <ul>
+              <li><strong>Sliver</strong></li>
+              <li><strong>Mythic</strong></li>
+              <li><strong>Covenant</strong></li>
+              <li><strong>PoshC2</strong></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Malware-Specific</h4>
+            <ul>
+              <li><strong>Emotet</strong></li>
+              <li><strong>QakBot</strong></li>
+              <li><strong>IcedID</strong></li>
+              <li><strong>BazarLoader</strong></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="indicators">
+        <h2>Detection Indicators</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Beaconing Behavior</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Regular, periodic connections to same destination:</p>
+              <ul>
+                <li>Connections at fixed intervals (e.g., every 60 seconds)</li>
+                <li>Slight jitter to avoid detection (59-61 seconds)</li>
+                <li>Consistent packet sizes</li>
+                <li>Connections regardless of user activity</li>
+                <li>Continues after hours, on weekends</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Suspicious Destinations</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Newly registered domains (&lt;30 days old)</li>
+                <li>DGA-like domain names (random strings)</li>
+                <li>Unusual TLDs (.xyz, .top, .cc)</li>
+                <li>IP addresses instead of domains</li>
+                <li>Rare destinations (only this host connects)</li>
+                <li>Known bad IPs/domains (threat intel)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Protocol Anomalies</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>HTTP on non-standard ports</li>
+                <li>HTTPS to IP addresses (no domain)</li>
+                <li>High volume of DNS TXT queries</li>
+                <li>Long DNS subdomain strings</li>
+                <li>Unusual user-agent strings</li>
+                <li>Encrypted traffic to unusual destinations</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Endpoint Indicators</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Unknown process making network connections</li>
+                <li>PowerShell/cmd with network activity</li>
+                <li>Process injection detected</li>
+                <li>Rundll32/regsvr32 with network connections</li>
+                <li>Scheduled task with network callback</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Validate the Alert</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>What triggered the alert? (TI match, beaconing, anomaly)</li>
+                <li>Check destination reputation (VirusTotal, URLhaus)</li>
+                <li>Is destination known C2 infrastructure?</li>
+                <li>Check domain age and registration details</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Identify the Host</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Which internal host is communicating?</li>
+                <li>Is it a workstation, server, or other device?</li>
+                <li>Who uses this device?</li>
+                <li>What is the device's role/criticality?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Analyze the Traffic Pattern</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>When did connections start?</li>
+                <li>What is the connection frequency?</li>
+                <li>Data volume transferred?</li>
+                <li>Protocol and ports used?</li>
+              </ul>
+
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Analyze connection pattern</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> suspiciousDest = <span class="st">"203.0.113.50"</span>;
+DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> RemoteIP == suspiciousDest
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    BytesSent = <span class="fn">sum</span>(SentBytes),
+    BytesReceived = <span class="fn">sum</span>(ReceivedBytes),
+    FirstSeen = <span class="fn">min</span>(TimeGenerated),
+    LastSeen = <span class="fn">max</span>(TimeGenerated)
+    <span class="kw">by</span> DeviceName, RemotePort, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Find the Process</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>Identify what process is making the connection:</p>
+              
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Find process making C2 connection</span>
+                </div>
+                <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIP == <span class="st">"203.0.113.50"</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, 
+    InitiatingProcessFileName, InitiatingProcessCommandLine,
+    InitiatingProcessFolderPath, RemotePort</code>
+                </div>
+              </div>
+
+              <ul>
+                <li>Is it a known/expected application?</li>
+                <li>Where is the executable located?</li>
+                <li>Is it signed? By whom?</li>
+                <li>When was the file created on disk?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 5: Determine Initial Access</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p>How did the malware get there?</p>
+              <ul>
+                <li>Check email logs for phishing around infection time</li>
+                <li>Check browser history for malicious downloads</li>
+                <li>Review process creation timeline before C2</li>
+                <li>Look for initial dropper/loader</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="containment">
+        <h2>Containment Actions</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Immediate (0-15 min)</h4>
+            <ul>
+              <li>Isolate affected host via EDR</li>
+              <li>Block C2 IP/domain at firewall</li>
+              <li>Block C2 domain at DNS</li>
+              <li>Collect volatile evidence (memory)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Short-term (15-60 min)</h4>
+            <ul>
+              <li>Hunt for same IOCs across environment</li>
+              <li>Check for lateral movement from host</li>
+              <li>Disable accounts used on compromised host</li>
+              <li>Collect forensic image</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Remediation</h4>
+            <ul>
+              <li>Remove malware/persistence</li>
+              <li>Rebuild host if needed</li>
+              <li>Reset affected credentials</li>
+              <li>Monitor for reinfection</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Isolate First, Investigate Second</div>
+          <p style="margin: 0;">
+            For confirmed C2, isolate the host immediately to stop attacker access. 
+            You can investigate on the isolated host—don't wait to contain.
+          </p>
+        </div>
+      </section>
+
+      <section id="hunting">
+        <h2>Hunting Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect beaconing pattern</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    Times = <span class="fn">make_list</span>(TimeGenerated)
+    <span class="kw">by</span> DeviceName, RemoteIP, RemotePort
+| <span class="kw">where</span> ConnectionCount > <span class="nu">20</span>
+<span class="cm">// Hosts with many regular connections to same destination</span>
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Connections to newly registered domains</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteUrl != <span class="st">""</span>
+| <span class="kw">join</span> <span class="kw">kind</span>=inner (
+    ThreatIntelligenceIndicator
+    | <span class="kw">where</span> IndicatorType == <span class="st">"domain"</span>
+    | <span class="kw">where</span> Tags <span class="kw">has</span> <span class="st">"new-domain"</span>
+) <span class="kw">on</span> $left.RemoteUrl == $right.DomainName
+| <span class="kw">project</span> TimeGenerated, DeviceName, RemoteUrl, 
+    InitiatingProcessFileName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">PowerShell with network connections</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> InitiatingProcessFileName <span class="kw">in~</span> 
+    (<span class="st">"powershell.exe"</span>, <span class="st">"pwsh.exe"</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, RemoteIP, RemoteUrl,
+    InitiatingProcessCommandLine
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Validate:</strong> Confirm C2 destination is malicious</li>
+          <li><strong>Identify:</strong> Which host, what process</li>
+          <li><strong>Isolate:</strong> Contain immediately—don't wait</li>
+          <li><strong>Block:</strong> C2 destination at firewall and DNS</li>
+          <li><strong>Hunt:</strong> Same IOCs across environment</li>
+          <li><strong>Investigate:</strong> Initial access, lateral movement</li>
+          <li><strong>Remediate:</strong> Remove malware, reset credentials, rebuild if needed</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-lateral-movement.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Lateral Movement</span>
+          </a>
+          <a href="../index.html#playbooks" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Section →</span>
+            <span class="footer-link-title">All Playbooks</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

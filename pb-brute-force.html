@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brute Force Attack Playbook | SOC Analyst Guide</title>
+  <meta name="description" content="Response playbook for brute force and password spray attacks: detection, investigation, and response procedures.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware Detection</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💀</span> Ransomware</a>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">🔓</span> Account Compromise</a>
+          <a href="pb-brute-force.html" class="nav-link active"><span class="nav-link-icon">🔨</span> Brute Force</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Related</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Security</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#playbooks">Playbooks</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Brute Force</span>
+        </nav>
+        <h1>🔨 Brute Force Attack Playbook</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">PB-06</span>
+          <span class="meta-item">Response Playbook</span>
+        </div>
+      </div>
+
+      <!-- Playbook Overview -->
+      <div class="card" style="border-left: 4px solid var(--accent-orange);">
+        <div class="card-header">
+          <h3 class="card-title" style="margin: 0;">Playbook Overview</h3>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div>
+            <strong style="color: var(--text-muted);">Trigger</strong>
+            <p style="margin: 0;">Multiple failed logins, password spray detection</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Default Severity</strong>
+            <p style="margin: 0;"><span class="priority-badge priority-p3">P3 Medium</span> (escalate if successful)</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Response SLA</strong>
+            <p style="margin: 0;">Response: 2 hours | Resolution: 8 hours</p>
+          </div>
+          <div>
+            <strong style="color: var(--text-muted);">Escalation</strong>
+            <p style="margin: 0;">Escalate if any account compromised</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Playbook Steps
+        </div>
+        <ul class="toc-list">
+          <li><a href="#types">Attack Types</a></li>
+          <li><a href="#detection">Detection Indicators</a></li>
+          <li><a href="#investigation">Investigation Steps</a></li>
+          <li><a href="#response">Response Actions</a></li>
+          <li><a href="#prevention">Prevention Measures</a></li>
+        </ul>
+      </div>
+
+      <section id="types">
+        <h2>Attack Types</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <h4 style="color: var(--accent-red);">Traditional Brute Force</h4>
+            <p><strong>Many passwords → One account</strong></p>
+            <ul>
+              <li>Attacker tries many passwords against single account</li>
+              <li>Usually triggers account lockout</li>
+              <li>Easier to detect</li>
+            </ul>
+            <p class="text-muted">Detection: High failed logins for one user</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-orange);">Password Spray</h4>
+            <p><strong>One password → Many accounts</strong></p>
+            <ul>
+              <li>Attacker tries common password across many accounts</li>
+              <li>Avoids account lockout</li>
+              <li>Harder to detect</li>
+            </ul>
+            <p class="text-muted">Detection: Same password error across accounts</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-yellow);">Credential Stuffing</h4>
+            <p><strong>Leaked credentials → Your accounts</strong></p>
+            <ul>
+              <li>Uses credentials from other breaches</li>
+              <li>Exploits password reuse</li>
+              <li>Often from botnets</li>
+            </ul>
+            <p class="text-muted">Detection: Failed logins from many IPs</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="detection">
+        <h2>Detection Indicators</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Attack Type</th>
+                <th>Indicators</th>
+                <th>Log Sources</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Brute Force</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>&gt;10 failed logins for same account</li>
+                    <li>Rapid succession (seconds apart)</li>
+                    <li>May trigger lockout</li>
+                  </ul>
+                </td>
+                <td>Azure AD, AD (4625), VPN, SSH</td>
+              </tr>
+              <tr>
+                <td><strong>Password Spray</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Same error code across multiple accounts</li>
+                    <li>From same IP or small IP range</li>
+                    <li>1-2 attempts per account</li>
+                    <li>Spread over time (hours)</li>
+                  </ul>
+                </td>
+                <td>Azure AD, AD, M365</td>
+              </tr>
+              <tr>
+                <td><strong>Credential Stuffing</strong></td>
+                <td>
+                  <ul style="margin: 0; padding-left: 1rem;">
+                    <li>Many IPs, many accounts</li>
+                    <li>Residential/proxy IPs</li>
+                    <li>Varied user agents</li>
+                    <li>Attempts against user list</li>
+                  </ul>
+                </td>
+                <td>WAF, Load balancer, App logs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect password spray pattern</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50126"</span>  <span class="cm">// Invalid username or password</span>
+| <span class="kw">summarize</span> 
+    FailedAccounts = <span class="fn">dcount</span>(UserPrincipalName),
+    AccountList = <span class="fn">make_set</span>(UserPrincipalName),
+    AttemptCount = <span class="fn">count</span>()
+    <span class="kw">by</span> IPAddress, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> FailedAccounts > <span class="nu">10</span>  <span class="cm">// Many accounts from same IP</span>
+| <span class="kw">order by</span> FailedAccounts <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Detect brute force against single account</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>  <span class="cm">// Failed logins</span>
+| <span class="kw">summarize</span> 
+    FailedCount = <span class="fn">count</span>(),
+    IPs = <span class="fn">make_set</span>(IPAddress),
+    ErrorCodes = <span class="fn">make_set</span>(ResultType)
+    <span class="kw">by</span> UserPrincipalName, bin(TimeGenerated, <span class="nu">1h</span>)
+| <span class="kw">where</span> FailedCount > <span class="nu">15</span>
+| <span class="kw">order by</span> FailedCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="investigation">
+        <h2>Investigation Steps</h2>
+
+        <div class="accordion">
+          <div class="accordion-item active">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 1: Assess Attack Scope</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>How many accounts targeted?</li>
+                <li>How many source IPs involved?</li>
+                <li>What time period?</li>
+                <li>What services targeted (Azure AD, VPN, OWA, RDP)?</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 2: Check for Successful Logins</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <p><strong>CRITICAL:</strong> Determine if any attack succeeded.</p>
+              
+              <div class="query-box">
+                <div class="query-header">
+                  <span class="query-lang">KQL</span>
+                  <span class="query-title">Check for success after failed attempts</span>
+                </div>
+                <div class="query-body">
+<code><span class="kw">let</span> suspiciousIP = <span class="st">"203.0.113.50"</span>;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> IPAddress == suspiciousIP
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>  <span class="cm">// Successful login</span>
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, AppDisplayName, 
+    Location, DeviceDetail</code>
+                </div>
+              </div>
+
+              <div class="callout callout-danger" style="margin-top: 1rem;">
+                <div class="callout-title">If Successful Login Found</div>
+                <p style="margin: 0;">Escalate to <span class="priority-badge priority-p2">P2 High</span> and follow <a href="pb-account-compromise.html">Account Compromise Playbook</a></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 3: Analyze Source IPs</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Check IP reputation (AbuseIPDB, VirusTotal)</li>
+                <li>Determine geolocation</li>
+                <li>Identify if it's known proxy/VPN/Tor</li>
+                <li>Check if IP has accessed other resources</li>
+              </ul>
+              <p class="text-muted">Password sprays often come from cloud hosting or residential proxies</p>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span class="accordion-title">Step 4: Identify Targeted Accounts</span>
+              <span class="accordion-icon">▼</span>
+            </div>
+            <div class="accordion-content">
+              <ul>
+                <li>Are specific users targeted (executives, admins)?</li>
+                <li>Is it a full user list (enumeration)?</li>
+                <li>Are the targeted accounts valid or mostly invalid?</li>
+                <li>Any pattern in targeted usernames?</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="response">
+        <h2>Response Actions</h2>
+
+        <h3>If Attack is Unsuccessful (Blocked)</h3>
+        <ul class="checklist">
+          <li>Block attacker IP(s) at firewall/WAF/Conditional Access</li>
+          <li>Review account lockout policies (are they working?)</li>
+          <li>Check if targeted accounts need password reset anyway</li>
+          <li>Document attack details for threat intelligence</li>
+          <li>Consider reporting to abuse contacts if applicable</li>
+        </ul>
+
+        <h3>If Attack is Successful (Compromised Account)</h3>
+        <div class="callout callout-danger">
+          <div class="callout-title">Immediate Actions</div>
+          <ol style="margin: 0;">
+            <li>Reset compromised account password immediately</li>
+            <li>Revoke all active sessions</li>
+            <li>Re-verify MFA methods</li>
+            <li>Block attacker IP(s)</li>
+            <li>Follow <a href="pb-account-compromise.html">Account Compromise Playbook</a></li>
+          </ol>
+        </div>
+
+        <h3>Blocking at Conditional Access (Azure AD)</h3>
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">PowerShell</span>
+            <span class="query-title">Add IP to named location block list</span>
+          </div>
+          <div class="query-body">
+<code><span class="cm"># This is typically done via Azure Portal or Graph API</span>
+<span class="cm"># Create Named Location with blocked IPs</span>
+<span class="cm"># Then reference in Conditional Access policy to block</span>
+
+<span class="cm"># Example: Check current sign-in activity from IP</span>
+Get-MgAuditLogSignIn -Filter <span class="st">"ipAddress eq '203.0.113.50'"</span> -Top <span class="nu">50</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="prevention">
+        <h2>Prevention Measures</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Control</th>
+                <th>Effectiveness</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MFA</strong></td>
+                <td>🟢 Very High</td>
+                <td>Blocks most credential attacks even if password compromised</td>
+              </tr>
+              <tr>
+                <td><strong>Smart Lockout (Azure AD)</strong></td>
+                <td>🟢 High</td>
+                <td>Locks out attackers, not legitimate users</td>
+              </tr>
+              <tr>
+                <td><strong>Password Policy</strong></td>
+                <td>🟡 Medium</td>
+                <td>Ban common passwords, require complexity</td>
+              </tr>
+              <tr>
+                <td><strong>Conditional Access</strong></td>
+                <td>🟢 High</td>
+                <td>Block legacy auth, require MFA, geo-blocking</td>
+              </tr>
+              <tr>
+                <td><strong>IP Reputation Blocking</strong></td>
+                <td>🟡 Medium</td>
+                <td>Block known bad IPs at perimeter</td>
+              </tr>
+              <tr>
+                <td><strong>Rate Limiting</strong></td>
+                <td>🟡 Medium</td>
+                <td>Slow down attacks at WAF/proxy</td>
+              </tr>
+              <tr>
+                <td><strong>Password Spray Detection</strong></td>
+                <td>🟢 High</td>
+                <td>Azure AD Identity Protection detects this</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">Block Legacy Authentication</div>
+          <p style="margin: 0;">
+            Legacy authentication protocols (POP, IMAP, SMTP AUTH) don't support MFA and are 
+            frequently targeted. Block them via Conditional Access unless specifically needed.
+          </p>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Playbook Summary</div>
+        <ol style="margin: 0;">
+          <li><strong>Identify:</strong> What type of attack? Scope?</li>
+          <li><strong>Check Success:</strong> Did any login succeed? (Critical)</li>
+          <li><strong>Analyze:</strong> Source IPs, targeted accounts</li>
+          <li><strong>Block:</strong> Attacker IPs at appropriate layer</li>
+          <li><strong>Remediate:</strong> Reset any compromised accounts</li>
+          <li><strong>Harden:</strong> Verify MFA, block legacy auth</li>
+        </ol>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="pb-account-compromise.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Account Compromise</span>
+          </a>
+          <a href="pb-impossible-travel.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Impossible Travel</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

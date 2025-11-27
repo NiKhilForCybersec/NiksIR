@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel Query Examples | SOC Analyst Guide</title>
+  <meta name="description" content="Microsoft Sentinel KQL query examples for common SOC investigations: authentication, malware, network, and threat hunting.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📊</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🔷</span> Sentinel Overview</a>
+          <a href="sentinel-queries.html" class="nav-link active"><span class="nav-link-icon">🔍</span> Query Examples</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📁</span> Log Sources</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📜</span> KQL Cheatsheet</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="../index.html#siem">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span>Query Examples</span>
+        </nav>
+        <h1>Sentinel Query Examples</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="tier-badge tier-l1">L1</span> <span class="tier-badge tier-l2">L2</span></span>
+          <span class="meta-item">Section 3.3</span>
+          <span class="meta-item">~15 min read</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="toc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h12"/>
+          </svg>
+          Query Categories
+        </div>
+        <ul class="toc-list">
+          <li><a href="#auth">Authentication</a></li>
+          <li><a href="#endpoint">Endpoint/MDE</a></li>
+          <li><a href="#email">Email/Office 365</a></li>
+          <li><a href="#network">Network</a></li>
+          <li><a href="#azure">Azure Activity</a></li>
+          <li><a href="#hunting">Threat Hunting</a></li>
+        </ul>
+      </div>
+
+      <section id="auth">
+        <h2>Authentication Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Failed logins by user</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ResultType != <span class="st">"0"</span>  <span class="cm">// Non-successful</span>
+| <span class="kw">summarize</span> FailedAttempts = <span class="fn">count</span>() <span class="kw">by</span> UserPrincipalName, 
+    ResultType, ResultDescription, IPAddress
+| <span class="kw">order by</span> FailedAttempts <span class="kw">desc</span>
+| <span class="kw">take</span> <span class="nu">50</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Successful logins from new locations</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> lookback = <span class="nu">30d</span>;
+<span class="kw">let</span> recent = <span class="nu">1d</span>;
+<span class="kw">let</span> historicalLocations = SigninLogs
+| <span class="kw">where</span> TimeGenerated <span class="kw">between</span> (<span class="fn">ago</span>(lookback) .. <span class="fn">ago</span>(recent))
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">distinct</span> UserPrincipalName, Location;
+SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(recent)
+| <span class="kw">where</span> ResultType == <span class="st">"0"</span>
+| <span class="kw">join</span> <span class="kw">kind</span>=leftanti historicalLocations 
+    <span class="kw">on</span> UserPrincipalName, Location
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, Location, 
+    IPAddress, AppDisplayName, DeviceDetail</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Password spray detection</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">1h</span>)
+| <span class="kw">where</span> ResultType == <span class="st">"50126"</span>  <span class="cm">// Invalid username/password</span>
+| <span class="kw">summarize</span> 
+    TargetedAccounts = <span class="fn">dcount</span>(UserPrincipalName),
+    AttemptCount = <span class="fn">count</span>(),
+    Accounts = <span class="fn">make_set</span>(UserPrincipalName, <span class="nu">100</span>)
+    <span class="kw">by</span> IPAddress, bin(TimeGenerated, <span class="nu">10m</span>)
+| <span class="kw">where</span> TargetedAccounts > <span class="nu">10</span>  <span class="cm">// Many accounts from same IP</span>
+| <span class="kw">order by</span> TargetedAccounts <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Risky sign-ins</span>
+          </div>
+          <div class="query-body">
+<code>SigninLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RiskLevelDuringSignIn <span class="kw">in</span> (<span class="st">"high"</span>, <span class="st">"medium"</span>)
+| <span class="kw">project</span> TimeGenerated, UserPrincipalName, RiskLevelDuringSignIn,
+    RiskEventTypes, IPAddress, Location, AppDisplayName,
+    ResultType, ResultDescription
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="endpoint">
+        <h2>Endpoint/MDE Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Suspicious PowerShell execution</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (<span class="st">"powershell.exe"</span>, <span class="st">"pwsh.exe"</span>)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (
+    <span class="st">"-enc"</span>, <span class="st">"-encodedcommand"</span>, <span class="st">"downloadstring"</span>,
+    <span class="st">"invoke-expression"</span>, <span class="st">"iex"</span>, <span class="st">"bypass"</span>,
+    <span class="st">"hidden"</span>, <span class="st">"frombase64"</span>
+)
+| <span class="kw">project</span> TimeGenerated, DeviceName, AccountName,
+    ProcessCommandLine, InitiatingProcessFileName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Process creation timeline for host</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> targetHost = <span class="st">"WORKSTATION-01"</span>;
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> DeviceName =~ targetHost
+| <span class="kw">project</span> TimeGenerated, FileName, ProcessCommandLine,
+    AccountName, InitiatingProcessFileName,
+    InitiatingProcessCommandLine
+| <span class="kw">order by</span> TimeGenerated <span class="kw">asc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Lateral movement indicators (PsExec, WMI)</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> 
+    <span class="cm">// PsExec</span>
+    (FileName =~ <span class="st">"psexec.exe"</span> <span class="kw">or</span> FileName =~ <span class="st">"psexesvc.exe"</span>)
+    <span class="cm">// WMI remote</span>
+    <span class="kw">or</span> (FileName =~ <span class="st">"wmic.exe"</span> <span class="kw">and</span> ProcessCommandLine <span class="kw">contains</span> <span class="st">"/node:"</span>)
+    <span class="cm">// Remote scheduled task</span>
+    <span class="kw">or</span> (FileName =~ <span class="st">"schtasks.exe"</span> <span class="kw">and</span> ProcessCommandLine <span class="kw">contains</span> <span class="st">"/s "</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName, 
+    ProcessCommandLine, AccountName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">New service installations</span>
+          </div>
+          <div class="query-body">
+<code>DeviceEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ServiceInstalled"</span>
+| <span class="kw">extend</span> ServiceName = <span class="fn">tostring</span>(AdditionalFields.ServiceName)
+| <span class="kw">extend</span> ServicePath = <span class="fn">tostring</span>(AdditionalFields.ServicePath)
+| <span class="kw">project</span> TimeGenerated, DeviceName, ServiceName, 
+    ServicePath, InitiatingProcessAccountName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="email">
+        <h2>Email/Office 365 Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Emails with malicious attachments</span>
+          </div>
+          <div class="query-body">
+<code>EmailEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ThreatTypes <span class="kw">has</span> <span class="st">"Malware"</span>
+| <span class="kw">project</span> TimeGenerated, SenderFromAddress, RecipientEmailAddress,
+    Subject, ThreatTypes, DeliveryAction, 
+    AttachmentCount, NetworkMessageId
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Inbox rule creation</span>
+          </div>
+          <div class="query-body">
+<code>OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> Operation <span class="kw">in</span> (<span class="st">"New-InboxRule"</span>, <span class="st">"Set-InboxRule"</span>)
+| <span class="kw">extend</span> Parameters = <span class="fn">tostring</span>(Parameters)
+| <span class="kw">project</span> TimeGenerated, UserId, Operation, Parameters,
+    ClientIP, ResultStatus
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">URL clicks from emails</span>
+          </div>
+          <div class="query-body">
+<code>UrlClickEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> ActionType == <span class="st">"ClickBlocked"</span> <span class="kw">or</span> ThreatTypes != <span class="st">""</span>
+| <span class="kw">project</span> TimeGenerated, AccountUpn, Url, ActionType,
+    ThreatTypes, IsClickedThrough, NetworkMessageId
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Email forwarding rules</span>
+          </div>
+          <div class="query-body">
+<code>OfficeActivity
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> Operation <span class="kw">contains</span> <span class="st">"InboxRule"</span>
+| <span class="kw">where</span> Parameters <span class="kw">has_any</span> (<span class="st">"ForwardTo"</span>, <span class="st">"RedirectTo"</span>, <span class="st">"ForwardAsAttachmentTo"</span>)
+| <span class="kw">project</span> TimeGenerated, UserId, Operation, Parameters, ClientIP</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="network">
+        <h2>Network Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Outbound connections to rare destinations</span>
+          </div>
+          <div class="query-body">
+<code>DeviceNetworkEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> RemoteIPType == <span class="st">"Public"</span>
+| <span class="kw">summarize</span> 
+    ConnectionCount = <span class="fn">count</span>(),
+    Devices = <span class="fn">dcount</span>(DeviceName)
+    <span class="kw">by</span> RemoteIP
+| <span class="kw">where</span> Devices == <span class="nu">1</span> <span class="kw">and</span> ConnectionCount > <span class="nu">10</span>
+<span class="cm">// Only one device talks to this IP, but frequently</span>
+| <span class="kw">order by</span> ConnectionCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">DNS queries to suspicious domains</span>
+          </div>
+          <div class="query-body">
+<code>DnsEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> Name <span class="kw">endswith</span> <span class="st">".xyz"</span> 
+    <span class="kw">or</span> Name <span class="kw">endswith</span> <span class="st">".top"</span>
+    <span class="kw">or</span> Name <span class="kw">endswith</span> <span class="st">".tk"</span>
+    <span class="kw">or</span> <span class="fn">strlen</span>(<span class="fn">tostring</span>(<span class="fn">split</span>(Name, <span class="st">"."</span>)[<span class="nu">0</span>])) > <span class="nu">25</span>  <span class="cm">// Long subdomain</span>
+| <span class="kw">summarize</span> QueryCount = <span class="fn">count</span>() <span class="kw">by</span> ClientIP, Name
+| <span class="kw">order by</span> QueryCount <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <section id="azure">
+        <h2>Azure Activity Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Privileged role assignments</span>
+          </div>
+          <div class="query-body">
+<code>AuditLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> OperationName <span class="kw">has</span> <span class="st">"Add member to role"</span>
+| <span class="kw">mv-expand</span> TargetResources
+| <span class="kw">extend</span> RoleName = <span class="fn">tostring</span>(TargetResources.displayName)
+| <span class="kw">extend</span> UserAdded = <span class="fn">tostring</span>(TargetResources.userPrincipalName)
+| <span class="kw">project</span> TimeGenerated, InitiatedBy.user.userPrincipalName,
+    UserAdded, RoleName, Result
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">App consent grants</span>
+          </div>
+          <div class="query-body">
+<code>AuditLogs
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> OperationName == <span class="st">"Consent to application"</span>
+| <span class="kw">mv-expand</span> TargetResources
+| <span class="kw">extend</span> AppName = <span class="fn">tostring</span>(TargetResources.displayName)
+| <span class="kw">extend</span> Permissions = <span class="fn">tostring</span>(TargetResources.modifiedProperties)
+| <span class="kw">project</span> TimeGenerated, InitiatedBy.user.userPrincipalName,
+    AppName, Permissions, Result</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="hunting">
+        <h2>Threat Hunting Queries</h2>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Living off the land binaries (LOLBins)</span>
+          </div>
+          <div class="query-body">
+<code><span class="kw">let</span> LOLBins = <span class="kw">dynamic</span>([<span class="st">"certutil.exe"</span>, <span class="st">"mshta.exe"</span>, <span class="st">"regsvr32.exe"</span>,
+    <span class="st">"rundll32.exe"</span>, <span class="st">"msiexec.exe"</span>, <span class="st">"wmic.exe"</span>, <span class="st">"cscript.exe"</span>,
+    <span class="st">"wscript.exe"</span>, <span class="st">"bitsadmin.exe"</span>]);
+DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">24h</span>)
+| <span class="kw">where</span> FileName <span class="kw">in~</span> (LOLBins)
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has_any</span> (<span class="st">"http"</span>, <span class="st">"ftp"</span>, <span class="st">"/download"</span>, 
+    <span class="st">"-urlcache"</span>, <span class="st">"javascript:"</span>)
+| <span class="kw">project</span> TimeGenerated, DeviceName, FileName,
+    ProcessCommandLine, AccountName</code>
+          </div>
+        </div>
+
+        <div class="query-box">
+          <div class="query-header">
+            <span class="query-lang">KQL</span>
+            <span class="query-title">Persistence via scheduled tasks</span>
+          </div>
+          <div class="query-body">
+<code>DeviceProcessEvents
+| <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">7d</span>)
+| <span class="kw">where</span> FileName =~ <span class="st">"schtasks.exe"</span>
+| <span class="kw">where</span> ProcessCommandLine <span class="kw">has</span> <span class="st">"/create"</span>
+| <span class="kw">project</span> TimeGenerated, DeviceName, ProcessCommandLine,
+    AccountName, InitiatingProcessFileName
+| <span class="kw">order by</span> TimeGenerated <span class="kw">desc</span></code>
+          </div>
+        </div>
+      </section>
+
+      <div class="callout callout-success">
+        <div class="callout-title">Query Tips</div>
+        <ul style="margin: 0;">
+          <li>Start with time filter (<code>where TimeGenerated > ago()</code>) for performance</li>
+          <li>Use <code>=~</code> for case-insensitive string comparison</li>
+          <li>Use <code>has</code> for substring matching (faster than <code>contains</code>)</li>
+          <li>Limit results with <code>take</code> when exploring data</li>
+          <li>Save commonly used queries as functions</li>
+        </ul>
+      </div>
+
+      <footer class="page-footer">
+        <div class="footer-nav">
+          <a href="sentinel-overview.html" class="footer-link">
+            <span class="footer-link-label">← Previous</span>
+            <span class="footer-link-title">Sentinel Overview</span>
+          </a>
+          <a href="log-sources.html" class="footer-link" style="text-align: right;">
+            <span class="footer-link-label">Next →</span>
+            <span class="footer-link-title">Log Sources</span>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

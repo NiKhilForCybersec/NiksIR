@@ -1,4 +1,4 @@
-/* SOC Analyst Guide - Main JavaScript */
+/* SOC Analyst Guide by NIK - Main JavaScript */
 /* ===================================== */
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,0 +1,3302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Authentication Flows - IAM Ultimate Guide</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --accent-purple: #a371f7;
+            --accent-cyan: #39c5cf;
+            --accent-orange: #f0883e;
+            --border: #30363d;
+        }
+
+        /* Packet Flow Diagram Styles */
+        .packet-flow {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .packet-flow pre {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            color: var(--text-primary);
+            margin: 0;
+            white-space: pre;
+        }
+
+        .packet-flow .hop-client { color: #58a6ff; }
+        .packet-flow .hop-switch { color: #a371f7; }
+        .packet-flow .hop-router { color: #f0883e; }
+        .packet-flow .hop-firewall { color: #f85149; }
+        .packet-flow .hop-proxy { color: #d29922; }
+        .packet-flow .hop-server { color: #3fb950; }
+        .packet-flow .hop-cloud { color: #39c5cf; }
+        .packet-flow .protocol { color: #ff7b72; }
+        .packet-flow .encrypted { color: #7ee787; }
+        .packet-flow .arrow { color: #8b949e; }
+
+        /* Wireshark Style Packet Display */
+        .wireshark-packet {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.7rem;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .wireshark-header {
+            background: #2d2d30;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wireshark-header .packet-num {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .wireshark-header .packet-info {
+            color: #9cdcfe;
+        }
+
+        .wireshark-layers {
+            padding: 0.75rem 1rem;
+        }
+
+        .wireshark-layer {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid #444;
+        }
+
+        .wireshark-layer.ethernet { border-color: #ce9178; }
+        .wireshark-layer.ip { border-color: #4ec9b0; }
+        .wireshark-layer.tcp { border-color: #569cd6; }
+        .wireshark-layer.tls { border-color: #c586c0; }
+        .wireshark-layer.http { border-color: #dcdcaa; }
+
+        .wireshark-layer-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .wireshark-layer.ethernet .wireshark-layer-title { color: #ce9178; }
+        .wireshark-layer.ip .wireshark-layer-title { color: #4ec9b0; }
+        .wireshark-layer.tcp .wireshark-layer-title { color: #569cd6; }
+        .wireshark-layer.tls .wireshark-layer-title { color: #c586c0; }
+        .wireshark-layer.http .wireshark-layer-title { color: #dcdcaa; }
+
+        .wireshark-field {
+            color: #d4d4d4;
+            margin: 0.15rem 0;
+        }
+
+        .wireshark-field .field-name {
+            color: #9cdcfe;
+        }
+
+        .wireshark-field .field-value {
+            color: #ce9178;
+        }
+
+        .wireshark-hex {
+            background: #1a1a1a;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #444;
+            color: #6a9955;
+            word-break: break-all;
+        }
+
+        /* TLS Handshake Diagram */
+        .tls-handshake {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.5rem;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .tls-client, .tls-server {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .tls-client { border-color: var(--accent); }
+        .tls-server { border-color: var(--accent-green); }
+
+        .tls-arrow {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .tls-message {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .tls-message.to-server {
+            flex-direction: row;
+        }
+
+        .tls-message.to-client {
+            flex-direction: row-reverse;
+        }
+
+        .tls-message .arrow-icon {
+            color: var(--accent-yellow);
+        }
+
+        /* Scenario Cards */
+        .scenario-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .scenario-header {
+            background: var(--bg-tertiary);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .scenario-icon {
+            font-size: 2rem;
+        }
+
+        .scenario-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .scenario-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .scenario-body {
+            padding: 1.5rem;
+        }
+
+        /* Step Flow */
+        .step-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: var(--accent);
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .step-item:not(:last-child) .step-number::after {
+            content: '';
+            position: absolute;
+            top: 32px;
+            left: 15px;
+            width: 2px;
+            height: calc(100% - 32px);
+            background: var(--border);
+        }
+
+        .step-content {
+            flex: 1;
+            padding-bottom: 1.5rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-detail {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .step-code {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            overflow-x: auto;
+        }
+
+        /* Network Hop Diagram */
+        .network-hops {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .hop-box {
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            min-width: 80px;
+        }
+
+        .hop-box.client { background: rgba(88, 166, 255, 0.2); border: 1px solid #58a6ff; }
+        .hop-box.switch { background: rgba(163, 113, 247, 0.2); border: 1px solid #a371f7; }
+        .hop-box.router { background: rgba(240, 136, 62, 0.2); border: 1px solid #f0883e; }
+        .hop-box.firewall { background: rgba(248, 81, 73, 0.2); border: 1px solid #f85149; }
+        .hop-box.proxy { background: rgba(210, 153, 34, 0.2); border: 1px solid #d29922; }
+        .hop-box.server { background: rgba(63, 185, 80, 0.2); border: 1px solid #3fb950; }
+        .hop-box.cloud { background: rgba(57, 197, 207, 0.2); border: 1px solid #39c5cf; }
+        .hop-box.idp { background: rgba(198, 120, 221, 0.2); border: 1px solid #c678dd; }
+
+        .hop-icon { font-size: 1.5rem; }
+        .hop-label { font-size: 0.7rem; font-weight: 600; margin-top: 0.25rem; }
+        .hop-detail { font-size: 0.6rem; color: var(--text-secondary); }
+
+        .hop-arrow {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        /* Protocol Badge */
+        .protocol-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .protocol-badge.tcp { background: rgba(86, 156, 214, 0.3); color: #569cd6; }
+        .protocol-badge.udp { background: rgba(78, 201, 176, 0.3); color: #4ec9b0; }
+        .protocol-badge.tls { background: rgba(197, 134, 192, 0.3); color: #c586c0; }
+        .protocol-badge.http { background: rgba(220, 220, 170, 0.3); color: #dcdcaa; }
+        .protocol-badge.kerberos { background: rgba(240, 136, 62, 0.3); color: #f0883e; }
+        .protocol-badge.saml { background: rgba(248, 81, 73, 0.3); color: #f85149; }
+        .protocol-badge.oidc { background: rgba(63, 185, 80, 0.3); color: #3fb950; }
+
+        /* Info Box */
+        .info-box {
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.note {
+            background: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .info-box.warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-color: var(--accent-yellow);
+        }
+
+        .info-box.security {
+            background: rgba(248, 81, 73, 0.1);
+            border-color: var(--accent-red);
+        }
+
+        .info-box.tip {
+            background: rgba(63, 185, 80, 0.1);
+            border-color: var(--accent-green);
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Tabs for scenarios */
+        .scenario-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .scenario-tab {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .scenario-tab:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+        }
+
+        .scenario-tab.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .scenario-content {
+            display: none;
+        }
+
+        .scenario-content.active {
+            display: block;
+        }
+
+        /* Certificate Chain */
+        .cert-chain {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 1rem 0;
+        }
+
+        .cert-box {
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-left: 2rem;
+            position: relative;
+        }
+
+        .cert-box::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 50%;
+            width: 2rem;
+            height: 2px;
+            background: var(--border);
+        }
+
+        .cert-box:first-child {
+            margin-left: 0;
+        }
+
+        .cert-box:first-child::before {
+            display: none;
+        }
+
+        .cert-box.root { border-color: var(--accent-red); }
+        .cert-box.intermediate { border-color: var(--accent-yellow); }
+        .cert-box.leaf { border-color: var(--accent-green); }
+
+        .cert-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .cert-box.root .cert-label { color: var(--accent-red); }
+        .cert-box.intermediate .cert-label { color: var(--accent-yellow); }
+        .cert-box.leaf .cert-label { color: var(--accent-green); }
+
+        .cert-cn {
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Hex dump style */
+        .hex-dump {
+            font-family: 'Consolas', monospace;
+            font-size: 0.7rem;
+            background: #0d0d0d;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .hex-dump .offset { color: #569cd6; }
+        .hex-dump .hex { color: #9cdcfe; }
+        .hex-dump .ascii { color: #ce9178; }
+
+        /* Cipher suite box */
+        .cipher-suite {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .cipher-part {
+            display: inline-block;
+            padding: 0.2rem 0.4rem;
+            margin: 0.1rem;
+            border-radius: 3px;
+        }
+
+        .cipher-part.kex { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+        .cipher-part.auth { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        .cipher-part.enc { background: rgba(63, 185, 80, 0.2); color: #3fb950; }
+        .cipher-part.hash { background: rgba(210, 153, 34, 0.2); color: #d29922; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="logo">IAM Guide</a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Foundations</div>
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="iam-fundamentals.html" class="nav-link">IAM Fundamentals</a>
+                    <a href="sso-protocols.html" class="nav-link">SSO Protocols</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">On-Premises</div>
+                    <a href="active-directory.html" class="nav-link">Active Directory</a>
+                    <a href="hybrid-identity.html" class="nav-link">Hybrid Identity</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Microsoft Entra</div>
+                    <a href="entra-id-fundamentals.html" class="nav-link">Entra ID Fundamentals</a>
+                    <a href="entra-id-authentication.html" class="nav-link">Authentication Methods</a>
+                    <a href="entra-conditional-access.html" class="nav-link">Conditional Access</a>
+                    <a href="entra-identity-protection.html" class="nav-link">Identity Protection</a>
+                    <a href="entra-id-governance.html" class="nav-link">ID Governance</a>
+                    <a href="entra-app-integration.html" class="nav-link">App Integration</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Okta</div>
+                    <a href="okta-fundamentals.html" class="nav-link">Okta Fundamentals</a>
+                    <a href="okta-sso-mfa.html" class="nav-link">SSO & MFA</a>
+                    <a href="okta-lifecycle.html" class="nav-link">Lifecycle Management</a>
+                    <a href="okta-governance.html" class="nav-link">Governance</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Advanced</div>
+                    <a href="pam.html" class="nav-link">Privileged Access (PAM)</a>
+                    <a href="enterprise-architecture.html" class="nav-link">Enterprise Architecture</a>
+                    <a href="network-auth-flows.html" class="nav-link active">Network & Auth Flows</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Operations</div>
+                    <a href="iam-security.html" class="nav-link">Security Best Practices</a>
+                    <a href="iam-troubleshooting.html" class="nav-link">Troubleshooting</a>
+                    <a href="iam-vendors-comparison.html" class="nav-link">Vendor Comparison</a>
+                    <a href="ad-to-entra-migration.html" class="nav-link">AD to Entra Migration</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Network & Authentication Flows</h1>
+                <p class="subtitle">Complete packet journey from keystroke to server response</p>
+            </header>
+
+            <!-- Overview -->
+            <section class="content-section">
+                <h2>Understanding the Complete Request Flow</h2>
+                <p>This guide provides a deep technical dive into what actually happens when a user accesses a resource - from the moment they type a URL until the response appears on screen. We'll trace packets through every network hop, examine TLS handshakes at the byte level, and understand how authentication decisions are made at each point.</p>
+
+                <div class="info-box note">
+                    <div class="info-box-title">🎯 What You'll Learn</div>
+                    <ul style="margin: 0; padding-left: 1.5rem;">
+                        <li>How packets travel through switches, routers, firewalls, and proxies</li>
+                        <li>TLS handshake mechanics including cipher negotiation</li>
+                        <li>SSL inspection and termination processes</li>
+                        <li>Authentication flows (Kerberos, SAML, OIDC) at each layer</li>
+                        <li>How Conditional Access decisions are made</li>
+                        <li>Wireshark-level packet analysis</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Scenario Selection -->
+            <section class="content-section">
+                <h2>Access Scenarios</h2>
+                
+                <div class="scenario-tabs">
+                    <button class="scenario-tab active" data-scenario="corp-onprem">Corporate LAN → On-Prem</button>
+                    <button class="scenario-tab" data-scenario="vpn-onprem">VPN → On-Prem</button>
+                    <button class="scenario-tab" data-scenario="ztna-onprem">ZTNA → On-Prem</button>
+                    <button class="scenario-tab" data-scenario="citrix-vdi">Citrix/VDI</button>
+                    <button class="scenario-tab" data-scenario="app-proxy">Entra App Proxy</button>
+                    <button class="scenario-tab" data-scenario="cloud-vm">Azure VM</button>
+                    <button class="scenario-tab" data-scenario="saas-app">SaaS Application</button>
+                </div>
+
+                <!-- Scenario 1: Corporate LAN to On-Prem -->
+                <div class="scenario-content active" id="corp-onprem">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">🏢</div>
+                            <div>
+                                <div class="scenario-title">Corporate Laptop → On-Prem Server (Same Network)</div>
+                                <div class="scenario-subtitle">Domain-joined workstation accessing internal resources via Kerberos</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Network Path</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">Workstation</div>
+                                    <div class="hop-detail">10.1.10.50</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box switch">
+                                    <div class="hop-icon">🔀</div>
+                                    <div class="hop-label">Access Switch</div>
+                                    <div class="hop-detail">VLAN 10</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box switch">
+                                    <div class="hop-icon">🔀</div>
+                                    <div class="hop-label">Core Switch</div>
+                                    <div class="hop-detail">L3 Routing</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box firewall">
+                                    <div class="hop-icon">🛡️</div>
+                                    <div class="hop-label">Internal FW</div>
+                                    <div class="hop-detail">Zone: Trust</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box server">
+                                    <div class="hop-icon">🖥️</div>
+                                    <div class="hop-label">App Server</div>
+                                    <div class="hop-detail">10.1.20.100</div>
+                                </div>
+                            </div>
+
+                            <h4>Complete Flow</h4>
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Types URL: http://intranet.corp.local</div>
+                                        <div class="step-detail">
+                                            Browser initiates request. First, it needs to resolve the hostname to an IP address.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">DNS Resolution (Internal DNS)</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge udp">UDP :53</span> Query sent to domain controller (DNS server)
+                                        </div>
+                                        <div class="step-code">
+Query: A record for intranet.corp.local
+Response: 10.1.20.100
+TTL: 3600 seconds
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">ARP Resolution (If Same Subnet)</div>
+                                        <div class="step-detail">
+                                            If destination is on different subnet, ARP resolves gateway MAC. If same subnet, ARP resolves server MAC directly.
+                                        </div>
+                                        <div class="step-code">
+Who has 10.1.20.1? Tell 10.1.10.50  (Gateway)
+10.1.20.1 is at AA:BB:CC:DD:EE:FF
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">TCP 3-Way Handshake</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge tcp">TCP :80</span> Establish reliable connection to web server
+                                        </div>
+                                        <div class="step-code">
+Client → Server: SYN, Seq=0
+Server → Client: SYN-ACK, Seq=0, Ack=1
+Client → Server: ACK, Seq=1, Ack=1
+Connection ESTABLISHED
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <div class="step-title">HTTP Request (Triggers Authentication)</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge http">HTTP</span> Server requires authentication, responds with 401 and WWW-Authenticate header
+                                        </div>
+                                        <div class="step-code">
+GET / HTTP/1.1
+Host: intranet.corp.local
+
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Negotiate
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Kerberos: Request Service Ticket from KDC</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge kerberos">Kerberos :88</span> Client already has TGT from Windows login. Now requests Service Ticket (ST) for HTTP/intranet.corp.local
+                                        </div>
+                                        <div class="step-code">
+Client → DC: TGS-REQ
+  Realm: CORP.LOCAL
+  SPN: HTTP/intranet.corp.local
+  TGT: [encrypted with krbtgt key]
+
+DC → Client: TGS-REP
+  Service Ticket: [encrypted with server's key]
+  Session Key: [for client-server communication]
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Present Kerberos Ticket to Server</div>
+                                        <div class="step-detail">
+                                            Browser sends Kerberos ticket in Authorization header. Server decrypts with its key, validates, and extracts user identity.
+                                        </div>
+                                        <div class="step-code">
+GET / HTTP/1.1
+Host: intranet.corp.local
+Authorization: Negotiate YIIGhgYGKw....[base64 Kerberos ticket]
+
+HTTP/1.1 200 OK
+WWW-Authenticate: Negotiate oYG3MIG0oA...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">8</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Authorization Check on Server</div>
+                                        <div class="step-detail">
+                                            Server extracts user SID and group SIDs from ticket. Checks against ACLs/permissions. Grants or denies access.
+                                        </div>
+                                        <div class="step-code">
+User: CORP\jsmith
+SID: S-1-5-21-xxx-xxx-xxx-1234
+Groups: Domain Users, Sales-Team, Intranet-Users
+Access: GRANTED (Intranet-Users has Read permission)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">9</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Response Delivered</div>
+                                        <div class="step-detail">
+                                            Server sends HTML response. Travels back through same network path. Browser renders page. SSO achieved - no password prompt!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box tip">
+                                <div class="info-box-title">🔑 Key Points</div>
+                                <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                                    <li>User never typed a password - TGT from Windows logon provides SSO</li>
+                                    <li>Kerberos tickets are encrypted - even if intercepted, they're useless</li>
+                                    <li>Server never sees user's password - only validates encrypted ticket</li>
+                                    <li>DC validates user is still active before issuing service ticket</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 2: VPN to On-Prem -->
+                <div class="scenario-content" id="vpn-onprem">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">🔐</div>
+                            <div>
+                                <div class="scenario-title">Remote User → VPN → On-Prem Server</div>
+                                <div class="scenario-subtitle">Traditional VPN access with SAML authentication and MFA</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Network Path</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">Home PC</div>
+                                    <div class="hop-detail">192.168.1.100</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box router">
+                                    <div class="hop-icon">📡</div>
+                                    <div class="hop-label">Home Router</div>
+                                    <div class="hop-detail">NAT</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">☁️</div>
+                                    <div class="hop-label">Internet</div>
+                                    <div class="hop-detail">ISP → Transit</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box firewall">
+                                    <div class="hop-icon">🛡️</div>
+                                    <div class="hop-label">VPN Gateway</div>
+                                    <div class="hop-detail">vpn.company.com</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box idp">
+                                    <div class="hop-icon">🔑</div>
+                                    <div class="hop-label">Entra ID</div>
+                                    <div class="hop-detail">SAML + MFA</div>
+                                </div>
+                            </div>
+
+                            <h4>Complete Flow</h4>
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Launches VPN Client</div>
+                                        <div class="step-detail">
+                                            GlobalProtect/AnyConnect/FortiClient initiates connection to vpn.company.com
+                                        </div>
+                                        <div class="step-code">
+DNS: vpn.company.com → 203.0.113.50 (public IP)
+TCP: Connect to 203.0.113.50:443
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Device Posture Check (Pre-Auth)</div>
+                                        <div class="step-detail">
+                                            VPN gateway checks Host Information Profile (HIP) before authentication:
+                                        </div>
+                                        <div class="step-code">
+HIP Check Results:
+✓ OS Version: Windows 11 23H2 (meets minimum)
+✓ Antivirus: Microsoft Defender (active, definitions current)
+✓ Disk Encryption: BitLocker (enabled, compliant)
+✓ Firewall: Windows Firewall (enabled)
+✓ Domain Status: corp.local (domain-joined)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">SAML Redirect to IdP</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge saml">SAML 2.0</span> VPN redirects to Entra ID for authentication
+                                        </div>
+                                        <div class="step-code">
+VPN → Client: HTTP 302 Redirect
+Location: https://login.microsoftonline.com/{tenant}/saml2
+  ?SAMLRequest=base64(AuthnRequest)
+  &RelayState=vpn-session-id
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Authenticates to Entra ID</div>
+                                        <div class="step-detail">
+                                            Embedded browser in VPN client shows Entra ID login page. User enters credentials.
+                                        </div>
+                                        <div class="step-code">
+Username: jsmith@company.com
+Password: ********
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <div class="step-title">MFA Challenge</div>
+                                        <div class="step-detail">
+                                            Conditional Access requires MFA for VPN. Push notification sent to Authenticator app.
+                                        </div>
+                                        <div class="step-code">
+MFA Method: Microsoft Authenticator (Push + Number Match)
+Challenge: "Enter 47 to approve sign-in"
+User Action: Opens Authenticator, enters 47, approves
+Result: MFA SATISFIED
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Conditional Access Evaluation</div>
+                                        <div class="step-detail">
+                                            CA policy "VPN Access" evaluates all signals:
+                                        </div>
+                                        <div class="step-code">
+Policy: "Require MFA and Compliant Device for VPN"
+Signals:
+  User: jsmith@company.com ✓
+  App: GlobalProtect VPN ✓
+  Device: Intune Compliant ✓
+  Location: Canada (allowed) ✓
+  Risk: None detected ✓
+Decision: GRANT ACCESS
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <div class="step-title">SAML Assertion Returned</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge saml">SAML 2.0</span> Entra ID sends signed assertion with user attributes and group memberships
+                                        </div>
+                                        <div class="step-code">
+POST /SAML/ACS HTTP/1.1
+Host: vpn.company.com
+
+SAMLResponse: base64(
+  &lt;Assertion&gt;
+    &lt;Subject&gt;jsmith@company.com&lt;/Subject&gt;
+    &lt;Attribute Name="groups"&gt;
+      VPN-Users, Sales-Team, All-Employees
+    &lt;/Attribute&gt;
+    &lt;Signature&gt;...signed by Entra ID...&lt;/Signature&gt;
+  &lt;/Assertion&gt;
+)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">8</div>
+                                    <div class="step-content">
+                                        <div class="step-title">VPN Tunnel Establishment</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge udp">IPSec</span> IKEv2 negotiates security parameters, establishes encrypted tunnel
+                                        </div>
+                                        <div class="step-code">
+Phase 1 (IKE_SA_INIT):
+  Encryption: AES-256-GCM
+  Integrity: SHA-384
+  DH Group: 20 (ECDH 384-bit)
+  
+Phase 2 (IKE_AUTH + CREATE_CHILD_SA):
+  ESP Encryption: AES-256-GCM
+  Tunnel Mode: Full
+  
+Client Assigned IP: 10.255.0.47 (VPN pool)
+DNS Servers: 10.1.1.10, 10.1.1.11
+Routes Pushed: 10.0.0.0/8 via tunnel
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">9</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Group-Based Network Assignment</div>
+                                        <div class="step-detail">
+                                            Based on SAML group claims, VPN assigns specific firewall zone/policies:
+                                        </div>
+                                        <div class="step-code">
+User Group: Sales-Team
+Assigned Zone: Sales-Zone
+Firewall Policy:
+  ✓ Allow: CRM (Salesforce, Dynamics)
+  ✓ Allow: File Servers (\\files\sales)
+  ✓ Allow: Intranet
+  ✗ Deny: Engineering servers
+  ✗ Deny: Database servers
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">10</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Access Internal Resources</div>
+                                        <div class="step-detail">
+                                            User is now "on the network" with IP from VPN pool. Accessing internal resources works like Scenario 1 (Corporate LAN).
+                                        </div>
+                                        <div class="step-code">
+User accesses: http://intranet.corp.local
+Traffic flow: 
+  Client (10.255.0.47) 
+  → IPSec Tunnel (encrypted)
+  → VPN Gateway (decrypts)
+  → Internal firewall
+  → Intranet server (10.1.20.100)
+  
+Kerberos: Works because client is domain-joined
+SSO: Achieved using existing TGT
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box warning">
+                                <div class="info-box-title">⚠️ VPN Security Considerations</div>
+                                <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                                    <li><strong>Full Tunnel vs Split Tunnel:</strong> Full tunnel routes ALL traffic through VPN (more secure, higher latency). Split tunnel only routes corporate traffic (faster, but internet traffic bypasses security controls).</li>
+                                    <li><strong>Network-Level Trust:</strong> Once connected, user has network access to allowed subnets - can scan, probe, move laterally within allowed zones.</li>
+                                    <li><strong>Consider ZTNA:</strong> For per-application access without network-level trust.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 3: ZTNA to On-Prem -->
+                <div class="scenario-content" id="ztna-onprem">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">🌐</div>
+                            <div>
+                                <div class="scenario-title">Remote User → ZTNA → On-Prem Application</div>
+                                <div class="scenario-subtitle">Zero Trust Network Access - per-app access without VPN (Zscaler/Netskope/Cloudflare)</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Network Path</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">User + Agent</div>
+                                    <div class="hop-detail">ZTNA Client</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">☁️</div>
+                                    <div class="hop-label">ZTNA Cloud</div>
+                                    <div class="hop-detail">Policy Engine</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box idp">
+                                    <div class="hop-icon">🔑</div>
+                                    <div class="hop-label">IdP</div>
+                                    <div class="hop-detail">SAML/OIDC</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box proxy">
+                                    <div class="hop-icon">🔌</div>
+                                    <div class="hop-label">Connector</div>
+                                    <div class="hop-detail">On-Prem (Outbound)</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box server">
+                                    <div class="hop-icon">🖥️</div>
+                                    <div class="hop-label">Internal App</div>
+                                    <div class="hop-detail">No Public IP</div>
+                                </div>
+                            </div>
+
+                            <h4>Complete Flow</h4>
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Accesses Internal App URL</div>
+                                        <div class="step-detail">
+                                            User opens browser to internal HR portal. ZTNA agent intercepts the request.
+                                        </div>
+                                        <div class="step-code">
+User navigates to: https://hr.internal.company.com
+ZTNA Agent: Intercepts request (matches configured private app)
+Action: Redirect to ZTNA cloud for authentication
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Authentication via IdP (OIDC/SAML)</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge oidc">OIDC</span> ZTNA redirects to corporate IdP. MFA required.
+                                        </div>
+                                        <div class="step-code">
+ZTNA → IdP: Authorization Request
+User: Authenticates with password + MFA
+IdP → ZTNA: ID Token + Access Token
+
+Token Claims:
+  sub: jsmith@company.com
+  groups: ["HR-Users", "All-Employees"]
+  device_compliance: true
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Device Posture Validation</div>
+                                        <div class="step-detail">
+                                            ZTNA agent reports device state to cloud. Policy requires certain posture.
+                                        </div>
+                                        <div class="step-code">
+Device Posture Report:
+  OS: Windows 11 (23H2)
+  Firewall: Enabled ✓
+  Antivirus: Running ✓
+  Disk Encryption: BitLocker ✓
+  Certificate: Valid machine cert ✓
+  Last Check: 2 minutes ago
+
+Posture Policy: "Require all security controls"
+Result: COMPLIANT
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Policy Evaluation (Zero Trust Decision)</div>
+                                        <div class="step-detail">
+                                            ZTNA cloud evaluates access policy for this specific application:
+                                        </div>
+                                        <div class="step-code">
+Access Policy: "HR Portal Access"
+Conditions:
+  ✓ User in group: HR-Users OR All-Employees
+  ✓ Device: Compliant
+  ✓ Authentication: MFA completed
+  ✓ Location: Not in blocked countries
+  ✓ Time: Business hours (or any time for this app)
+  
+Decision: ALLOW ACCESS to hr.internal.company.com ONLY
+(No network access to any other internal resource)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Secure Tunnel to On-Prem Connector</div>
+                                        <div class="step-detail">
+                                            ZTNA cloud routes request through on-premises connector. Connector makes OUTBOUND connection only - no inbound firewall rules needed!
+                                        </div>
+                                        <div class="step-code">
+ZTNA Cloud → On-Prem Connector:
+  Protocol: mTLS over HTTPS (443 outbound)
+  Connection: Persistent WebSocket from connector
+  Direction: Connector initiated (OUTBOUND ONLY)
+  
+Firewall Rule Required: NONE (outbound 443 usually allowed)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Connector Forwards to Internal App</div>
+                                        <div class="step-detail">
+                                            Connector (inside corporate network) forwards request to internal application server.
+                                        </div>
+                                        <div class="step-code">
+Connector → Internal App:
+  Destination: 10.1.50.25:443 (hr.internal.company.com)
+  Protocol: HTTPS
+  Headers Added:
+    X-Forwarded-For: [user's IP]
+    X-ZTNA-User: jsmith@company.com
+    X-ZTNA-Groups: HR-Users,All-Employees
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Response Back Through Same Path</div>
+                                        <div class="step-detail">
+                                            Application response travels back: App → Connector → ZTNA Cloud → User Agent → Browser
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box tip">
+                                <div class="info-box-title">✅ ZTNA vs VPN Comparison</div>
+                                <table class="comparison-table" style="margin-top: 0.5rem;">
+                                    <tr>
+                                        <th>Aspect</th>
+                                        <th>VPN</th>
+                                        <th>ZTNA</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Access Scope</td>
+                                        <td>Network-level (entire subnet)</td>
+                                        <td>Per-application only</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lateral Movement</td>
+                                        <td>Possible within allowed zones</td>
+                                        <td>Not possible - app-specific</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Firewall Rules</td>
+                                        <td>Inbound rules required</td>
+                                        <td>Outbound only (connector)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>App Visibility</td>
+                                        <td>Apps exposed if on VPN subnet</td>
+                                        <td>Apps invisible until authorized</td>
+                                    </tr>
+                                    <tr>
+                                        <td>User Experience</td>
+                                        <td>Connect to VPN first</td>
+                                        <td>Direct to app (transparent)</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 4: Citrix/VDI -->
+                <div class="scenario-content" id="citrix-vdi">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">🖥️</div>
+                            <div>
+                                <div class="scenario-title">User → Citrix/VDI → On-Prem Resources</div>
+                                <div class="scenario-subtitle">Virtual desktop session with internal resource access</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Network Path</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">User Device</div>
+                                    <div class="hop-detail">Workspace App</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">☁️</div>
+                                    <div class="hop-label">Gateway</div>
+                                    <div class="hop-detail">NetScaler/ADC</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box idp">
+                                    <div class="hop-icon">🔑</div>
+                                    <div class="hop-label">IdP</div>
+                                    <div class="hop-detail">SAML Auth</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box proxy">
+                                    <div class="hop-icon">🎛️</div>
+                                    <div class="hop-label">Broker</div>
+                                    <div class="hop-detail">Delivery Controller</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box server">
+                                    <div class="hop-icon">🖥️</div>
+                                    <div class="hop-label">VDA</div>
+                                    <div class="hop-detail">Virtual Desktop</div>
+                                </div>
+                            </div>
+
+                            <h4>Complete Flow</h4>
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Opens Citrix Workspace</div>
+                                        <div class="step-detail">
+                                            Workspace app or browser connects to Citrix Gateway URL
+                                        </div>
+                                        <div class="step-code">
+URL: https://citrix.company.com
+Protocol: HTTPS :443
+Gateway: Citrix NetScaler ADC
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">SAML Authentication</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge saml">SAML 2.0</span> Gateway redirects to IdP. User authenticates with MFA.
+                                        </div>
+                                        <div class="step-code">
+Gateway → IdP: SAML AuthnRequest
+User: Enters credentials
+IdP: MFA Challenge (Authenticator push)
+IdP → Gateway: SAML Assertion
+  Subject: jsmith@company.com
+  Groups: VDI-Users, Sales-Team
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Resource Enumeration</div>
+                                        <div class="step-detail">
+                                            Gateway queries Delivery Controller for user's available desktops/apps based on group membership.
+                                        </div>
+                                        <div class="step-code">
+Available Resources for jsmith:
+  🖥️ Windows 11 Desktop (Pooled)
+  🖥️ Windows 11 Desktop (Persistent - Personal)
+  📱 Published Apps:
+     - SAP
+     - Dynamics 365
+     - Internal Legacy App
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Launches Desktop</div>
+                                        <div class="step-detail">
+                                            User clicks "Windows 11 Desktop". Delivery Controller assigns VDA (Virtual Delivery Agent).
+                                        </div>
+                                        <div class="step-code">
+Broker Assignment:
+  User: jsmith@company.com
+  Desktop Group: Sales-Desktops
+  Assigned VDA: CVAD-VDA-017.corp.local
+  IP: 10.1.100.17
+  Session Type: HDX
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <div class="step-title">ICA/HDX Session Establishment</div>
+                                        <div class="step-detail">
+                                            Workspace app receives ICA file with connection details. Establishes HDX session through Gateway.
+                                        </div>
+                                        <div class="step-code">
+Protocol: ICA/HDX (Citrix proprietary)
+Port: TCP 443 (through Gateway) or TCP 1494/2598 (direct)
+Encryption: TLS 1.3
+Virtual Channels: Display, Audio, USB, Clipboard, Printing
+Codec: H.264/H.265 for graphics
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Inside Virtual Desktop</div>
+                                        <div class="step-detail">
+                                            User is now "inside" the VDI. The virtual desktop is domain-joined and has a Kerberos TGT from the user's logon.
+                                        </div>
+                                        <div class="step-code">
+Virtual Desktop Environment:
+  OS: Windows 11 Enterprise
+  Domain: CORP.LOCAL
+  User Profile: Roaming/FSLogix
+  Kerberos TGT: ✓ (via Single Sign-On)
+  
+Network Location: Corporate LAN (VLAN 100)
+Can Access: All internal resources as if on-site
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Accessing Internal Resources FROM VDI</div>
+                                        <div class="step-detail">
+                                            From VDI, user accesses internal file server. This is now a standard Kerberos flow (same as Scenario 1).
+                                        </div>
+                                        <div class="step-code">
+User action (in VDI): Opens \\fileserver\sales
+Flow: VDI → DNS → Kerberos → File Server
+SSO: Works because VDI has user's Kerberos TGT
+
+Key Point: User's home PC NEVER touches corporate network
+Only ICA/HDX pixels travel to user's device
+Data stays in datacenter
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box security">
+                                <div class="info-box-title">🔒 Security Benefits of VDI</div>
+                                <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                                    <li><strong>Data Never Leaves Datacenter:</strong> Only screen pixels sent to user - no files on endpoint</li>
+                                    <li><strong>Clipboard Control:</strong> Can block copy/paste between VDI and local device</li>
+                                    <li><strong>USB Control:</strong> Block local USB devices from mapping into VDI</li>
+                                    <li><strong>Session Recording:</strong> Can record all user activity for audit</li>
+                                    <li><strong>Unmanaged Devices:</strong> Works from personal/BYOD devices safely</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 5: Entra App Proxy -->
+                <div class="scenario-content" id="app-proxy">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">🔷</div>
+                            <div>
+                                <div class="scenario-title">Remote User → Entra App Proxy → On-Prem App</div>
+                                <div class="scenario-subtitle">Microsoft's ZTNA solution for legacy on-prem applications</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Network Path</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">Remote User</div>
+                                    <div class="hop-detail">Browser</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">☁️</div>
+                                    <div class="hop-label">App Proxy</div>
+                                    <div class="hop-detail">Azure Cloud</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box idp">
+                                    <div class="hop-icon">🔑</div>
+                                    <div class="hop-label">Entra ID</div>
+                                    <div class="hop-detail">Pre-Auth + CA</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box proxy">
+                                    <div class="hop-icon">🔌</div>
+                                    <div class="hop-label">Connector</div>
+                                    <div class="hop-detail">On-Prem (Outbound)</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box server">
+                                    <div class="hop-icon">🖥️</div>
+                                    <div class="hop-label">Legacy App</div>
+                                    <div class="hop-detail">IWA/Forms</div>
+                                </div>
+                            </div>
+
+                            <h4>Complete Flow</h4>
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Accesses External URL</div>
+                                        <div class="step-detail">
+                                            User browses to App Proxy external URL. This is a public URL hosted by Microsoft.
+                                        </div>
+                                        <div class="step-code">
+External URL: https://hrportal-company.msappproxy.net
+Or custom domain: https://hr.company.com
+
+DNS resolves to: Azure App Proxy cloud service
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Pre-Authentication (BEFORE Internal Network)</div>
+                                        <div class="step-detail">
+                                            App Proxy requires authentication BEFORE any traffic reaches your network. This is the key security feature.
+                                        </div>
+                                        <div class="step-code">
+App Proxy → User: 302 Redirect to login.microsoftonline.com
+User: Authenticates to Entra ID
+MFA: Required by Conditional Access
+Conditional Access: Evaluates all policies
+
+⚠️ CRITICAL: Unauthenticated requests NEVER reach your network
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Conditional Access Evaluation</div>
+                                        <div class="step-detail">
+                                            CA policy for this application is evaluated:
+                                        </div>
+                                        <div class="step-code">
+Policy: "On-Prem App Access"
+Requirements:
+  ✓ MFA: Completed
+  ✓ Device: Hybrid Entra Joined OR Compliant
+  ✓ Location: Not from blocked countries
+  ✓ App: HR Portal (Enterprise App)
+  
+Session Controls:
+  Sign-in frequency: 4 hours
+  Persistent browser: No
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">App Proxy Routes to Connector</div>
+                                        <div class="step-detail">
+                                            Azure App Proxy cloud service sends request to on-premises Connector via Service Bus relay.
+                                        </div>
+                                        <div class="step-code">
+Connection Type: Service Bus Relay (Azure)
+Connector Connection: OUTBOUND ONLY (443)
+No Inbound Firewall Rules Required!
+
+App Proxy Cloud → Service Bus → Connector
+Connector maintains persistent outbound connection
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Connector Forwards to Internal App</div>
+                                        <div class="step-detail">
+                                            Connector receives request and forwards to internal application URL.
+                                        </div>
+                                        <div class="step-code">
+External URL: https://hrportal-company.msappproxy.net
+Internal URL: http://hrportal.corp.local:80
+
+Connector forwards:
+  GET / HTTP/1.1
+  Host: hrportal.corp.local
+  X-MS-Proxy: True
+  X-Forwarded-For: [user's IP]
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <div class="step-title">SSO via Kerberos Constrained Delegation (KCD)</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge kerberos">Kerberos KCD</span> Connector requests Kerberos ticket ON BEHALF of user. Backend app sees Kerberos auth - SSO achieved!
+                                        </div>
+                                        <div class="step-code">
+KCD Flow:
+1. Connector service account: CORP\AppProxySvc
+2. Connector → DC: Request ticket for jsmith to HTTP/hrportal
+   Using S4U2Self + S4U2Proxy (constrained delegation)
+3. DC → Connector: Service ticket for jsmith
+4. Connector → App: Present Kerberos ticket
+5. App: Validates ticket, sees user as "CORP\jsmith"
+
+Result: User gets SSO without typing credentials again!
+Backend app doesn't know user came from internet!
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Response Back to User</div>
+                                        <div class="step-detail">
+                                            Application response travels back: App → Connector → Service Bus → App Proxy Cloud → User
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box tip">
+                                <div class="info-box-title">💡 App Proxy SSO Options</div>
+                                <table class="comparison-table" style="margin-top: 0.5rem;">
+                                    <tr>
+                                        <th>SSO Method</th>
+                                        <th>Backend App Auth</th>
+                                        <th>Use Case</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Kerberos (KCD)</td>
+                                        <td>Windows Integrated Auth (IWA)</td>
+                                        <td>IIS apps, SharePoint, legacy .NET</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Header-Based</td>
+                                        <td>HTTP headers (X-User, etc.)</td>
+                                        <td>Apps that trust proxy headers</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Password Vaulting</td>
+                                        <td>Forms-based login</td>
+                                        <td>Apps with HTML login forms</td>
+                                    </tr>
+                                    <tr>
+                                        <td>SAML</td>
+                                        <td>SAML assertions</td>
+                                        <td>SAML-capable on-prem apps</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 6: Azure VM -->
+                <div class="scenario-content" id="cloud-vm">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">☁️</div>
+                            <div>
+                                <div class="scenario-title">User → Azure Cloud VM</div>
+                                <div class="scenario-subtitle">Secure access to Azure-hosted servers via Bastion</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Access Options Comparison</h4>
+                            <table class="comparison-table">
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Security</th>
+                                    <th>Requires</th>
+                                    <th>Recommendation</th>
+                                </tr>
+                                <tr>
+                                    <td>Public IP + RDP/SSH</td>
+                                    <td style="color: var(--accent-red);">❌ Poor</td>
+                                    <td>Public IP, open ports</td>
+                                    <td>Never use - exposed to attacks</td>
+                                </tr>
+                                <tr>
+                                    <td>VPN to Azure VNet</td>
+                                    <td style="color: var(--accent-yellow);">⚠️ Medium</td>
+                                    <td>VPN Gateway, client config</td>
+                                    <td>OK for site-to-site</td>
+                                </tr>
+                                <tr>
+                                    <td>Azure Bastion</td>
+                                    <td style="color: var(--accent-green);">✅ Excellent</td>
+                                    <td>Bastion service, browser</td>
+                                    <td>Recommended for admin access</td>
+                                </tr>
+                                <tr>
+                                    <td>Just-In-Time (JIT)</td>
+                                    <td style="color: var(--accent-green);">✅ Excellent</td>
+                                    <td>Defender for Cloud</td>
+                                    <td>Time-limited port opening</td>
+                                </tr>
+                            </table>
+
+                            <h4>Azure Bastion Flow</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">Browser</div>
+                                    <div class="hop-detail">HTML5</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">🌐</div>
+                                    <div class="hop-label">Azure Portal</div>
+                                    <div class="hop-detail">portal.azure.com</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box idp">
+                                    <div class="hop-icon">🔑</div>
+                                    <div class="hop-label">Entra ID</div>
+                                    <div class="hop-detail">Auth + MFA + CA</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box proxy">
+                                    <div class="hop-icon">🏰</div>
+                                    <div class="hop-label">Bastion</div>
+                                    <div class="hop-detail">Bastion Subnet</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box server">
+                                    <div class="hop-icon">🖥️</div>
+                                    <div class="hop-label">Azure VM</div>
+                                    <div class="hop-detail">No Public IP</div>
+                                </div>
+                            </div>
+
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Accesses Azure Portal</div>
+                                        <div class="step-detail">
+                                            Navigate to portal.azure.com, authenticate with Entra ID + MFA. Conditional Access evaluated.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Navigate to VM and Click Connect via Bastion</div>
+                                        <div class="step-detail">
+                                            User selects VM, clicks "Connect" → "Bastion". Enters VM credentials (local admin or domain).
+                                        </div>
+                                        <div class="step-code">
+VM: prod-webserver-01
+Connection Type: Bastion
+Credentials: Local admin OR Entra ID (if enabled)
+
+Bastion options:
+  ✓ Open in new browser tab
+  ✓ Copy/paste enabled (configurable)
+  ✗ No RDP/SSH client needed
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Bastion Establishes Connection</div>
+                                        <div class="step-detail">
+                                            Bastion service (in AzureBastionSubnet) connects to VM via private IP. NSG allows Bastion → VM on 3389/22.
+                                        </div>
+                                        <div class="step-code">
+Browser → Bastion: HTTPS/WebSocket (443)
+Bastion → VM: RDP (3389) or SSH (22) over private network
+
+VM has NO public IP
+VM NSG: Allow from AzureBastionSubnet only
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Gets Console in Browser</div>
+                                        <div class="step-detail">
+                                            Full RDP/SSH session renders in browser via HTML5. No client software needed. Session is logged.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box security">
+                                <div class="info-box-title">🔒 Security Benefits</div>
+                                <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                                    <li><strong>No Public IP on VM:</strong> VM is not exposed to internet at all</li>
+                                    <li><strong>No RDP/SSH to Internet:</strong> Port 3389/22 never exposed</li>
+                                    <li><strong>Audit Logging:</strong> All Bastion sessions logged in Azure</li>
+                                    <li><strong>MFA Enforced:</strong> Portal access requires MFA via CA</li>
+                                    <li><strong>No Client Software:</strong> Works from any browser</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 7: SaaS Application -->
+                <div class="scenario-content" id="saas-app">
+                    <div class="scenario-card">
+                        <div class="scenario-header">
+                            <div class="scenario-icon">📱</div>
+                            <div>
+                                <div class="scenario-title">User → SaaS Application (Salesforce Example)</div>
+                                <div class="scenario-subtitle">SAML SSO flow with Conditional Access</div>
+                            </div>
+                        </div>
+                        <div class="scenario-body">
+                            <h4>Network Path</h4>
+                            <div class="network-hops">
+                                <div class="hop-box client">
+                                    <div class="hop-icon">💻</div>
+                                    <div class="hop-label">Browser</div>
+                                    <div class="hop-detail">User Device</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">☁️</div>
+                                    <div class="hop-label">Salesforce</div>
+                                    <div class="hop-detail">SP (Service Provider)</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box idp">
+                                    <div class="hop-icon">🔑</div>
+                                    <div class="hop-label">Entra ID</div>
+                                    <div class="hop-detail">IdP</div>
+                                </div>
+                                <div class="hop-arrow">→</div>
+                                <div class="hop-box cloud">
+                                    <div class="hop-icon">☁️</div>
+                                    <div class="hop-label">Salesforce</div>
+                                    <div class="hop-detail">Session Created</div>
+                                </div>
+                            </div>
+
+                            <h4>SP-Initiated SAML Flow</h4>
+                            <div class="step-flow">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Navigates to Salesforce</div>
+                                        <div class="step-detail">
+                                            User opens https://company.salesforce.com. Salesforce checks for existing session.
+                                        </div>
+                                        <div class="step-code">
+GET https://company.my.salesforce.com/
+Response: No valid session found
+Action: Redirect to IdP for authentication
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <div class="step-title">SAML AuthnRequest to IdP</div>
+                                        <div class="step-detail">
+                                            <span class="protocol-badge saml">SAML 2.0</span> Salesforce redirects browser to Entra ID with SAML AuthnRequest
+                                        </div>
+                                        <div class="step-code">
+HTTP/1.1 302 Found
+Location: https://login.microsoftonline.com/{tenant-id}/saml2
+  ?SAMLRequest=base64(deflate(AuthnRequest))
+  &RelayState=/home/home.jsp
+
+AuthnRequest contains:
+  - Issuer: https://company.my.salesforce.com
+  - AssertionConsumerServiceURL: https://company.my.salesforce.com/saml/acs
+  - NameIDPolicy: emailAddress
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <div class="step-title">User Authenticates to Entra ID</div>
+                                        <div class="step-detail">
+                                            Browser shows Entra ID login. User enters credentials. MFA challenged.
+                                        </div>
+                                        <div class="step-code">
+Primary Authentication:
+  Username: jsmith@company.com
+  Password: ********
+  Method: Password Hash Sync (cloud auth)
+
+MFA Challenge:
+  Method: Microsoft Authenticator
+  Type: Push + Number Match
+  Challenge: "Enter 73 to sign in"
+  Result: APPROVED
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Conditional Access Evaluation</div>
+                                        <div class="step-detail">
+                                            After authentication, CA policies for Salesforce are evaluated:
+                                        </div>
+                                        <div class="step-code">
+Policy: "SaaS App Access"
+Target: Salesforce Enterprise App
+
+Signals Evaluated:
+  User: jsmith@company.com ✓
+  Groups: Sales-Team ✓
+  Device: Windows 11, Intune Compliant ✓
+  Location: Toronto, Canada ✓
+  Client App: Browser (Modern Auth) ✓
+  Sign-in Risk: None ✓
+  User Risk: Low ✓
+
+Controls:
+  Require MFA: ✓ Satisfied
+  Require Compliant Device: ✓ Satisfied
+
+Decision: GRANT ACCESS
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <div class="step-title">SAML Assertion Generated</div>
+                                        <div class="step-detail">
+                                            Entra ID creates SAML Assertion with user attributes and digitally signs it.
+                                        </div>
+                                        <div class="step-code">
+SAML Response:
+&lt;samlp:Response&gt;
+  &lt;Assertion&gt;
+    &lt;Issuer&gt;https://sts.windows.net/{tenant-id}/&lt;/Issuer&gt;
+    &lt;Subject&gt;
+      &lt;NameID&gt;jsmith@company.com&lt;/NameID&gt;
+    &lt;/Subject&gt;
+    &lt;Conditions&gt;
+      &lt;AudienceRestriction&gt;
+        &lt;Audience&gt;https://company.my.salesforce.com&lt;/Audience&gt;
+      &lt;/AudienceRestriction&gt;
+      NotBefore="2024-01-15T10:00:00Z"
+      NotOnOrAfter="2024-01-15T11:00:00Z"
+    &lt;/Conditions&gt;
+    &lt;AttributeStatement&gt;
+      &lt;Attribute Name="http://schemas.microsoft.com/identity/claims/displayname"&gt;
+        &lt;AttributeValue&gt;John Smith&lt;/AttributeValue&gt;
+      &lt;/Attribute&gt;
+      &lt;Attribute Name="groups"&gt;
+        &lt;AttributeValue&gt;Sales-Team&lt;/AttributeValue&gt;
+        &lt;AttributeValue&gt;All-Employees&lt;/AttributeValue&gt;
+      &lt;/Attribute&gt;
+    &lt;/AttributeStatement&gt;
+    &lt;Signature&gt;...RSA-SHA256 signature...&lt;/Signature&gt;
+  &lt;/Assertion&gt;
+&lt;/samlp:Response&gt;
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">6</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Browser Posts Assertion to Salesforce ACS</div>
+                                        <div class="step-detail">
+                                            Browser automatically POSTs the SAML Response to Salesforce's Assertion Consumer Service.
+                                        </div>
+                                        <div class="step-code">
+POST https://company.my.salesforce.com/saml/acs HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+SAMLResponse=base64(SAML Response)
+RelayState=/home/home.jsp
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">7</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Salesforce Validates Assertion</div>
+                                        <div class="step-detail">
+                                            Salesforce validates signature, timestamps, audience, and maps user to Salesforce profile.
+                                        </div>
+                                        <div class="step-code">
+Validation Steps:
+1. Verify XML signature using Entra ID's public certificate ✓
+2. Check NotBefore/NotOnOrAfter timestamps ✓
+3. Verify Audience matches Salesforce Entity ID ✓
+4. Extract NameID: jsmith@company.com
+5. Look up Salesforce user by Federation ID
+6. User found: John Smith (Sales Rep profile)
+7. Create session, set cookies
+
+Result: User logged into Salesforce with SSO
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">8</div>
+                                    <div class="step-content">
+                                        <div class="step-title">Redirect to Original Resource</div>
+                                        <div class="step-detail">
+                                            Salesforce redirects user to original destination (from RelayState).
+                                        </div>
+                                        <div class="step-code">
+HTTP/1.1 302 Found
+Location: /home/home.jsp
+Set-Cookie: sid=xxxx; secure; httponly
+
+User is now in Salesforce!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DEEP DIVE: THE PACKET JOURNEY -->
+            <section class="content-section">
+                <h2>Deep Dive: The Packet Journey</h2>
+                <p>Let's trace a packet through every network device from the moment you press Enter until the response appears.</p>
+
+                <h3>Layer-by-Layer Packet Construction</h3>
+                <p>When you type a URL and press Enter, your computer builds a packet from the application layer down:</p>
+
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-client">APPLICATION LAYER (Layer 7)</span>
+┌────────────────────────────────────────────────────────────────────┐
+│ HTTP Request                                                        │
+│ GET /index.html HTTP/1.1                                           │
+│ Host: www.example.com                                              │
+│ User-Agent: Mozilla/5.0...                                         │
+│ Accept: text/html...                                               │
+└────────────────────────────────────────────────────────────────────┘
+                              ↓ <span class="arrow">Encapsulated into</span>
+<span class="encrypted">TRANSPORT LAYER (Layer 4) - After TLS</span>
+┌────────────────────────────────────────────────────────────────────┐
+│ TLS Record                                                          │
+│ Content Type: Application Data (0x17)                              │
+│ Version: TLS 1.3                                                   │
+│ Length: 256 bytes                                                  │
+│ [Encrypted HTTP Data]                                              │
+└────────────────────────────────────────────────────────────────────┘
+                              ↓ <span class="arrow">Encapsulated into</span>
+<span class="protocol">TRANSPORT LAYER (Layer 4) - TCP</span>
+┌────────────────────────────────────────────────────────────────────┐
+│ TCP Header (20 bytes minimum)                                       │
+│ Source Port: 52431 (ephemeral)                                     │
+│ Dest Port: 443 (HTTPS)                                             │
+│ Sequence: 1001                                                     │
+│ Acknowledgment: 5001                                               │
+│ Flags: PSH, ACK                                                    │
+│ Window: 65535                                                      │
+│ Checksum: 0x8a4f                                                   │
+└────────────────────────────────────────────────────────────────────┘
+                              ↓ <span class="arrow">Encapsulated into</span>
+<span class="hop-router">NETWORK LAYER (Layer 3) - IP</span>
+┌────────────────────────────────────────────────────────────────────┐
+│ IP Header (20 bytes minimum)                                        │
+│ Version: 4                                                         │
+│ IHL: 5 (20 bytes)                                                  │
+│ Total Length: 540                                                  │
+│ TTL: 64                                                            │
+│ Protocol: 6 (TCP)                                                  │
+│ Source IP: 10.1.10.50                                              │
+│ Dest IP: 203.0.113.100                                             │
+│ Header Checksum: 0x3c2d                                            │
+└────────────────────────────────────────────────────────────────────┘
+                              ↓ <span class="arrow">Encapsulated into</span>
+<span class="hop-switch">DATA LINK LAYER (Layer 2) - Ethernet</span>
+┌────────────────────────────────────────────────────────────────────┐
+│ Ethernet Frame                                                      │
+│ Dest MAC: AA:BB:CC:DD:EE:FF (Gateway)                              │
+│ Source MAC: 11:22:33:44:55:66 (My NIC)                             │
+│ EtherType: 0x0800 (IPv4)                                           │
+│ [IP Packet]                                                        │
+│ FCS: 0x12345678                                                    │
+└────────────────────────────────────────────────────────────────────┘
+                              ↓ <span class="arrow">Converted to</span>
+<span class="hop-client">PHYSICAL LAYER (Layer 1)</span>
+┌────────────────────────────────────────────────────────────────────┐
+│ Electrical signals / Light pulses / Radio waves                     │
+│ Encoding: 1000BASE-T (Gigabit Ethernet)                            │
+│ Cable: Cat6 → RJ45 → Switch port                                   │
+└────────────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>Hop-by-Hop Journey</h3>
+
+                <h4>Hop 1: Access Switch (Layer 2)</h4>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-switch">ACCESS SWITCH</span>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  <span class="hop-client">Workstation</span>                    <span class="hop-switch">Switch</span>                                     │
+│  Port 1 ─────────────────► MAC Table Lookup                                 │
+│  10.1.10.50                    │                                            │
+│  MAC: 11:22:33:44:55:66        ▼                                            │
+│                           ┌─────────────────────────────┐                   │
+│                           │ MAC Address Table           │                   │
+│                           │ 11:22:33:44:55:66 → Port 1 │                   │
+│                           │ AA:BB:CC:DD:EE:FF → Port 24│ (Uplink)          │
+│                           └─────────────────────────────┘                   │
+│                                    │                                        │
+│  <span class="arrow">What happens:</span>                       ▼                                        │
+│  1. Frame arrives on Port 1        Forward to Port 24                       │
+│  2. Switch learns source MAC       (Destination MAC is gateway)             │
+│  3. Looks up dest MAC in table                                              │
+│  4. Forwards out correct port      ─────────────────────► <span class="hop-router">To Router/L3</span>     │
+│                                                                             │
+│  <span class="encrypted">VLAN:</span> 10 (User VLAN)                                                      │
+│  <span class="encrypted">802.1Q Tag:</span> Added if trunk port                                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <h4>Hop 2: Core Switch / Router (Layer 3)</h4>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-router">CORE SWITCH / ROUTER (Layer 3 Routing)</span>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Frame arrives → <span class="hop-switch">Strip Ethernet Header</span> → Examine IP Header                │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ Routing Table Lookup                                                 │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │ Destination        Next Hop         Interface    Metric              │   │
+│  │ 10.1.10.0/24       Connected        VLAN10       0                   │   │
+│  │ 10.1.20.0/24       Connected        VLAN20       0                   │   │
+│  │ 0.0.0.0/0          10.1.1.1         GigE0/1      1    ← <span class="arrow">Default Route</span>│
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  Destination: 203.0.113.100 (Internet)                                      │
+│  Match: 0.0.0.0/0 (Default Route)                                           │
+│  Next Hop: 10.1.1.1 (Firewall)                                              │
+│                                                                             │
+│  <span class="arrow">Actions:</span>                                                                   │
+│  1. Decrement TTL: 64 → 63                                                  │
+│  2. Recalculate IP checksum                                                 │
+│  3. ARP for next hop (10.1.1.1) if not cached                               │
+│  4. Build new Ethernet frame with firewall's MAC as destination             │
+│  5. Forward to GigE0/1                                                      │
+│                                                                             │
+│  <span class="hop-switch">New Ethernet Header:</span>                                                      │
+│  Src MAC: Router's MAC (GigE0/1)                                            │
+│  Dst MAC: Firewall's MAC                                                    │
+│  EtherType: 0x0800                                                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <h4>Hop 3: Firewall (Layer 3-7)</h4>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-firewall">FIREWALL (Stateful Inspection)</span>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  <span class="hop-firewall">Zone-Based Policy Evaluation</span>                                             │
+│                                                                             │
+│  Source Zone: TRUST (Internal users)                                        │
+│  Dest Zone: UNTRUST (Internet)                                              │
+│  Source IP: 10.1.10.50                                                      │
+│  Dest IP: 203.0.113.100                                                     │
+│  Dest Port: 443 (HTTPS)                                                     │
+│  Protocol: TCP                                                              │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ Policy Lookup                                                        │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │ Rule 10: TRUST → UNTRUST                                             │   │
+│  │   Source: 10.1.10.0/24                                               │   │
+│  │   Dest: Any                                                          │   │
+│  │   Application: ssl, web-browsing                                     │   │
+│  │   Action: ALLOW                                                      │   │
+│  │   Profile: URL-Filter, SSL-Decrypt, AV-Profile                       │   │
+│  │   <span class="encrypted">MATCH ✓</span>                                                           │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  <span class="arrow">Session Created:</span>                                                           │
+│  Session ID: 12345678                                                       │
+│  State: INIT → SYN_SENT                                                     │
+│  NAT: 10.1.10.50:52431 → 198.51.100.5:52431 (Source NAT)                   │
+│  Timeout: 30 seconds (SYN timeout)                                          │
+│                                                                             │
+│  <span class="hop-firewall">SSL Inspection Decision:</span>                                                 │
+│  Category: Business (not banking/healthcare)                                │
+│  Action: DECRYPT for inspection                                             │
+│  (See SSL Inspection section below)                                         │
+│                                                                             │
+│  ──────────────────────────────────────────────► <span class="hop-cloud">To ISP/Internet</span>           │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <h4>Hop 4: NAT at Edge</h4>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-router">SOURCE NAT (Masquerading)</span>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  <span class="hop-client">Original Packet:</span>                      <span class="hop-router">NAT'd Packet:</span>                     │
+│  ┌─────────────────────────┐          ┌─────────────────────────┐          │
+│  │ Src: 10.1.10.50:52431   │   NAT    │ Src: 198.51.100.5:52431│          │
+│  │ Dst: 203.0.113.100:443  │ ──────►  │ Dst: 203.0.113.100:443 │          │
+│  └─────────────────────────┘          └─────────────────────────┘          │
+│                                                                             │
+│  <span class="arrow">NAT Table Entry Created:</span>                                                   │
+│  ┌───────────────────────────────────────────────────────────────────────┐ │
+│  │ Internal              External              Remote                     │ │
+│  │ 10.1.10.50:52431  ←→  198.51.100.5:52431  ←→  203.0.113.100:443      │ │
+│  │ Protocol: TCP         Timeout: 3600s         State: ESTABLISHED       │ │
+│  └───────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│  <span class="encrypted">Why NAT?</span>                                                                   │
+│  • Private IPs (10.x, 192.168.x) not routable on internet                  │
+│  • Hides internal network structure                                        │
+│  • Single public IP can serve many internal hosts                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <h4>Hop 5: Internet Transit</h4>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-cloud">INTERNET TRANSIT (Multiple AS Hops)</span>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  <span class="hop-router">Your ISP</span>                                                                   │
+│  AS 12345                                                                   │
+│      │                                                                      │
+│      │ BGP Routing Decision                                                 │
+│      │ Dest: 203.0.113.100                                                  │
+│      │ Best Path: via AS 67890 (Tier 1 Provider)                            │
+│      ▼                                                                      │
+│  <span class="hop-router">Tier 1 Provider</span>                                                           │
+│  AS 67890                                                                   │
+│      │                                                                      │
+│      │ Looks up in global routing table                                     │
+│      │ 203.0.113.0/24 announced by AS 11111                                 │
+│      ▼                                                                      │
+│  <span class="hop-router">Destination ISP</span>                                                           │
+│  AS 11111                                                                   │
+│      │                                                                      │
+│      │ Routes to customer's network                                         │
+│      ▼                                                                      │
+│  <span class="hop-server">Web Server</span>                                                                 │
+│  203.0.113.100                                                              │
+│                                                                             │
+│  <span class="arrow">Traceroute example:</span>                                                         │
+│  1   10.1.1.1      (Firewall)           1ms                                 │
+│  2   198.51.100.1  (ISP Edge)           5ms                                 │
+│  3   72.14.215.85  (Tier 1)             15ms                                │
+│  4   72.14.233.105 (Tier 1)             20ms                                │
+│  5   203.0.113.1   (Dest ISP)           25ms                                │
+│  6   203.0.113.100 (Web Server)         28ms                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+            </section>
+
+            <!-- TLS HANDSHAKE DEEP DIVE -->
+            <section class="content-section">
+                <h2>TLS Handshake Deep Dive</h2>
+                <p>The TLS handshake establishes an encrypted connection. Here's exactly what happens at the byte level.</p>
+
+                <h3>TLS 1.3 Handshake (Modern - 1-RTT)</h3>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-client">CLIENT</span>                                                          <span class="hop-server">SERVER</span>
+   │                                                                  │
+   │  <span class="protocol">─────────────── ClientHello ───────────────►</span>                 │
+   │  • Random (32 bytes)                                             │
+   │  • Session ID (legacy)                                           │
+   │  • Cipher Suites:                                                │
+   │    - TLS_AES_256_GCM_SHA384 (0x1302)                            │
+   │    - TLS_AES_128_GCM_SHA256 (0x1301)                            │
+   │    - TLS_CHACHA20_POLY1305_SHA256 (0x1303)                      │
+   │  • Extensions:                                                   │
+   │    - supported_versions: TLS 1.3                                │
+   │    - supported_groups: x25519, secp256r1                        │
+   │    - signature_algorithms: rsa_pss_rsae_sha256, ecdsa_secp256r1_sha256
+   │    - key_share: x25519 public key (32 bytes)                    │
+   │    - server_name (SNI): www.example.com                         │
+   │                                                                  │
+   │  <span class="protocol">◄─────────────── ServerHello ────────────────</span>                 │
+   │  • Random (32 bytes)                                             │
+   │  • Selected Cipher: TLS_AES_256_GCM_SHA384                      │
+   │  • Extensions:                                                   │
+   │    - supported_versions: TLS 1.3                                │
+   │    - key_share: x25519 server public key                        │
+   │                                                                  │
+   │  <span class="encrypted">═══════ Encrypted with Handshake Keys ═══════</span>               │
+   │                                                                  │
+   │  <span class="protocol">◄─────────────── EncryptedExtensions ────────</span>                 │
+   │                                                                  │
+   │  <span class="protocol">◄─────────────── Certificate ─────────────────</span>                │
+   │  • Server certificate chain                                      │
+   │                                                                  │
+   │  <span class="protocol">◄─────────────── CertificateVerify ───────────</span>                │
+   │  • Signature over handshake transcript                          │
+   │                                                                  │
+   │  <span class="protocol">◄─────────────── Finished ────────────────────</span>                │
+   │  • HMAC of handshake transcript                                 │
+   │                                                                  │
+   │  <span class="protocol">─────────────── Finished ────────────────────►</span>                │
+   │  • HMAC of handshake transcript                                 │
+   │                                                                  │
+   │  <span class="encrypted">═══════ Encrypted with Application Keys ═══════</span>             │
+   │                                                                  │
+   │  <span class="protocol">─────────────── Application Data ────────────►</span>                │
+   │                     (HTTP Request)                               │
+   │                                                                  │
+   │  <span class="protocol">◄────────────── Application Data ─────────────</span>                │
+   │                     (HTTP Response)                              │
+                    </pre>
+                </div>
+
+                <h3>Cipher Suite Breakdown</h3>
+                <div class="cipher-suite">
+                    <strong>TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384</strong><br><br>
+                    <span class="cipher-part kex">ECDHE</span> - Key Exchange (Elliptic Curve Diffie-Hellman Ephemeral)<br>
+                    <span class="cipher-part auth">RSA</span> - Authentication (Certificate signature algorithm)<br>
+                    <span class="cipher-part enc">AES_256_GCM</span> - Encryption (256-bit AES in Galois/Counter Mode)<br>
+                    <span class="cipher-part hash">SHA384</span> - Hash (for key derivation and finished messages)
+                </div>
+
+                <div class="info-box note">
+                    <div class="info-box-title">🔑 TLS 1.3 Improvements</div>
+                    <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                        <li><strong>1-RTT Handshake:</strong> Client sends key share in first message (vs 2-RTT in TLS 1.2)</li>
+                        <li><strong>0-RTT Resumption:</strong> Returning clients can send data immediately (with replay protection caveats)</li>
+                        <li><strong>Removed Insecure:</strong> No RSA key exchange, no CBC mode ciphers, no SHA-1</li>
+                        <li><strong>Encrypted Handshake:</strong> Certificate sent encrypted (hides server identity)</li>
+                        <li><strong>Forward Secrecy:</strong> Always uses ephemeral keys - compromised long-term key can't decrypt past traffic</li>
+                    </ul>
+                </div>
+
+                <h3>Certificate Chain Validation</h3>
+                <div class="cert-chain">
+                    <div class="cert-box root">
+                        <div class="cert-label">ROOT CA (Trusted by OS/Browser)</div>
+                        <div class="cert-cn">CN=DigiCert Global Root G2</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Self-signed | Validity: 25 years | Stored in OS trust store
+                        </div>
+                    </div>
+                    <div class="cert-box intermediate">
+                        <div class="cert-label">INTERMEDIATE CA</div>
+                        <div class="cert-cn">CN=DigiCert TLS RSA SHA256 2020 CA1</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Signed by Root | Validity: 10 years | Sent by server
+                        </div>
+                    </div>
+                    <div class="cert-box leaf">
+                        <div class="cert-label">LEAF/END-ENTITY CERTIFICATE</div>
+                        <div class="cert-cn">CN=www.example.com</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Signed by Intermediate | Validity: 1-2 years | Subject: your domain | SAN: www.example.com, example.com
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-flow" style="margin-top: 1rem;">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Receive Certificate Chain</div>
+                            <div class="step-detail">Server sends leaf certificate and intermediate(s). Root is NOT sent.</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Build Chain to Trusted Root</div>
+                            <div class="step-detail">Client finds matching root in local trust store by matching Issuer → Subject.</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Verify Each Signature</div>
+                            <div class="step-detail">Verify leaf signed by intermediate, intermediate signed by root.</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Check Validity Dates</div>
+                            <div class="step-detail">Ensure NotBefore ≤ now ≤ NotAfter for each certificate.</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">Check Revocation (OCSP/CRL)</div>
+                            <div class="step-detail">Query OCSP responder or check CRL to ensure cert not revoked.</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <div class="step-title">Verify Hostname Match</div>
+                            <div class="step-detail">Ensure CN or SAN matches the hostname user requested.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SSL INSPECTION AT FIREWALL -->
+            <section class="content-section">
+                <h2>SSL/TLS Inspection at Firewall</h2>
+                <p>Firewalls cannot inspect encrypted traffic without decrypting it. SSL inspection (also called SSL decryption, HTTPS inspection, or man-in-the-middle) allows the firewall to see inside encrypted connections.</p>
+
+                <h3>How SSL Inspection Works</h3>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-client">CLIENT</span>                    <span class="hop-firewall">FIREWALL</span>                    <span class="hop-server">SERVER</span>
+   │                           │                            │
+   │                           │                            │
+   │ ── ClientHello ──────────►│                            │
+   │    SNI: example.com       │                            │
+   │                           │ ── ClientHello ───────────►│
+   │                           │    (Firewall as client)    │
+   │                           │                            │
+   │                           │ ◄── ServerHello ───────────│
+   │                           │ ◄── Certificate ───────────│
+   │                           │     (Real server cert)     │
+   │                           │                            │
+   │                           │ <span class="encrypted">Firewall validates real cert</span>   │
+   │                           │ <span class="encrypted">Generates NEW certificate</span>     │
+   │                           │ <span class="encrypted">for "example.com" signed</span>     │
+   │                           │ <span class="encrypted">by Firewall CA</span>               │
+   │                           │                            │
+   │ ◄── ServerHello ──────────│                            │
+   │ ◄── Certificate ──────────│                            │
+   │     (<span class="hop-firewall">Firewall-generated cert</span>)                        │
+   │     Signed by: Enterprise-FW-CA                        │
+   │                           │                            │
+   │ <span class="hop-client">Client validates cert</span>      │                            │
+   │ (Trusts Enterprise-FW-CA  │                            │
+   │  because it was deployed  │                            │
+   │  via GPO/MDM)             │                            │
+   │                           │                            │
+   │ ══ TLS Session 1 ═════════│══ TLS Session 2 ══════════│
+   │    (Client↔Firewall)      │   (Firewall↔Server)       │
+   │                           │                            │
+   │ ── HTTP GET /page ───────►│                            │
+   │    (Encrypted to FW)      │                            │
+   │                           │ <span class="hop-firewall">DECRYPT</span>                    │
+   │                           │ <span class="hop-firewall">INSPECT CONTENT</span>            │
+   │                           │ <span class="hop-firewall">• Malware scan</span>              │
+   │                           │ <span class="hop-firewall">• DLP check</span>                 │
+   │                           │ <span class="hop-firewall">• URL category</span>              │
+   │                           │ <span class="hop-firewall">RE-ENCRYPT</span>                  │
+   │                           │                            │
+   │                           │ ── HTTP GET /page ────────►│
+   │                           │    (Encrypted to Server)   │
+   │                           │                            │
+   │                           │ ◄── HTTP 200 OK ───────────│
+   │                           │                            │
+   │                           │ <span class="hop-firewall">DECRYPT → INSPECT → RE-ENCRYPT</span>
+   │                           │                            │
+   │ ◄── HTTP 200 OK ──────────│                            │
+   │                           │                            │
+                    </pre>
+                </div>
+
+                <h3>Requirements for SSL Inspection</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Requirement</th>
+                        <th>Details</th>
+                        <th>Deployment Method</th>
+                    </tr>
+                    <tr>
+                        <td>Firewall CA Certificate</td>
+                        <td>Internal CA that signs generated certificates</td>
+                        <td>Create on firewall or use Enterprise PKI</td>
+                    </tr>
+                    <tr>
+                        <td>Trust Distribution</td>
+                        <td>All clients must trust the Firewall CA</td>
+                        <td>GPO (Windows), MDM (mobile), manual (BYOD)</td>
+                    </tr>
+                    <tr>
+                        <td>Processing Power</td>
+                        <td>TLS is CPU-intensive - need adequate firewall capacity</td>
+                        <td>Hardware acceleration, dedicated decrypt cards</td>
+                    </tr>
+                    <tr>
+                        <td>Exclusion List</td>
+                        <td>Some sites should NOT be decrypted (banking, healthcare)</td>
+                        <td>URL category bypass or explicit domain list</td>
+                    </tr>
+                </table>
+
+                <h3>What Firewall Can Inspect After Decryption</h3>
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Decrypted HTTP Request</span>
+                        <span class="packet-info">User → www.example.com</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer http">
+                            <div class="wireshark-layer-title">▼ Hypertext Transfer Protocol</div>
+                            <div class="wireshark-field"><span class="field-name">Request Method:</span> <span class="field-value">POST</span></div>
+                            <div class="wireshark-field"><span class="field-name">Request URI:</span> <span class="field-value">/api/upload</span></div>
+                            <div class="wireshark-field"><span class="field-name">Host:</span> <span class="field-value">www.example.com</span></div>
+                            <div class="wireshark-field"><span class="field-name">Content-Type:</span> <span class="field-value">multipart/form-data</span></div>
+                            <div class="wireshark-field"><span class="field-name">Cookie:</span> <span class="field-value">session=abc123...</span></div>
+                        </div>
+                        <div class="wireshark-layer" style="border-color: var(--accent-red);">
+                            <div class="wireshark-layer-title" style="color: var(--accent-red);">▼ Firewall Inspection Results</div>
+                            <div class="wireshark-field"><span class="field-name">URL Category:</span> <span class="field-value">File Sharing</span></div>
+                            <div class="wireshark-field"><span class="field-name">Threat Scan:</span> <span class="field-value">Clean (no malware)</span></div>
+                            <div class="wireshark-field"><span class="field-name">DLP Match:</span> <span class="field-value">⚠️ SSN Pattern Detected</span></div>
+                            <div class="wireshark-field"><span class="field-name">File Type:</span> <span class="field-value">application/vnd.ms-excel</span></div>
+                            <div class="wireshark-field"><span class="field-name">Action:</span> <span class="field-value" style="color: var(--accent-red);">BLOCK (DLP Policy)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>SSL Inspection Bypass Categories</h3>
+                <div class="info-box warning">
+                    <div class="info-box-title">⚠️ Sites That Should NOT Be Decrypted</div>
+                    <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                        <li><strong>Financial/Banking:</strong> Legal/compliance requirements, customer expectation of privacy</li>
+                        <li><strong>Healthcare:</strong> HIPAA requirements, medical record privacy</li>
+                        <li><strong>Government:</strong> May use certificate pinning, legal requirements</li>
+                        <li><strong>Certificate Pinning Apps:</strong> Will break if certificate doesn't match expected</li>
+                        <li><strong>Personal Privacy:</strong> Consider employee privacy expectations</li>
+                    </ul>
+                </div>
+
+                <div class="info-box security">
+                    <div class="info-box-title">🔒 Certificate Pinning Detection</div>
+                    <p style="margin: 0; font-size: 0.85rem;">Some applications "pin" expected certificates. If they see the firewall's certificate instead of the real one, they refuse to connect. Common examples: banking apps, security tools, some mobile apps. Solution: Add these domains to SSL decryption bypass list.</p>
+                </div>
+            </section>
+
+            <!-- SSL TERMINATION AT PROXY/LOAD BALANCER -->
+            <section class="content-section">
+                <h2>SSL Termination at Load Balancer / Reverse Proxy</h2>
+                <p>SSL termination offloads TLS processing from backend servers to a dedicated device. This centralizes certificate management and improves performance.</p>
+
+                <h3>SSL Termination Architecture</h3>
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-client">INTERNET CLIENTS</span>                <span class="hop-proxy">LOAD BALANCER</span>              <span class="hop-server">BACKEND SERVERS</span>
+        │                              │                            │
+        │                              │                       ┌────┴────┐
+        │                              │                       │ Web 1   │
+   ┌────┴────┐                    ┌────┴────┐                  │ Web 2   │
+   │ User 1  │                    │   F5    │                  │ Web 3   │
+   │ User 2  │ ═══ HTTPS:443 ═══► │  NGINX  │ ─── HTTP:80 ────►│         │
+   │ User 3  │   (Encrypted)      │   HAP   │   (Unencrypted)  │         │
+   └─────────┘                    └─────────┘                  └─────────┘
+                                       │
+                            ┌──────────┴──────────┐
+                            │  SSL TERMINATION    │
+                            │  • Holds private key│
+                            │  • Decrypts traffic │
+                            │  • Routes to backend│
+                            │  • Adds X-Forwarded │
+                            │    headers          │
+                            └─────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>SSL Termination Options</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Mode</th>
+                        <th>Client → LB</th>
+                        <th>LB → Backend</th>
+                        <th>Use Case</th>
+                    </tr>
+                    <tr>
+                        <td><strong>SSL Termination</strong></td>
+                        <td>HTTPS (encrypted)</td>
+                        <td>HTTP (plain)</td>
+                        <td>Internal/trusted backend network, best performance</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SSL Bridging</strong></td>
+                        <td>HTTPS (encrypted)</td>
+                        <td>HTTPS (re-encrypted)</td>
+                        <td>Compliance requirements, untrusted backend network</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SSL Passthrough</strong></td>
+                        <td>HTTPS (encrypted)</td>
+                        <td>HTTPS (same stream)</td>
+                        <td>LB doesn't inspect, end-to-end encryption required</td>
+                    </tr>
+                </table>
+
+                <h3>Headers Added by Reverse Proxy</h3>
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Request After Proxy</span>
+                        <span class="packet-info">Proxy → Backend Server</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer http">
+                            <div class="wireshark-layer-title">▼ HTTP Headers (Added by Proxy)</div>
+                            <div class="wireshark-field"><span class="field-name">X-Forwarded-For:</span> <span class="field-value">203.0.113.50</span> <span style="color: var(--text-secondary);">(Original client IP)</span></div>
+                            <div class="wireshark-field"><span class="field-name">X-Forwarded-Proto:</span> <span class="field-value">https</span> <span style="color: var(--text-secondary);">(Original protocol)</span></div>
+                            <div class="wireshark-field"><span class="field-name">X-Forwarded-Host:</span> <span class="field-value">www.example.com</span> <span style="color: var(--text-secondary);">(Original Host header)</span></div>
+                            <div class="wireshark-field"><span class="field-name">X-Real-IP:</span> <span class="field-value">203.0.113.50</span> <span style="color: var(--text-secondary);">(Alternative to X-Forwarded-For)</span></div>
+                            <div class="wireshark-field"><span class="field-name">X-Forwarded-Port:</span> <span class="field-value">443</span></div>
+                        </div>
+                        <div class="wireshark-layer" style="border-color: var(--accent-green);">
+                            <div class="wireshark-layer-title" style="color: var(--accent-green);">▼ Why These Headers Matter</div>
+                            <div class="wireshark-field">• Backend sees proxy IP, not client IP - X-Forwarded-For provides real client</div>
+                            <div class="wireshark-field">• Backend sees HTTP, not HTTPS - X-Forwarded-Proto helps generate correct URLs</div>
+                            <div class="wireshark-field">• Logging, rate limiting, geo-blocking all need original client IP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>NGINX SSL Termination Example</h3>
+                <div class="step-code">
+# NGINX configuration for SSL termination
+server {
+    listen 443 ssl http2;
+    server_name www.example.com;
+
+    # SSL Certificate and Key
+    ssl_certificate     /etc/nginx/certs/example.com.crt;
+    ssl_certificate_key /etc/nginx/certs/example.com.key;
+
+    # Modern SSL settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers off;
+
+    # HSTS
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    location / {
+        # Forward to backend (HTTP)
+        proxy_pass http://backend-servers;
+        
+        # Add forwarded headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+upstream backend-servers {
+    server 10.1.20.10:80 weight=5;
+    server 10.1.20.11:80 weight=5;
+    server 10.1.20.12:80 backup;
+}
+                </div>
+            </section>
+
+            <!-- PROXY SCENARIOS -->
+            <section class="content-section">
+                <h2>Proxy Scenarios</h2>
+
+                <h3>Forward Proxy (Outbound Web Access)</h3>
+                <p>A forward proxy sits between internal users and the internet. Users' requests go TO the proxy, which fetches content on their behalf.</p>
+
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-client">INTERNAL USERS</span>              <span class="hop-proxy">FORWARD PROXY</span>              <span class="hop-cloud">INTERNET</span>
+       │                           │                           │
+  ┌────┴────┐                 ┌────┴────┐                      │
+  │ User PC │                 │ Squid   │                 ┌────┴────┐
+  │         │ ─── HTTP ──────►│ Zscaler │ ─── HTTPS ─────►│ Website │
+  │         │    (Explicit)   │ BlueCoat│                 │         │
+  └─────────┘                 └─────────┘                 └─────────┘
+       │                           │
+       │ Browser configured with:  │ Functions:
+       │ proxy.company.com:8080    │ • Content filtering
+       │                           │ • Caching
+       │                           │ • Authentication
+       │                           │ • Logging
+       │                           │ • Bandwidth control
+                    </pre>
+                </div>
+
+                <h4>Explicit vs Transparent Proxy</h4>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Explicit Proxy</th>
+                        <th>Transparent Proxy</th>
+                    </tr>
+                    <tr>
+                        <td>Client Config</td>
+                        <td>Browser/OS must be configured with proxy address</td>
+                        <td>No client configuration needed</td>
+                    </tr>
+                    <tr>
+                        <td>How Traffic Reaches Proxy</td>
+                        <td>Client sends request directly to proxy</td>
+                        <td>Network redirects traffic (WCCP, policy routing)</td>
+                    </tr>
+                    <tr>
+                        <td>HTTP Method</td>
+                        <td>CONNECT method for HTTPS tunneling</td>
+                        <td>Original request (proxy intercepts)</td>
+                    </tr>
+                    <tr>
+                        <td>User Awareness</td>
+                        <td>User knows they're using a proxy</td>
+                        <td>User may not know</td>
+                    </tr>
+                    <tr>
+                        <td>SSL Inspection</td>
+                        <td>Easier (client expects proxy)</td>
+                        <td>More complex (need to handle like real server)</td>
+                    </tr>
+                </table>
+
+                <h4>PAC Files (Proxy Auto-Configuration)</h4>
+                <p>PAC files contain JavaScript that determines whether a request should go through a proxy or direct.</p>
+
+                <div class="step-code">
+// proxy.pac - Proxy Auto-Configuration file
+function FindProxyForURL(url, host) {
+    
+    // Don't proxy localhost
+    if (isPlainHostName(host) || 
+        host == "localhost" || 
+        host == "127.0.0.1") {
+        return "DIRECT";
+    }
+    
+    // Don't proxy internal domains
+    if (dnsDomainIs(host, ".corp.local") ||
+        dnsDomainIs(host, ".internal.company.com")) {
+        return "DIRECT";
+    }
+    
+    // Don't proxy internal IP ranges
+    if (isInNet(host, "10.0.0.0", "255.0.0.0") ||
+        isInNet(host, "172.16.0.0", "255.240.0.0") ||
+        isInNet(host, "192.168.0.0", "255.255.0.0")) {
+        return "DIRECT";
+    }
+    
+    // Use proxy for everything else
+    // Failover: try proxy1, then proxy2, then direct
+    return "PROXY proxy1.company.com:8080; PROXY proxy2.company.com:8080; DIRECT";
+}
+                </div>
+
+                <h4>WPAD (Web Proxy Auto-Discovery)</h4>
+                <div class="step-flow">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Browser Looks for PAC File</div>
+                            <div class="step-detail">When "Automatically detect settings" is enabled, browser tries to find wpad.dat</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">DHCP Method (Option 252)</div>
+                            <div class="step-detail">DHCP server can provide PAC URL in option 252</div>
+                            <div class="step-code">Option 252: http://wpad.company.com/wpad.dat</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">DNS Method</div>
+                            <div class="step-detail">Browser queries DNS for wpad.{domain}</div>
+                            <div class="step-code">
+DNS Query: wpad.company.com
+Browser fetches: http://wpad.company.com/wpad.dat
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">PAC File Executed</div>
+                            <div class="step-detail">JavaScript in PAC file runs for each URL to determine proxy or direct</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box security">
+                    <div class="info-box-title">🔒 WPAD Security Concerns</div>
+                    <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                        <li><strong>WPAD Hijacking:</strong> Attacker on network can respond to WPAD requests with malicious PAC file</li>
+                        <li><strong>Mitigation:</strong> Register wpad.yourdomain.com in DNS explicitly (don't let it be hijacked)</li>
+                        <li><strong>Disable if not used:</strong> If you don't use WPAD, disable "Automatically detect settings" via GPO</li>
+                    </ul>
+                </div>
+
+                <h3>Reverse Proxy (Inbound Application Access)</h3>
+                <p>A reverse proxy sits in front of backend servers. External clients connect to the proxy, which forwards to internal servers.</p>
+
+                <div class="packet-flow">
+                    <pre>
+<span class="hop-cloud">INTERNET</span>                <span class="hop-proxy">REVERSE PROXY</span>            <span class="hop-server">BACKEND SERVERS</span>
+     │                          │                           │
+┌────┴────┐                ┌────┴────┐                 ┌────┴────┐
+│ External│                │  NGINX  │                 │ App 1   │
+│ Users   │ ═══ HTTPS ════►│   F5    │ ─── HTTP ──────►│ App 2   │
+│         │                │  Azure  │                 │ App 3   │
+└─────────┘                │  AG     │                 └─────────┘
+                           └─────────┘
+                                │
+                     ┌──────────┴──────────┐
+                     │ Functions:          │
+                     │ • SSL termination   │
+                     │ • Load balancing    │
+                     │ • WAF protection    │
+                     │ • Caching           │
+                     │ • Compression       │
+                     │ • URL rewriting     │
+                     │ • Authentication    │
+                     └─────────────────────┘
+
+<span class="arrow">Benefits:</span>
+• Backend servers not directly exposed
+• Single point for SSL certificates
+• Can add security (WAF) without changing apps
+• Health checking and failover
+                    </pre>
+                </div>
+            </section>
+
+            <!-- WIRESHARK PACKET ANALYSIS -->
+            <section class="content-section">
+                <h2>Wireshark Packet Analysis</h2>
+                <p>Understanding what packets look like at each layer helps with troubleshooting. Here are examples of real packet captures.</p>
+
+                <h3>TCP 3-Way Handshake</h3>
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Packet #1 - SYN</span>
+                        <span class="packet-info">10.1.10.50 → 203.0.113.100</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer ethernet">
+                            <div class="wireshark-layer-title">▼ Ethernet II</div>
+                            <div class="wireshark-field"><span class="field-name">Destination:</span> <span class="field-value">aa:bb:cc:dd:ee:ff</span> (Gateway)</div>
+                            <div class="wireshark-field"><span class="field-name">Source:</span> <span class="field-value">11:22:33:44:55:66</span> (My NIC)</div>
+                            <div class="wireshark-field"><span class="field-name">Type:</span> <span class="field-value">IPv4 (0x0800)</span></div>
+                        </div>
+                        <div class="wireshark-layer ip">
+                            <div class="wireshark-layer-title">▼ Internet Protocol Version 4</div>
+                            <div class="wireshark-field"><span class="field-name">Version:</span> <span class="field-value">4</span></div>
+                            <div class="wireshark-field"><span class="field-name">Header Length:</span> <span class="field-value">20 bytes (5)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Total Length:</span> <span class="field-value">52</span></div>
+                            <div class="wireshark-field"><span class="field-name">Identification:</span> <span class="field-value">0x1a2b (6699)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Flags:</span> <span class="field-value">0x4000, Don't fragment</span></div>
+                            <div class="wireshark-field"><span class="field-name">Time to Live:</span> <span class="field-value">64</span></div>
+                            <div class="wireshark-field"><span class="field-name">Protocol:</span> <span class="field-value">TCP (6)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Source Address:</span> <span class="field-value">10.1.10.50</span></div>
+                            <div class="wireshark-field"><span class="field-name">Destination Address:</span> <span class="field-value">203.0.113.100</span></div>
+                        </div>
+                        <div class="wireshark-layer tcp">
+                            <div class="wireshark-layer-title">▼ Transmission Control Protocol</div>
+                            <div class="wireshark-field"><span class="field-name">Source Port:</span> <span class="field-value">52431</span></div>
+                            <div class="wireshark-field"><span class="field-name">Destination Port:</span> <span class="field-value">443</span></div>
+                            <div class="wireshark-field"><span class="field-name">Sequence Number:</span> <span class="field-value">0 (relative)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Flags:</span> <span class="field-value">0x002 (SYN)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Window:</span> <span class="field-value">65535</span></div>
+                            <div class="wireshark-field"><span class="field-name">Options:</span> <span class="field-value">MSS=1460, SACK_PERM, WS=128</span></div>
+                        </div>
+                    </div>
+                    <div class="wireshark-hex">
+0000   aa bb cc dd ee ff 11 22 33 44 55 66 08 00 45 00
+0010   00 34 1a 2b 40 00 40 06 xx xx 0a 01 0a 32 cb 00
+0020   71 64 cc cf 01 bb 00 00 00 00 00 00 00 00 80 02
+0030   ff ff xx xx 00 00 02 04 05 b4 01 03 03 07 01 01
+                    </div>
+                </div>
+
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Packet #2 - SYN-ACK</span>
+                        <span class="packet-info">203.0.113.100 → 10.1.10.50</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer tcp">
+                            <div class="wireshark-layer-title">▼ Transmission Control Protocol</div>
+                            <div class="wireshark-field"><span class="field-name">Source Port:</span> <span class="field-value">443</span></div>
+                            <div class="wireshark-field"><span class="field-name">Destination Port:</span> <span class="field-value">52431</span></div>
+                            <div class="wireshark-field"><span class="field-name">Sequence Number:</span> <span class="field-value">0 (relative)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Acknowledgment Number:</span> <span class="field-value">1</span></div>
+                            <div class="wireshark-field"><span class="field-name">Flags:</span> <span class="field-value">0x012 (SYN, ACK)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Window:</span> <span class="field-value">28960</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Packet #3 - ACK</span>
+                        <span class="packet-info">10.1.10.50 → 203.0.113.100</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer tcp">
+                            <div class="wireshark-layer-title">▼ Transmission Control Protocol</div>
+                            <div class="wireshark-field"><span class="field-name">Sequence Number:</span> <span class="field-value">1</span></div>
+                            <div class="wireshark-field"><span class="field-name">Acknowledgment Number:</span> <span class="field-value">1</span></div>
+                            <div class="wireshark-field"><span class="field-name">Flags:</span> <span class="field-value">0x010 (ACK)</span></div>
+                            <div class="wireshark-field" style="color: var(--accent-green); font-weight: bold;">Connection ESTABLISHED</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>TLS ClientHello</h3>
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Packet #4 - TLS ClientHello</span>
+                        <span class="packet-info">Client → Server</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer tls">
+                            <div class="wireshark-layer-title">▼ Transport Layer Security</div>
+                            <div class="wireshark-field"><span class="field-name">Content Type:</span> <span class="field-value">Handshake (22)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Version:</span> <span class="field-value">TLS 1.0 (0x0301)</span> - Legacy, real version in extension</div>
+                            <div class="wireshark-field"><span class="field-name">Length:</span> <span class="field-value">512</span></div>
+                        </div>
+                        <div class="wireshark-layer" style="border-color: #c586c0; margin-left: 1rem;">
+                            <div class="wireshark-layer-title" style="color: #c586c0;">▼ Handshake Protocol: Client Hello</div>
+                            <div class="wireshark-field"><span class="field-name">Handshake Type:</span> <span class="field-value">Client Hello (1)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Version:</span> <span class="field-value">TLS 1.2 (0x0303)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Random:</span> <span class="field-value">a1b2c3d4... (32 bytes)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Session ID Length:</span> <span class="field-value">32</span></div>
+                            <div class="wireshark-field"><span class="field-name">Cipher Suites (17 suites):</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-value">TLS_AES_256_GCM_SHA384 (0x1302)</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-value">TLS_AES_128_GCM_SHA256 (0x1301)</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-value">TLS_CHACHA20_POLY1305_SHA256 (0x1303)</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-value">TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Extensions:</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">server_name (SNI):</span> <span class="field-value">www.example.com</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">supported_versions:</span> <span class="field-value">TLS 1.3, TLS 1.2</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">supported_groups:</span> <span class="field-value">x25519, secp256r1, secp384r1</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">key_share:</span> <span class="field-value">x25519 (32 bytes)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Kerberos TGS-REQ</h3>
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">Kerberos TGS-REQ</span>
+                        <span class="packet-info">Client → Domain Controller :88</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer" style="border-color: #f0883e;">
+                            <div class="wireshark-layer-title" style="color: #f0883e;">▼ Kerberos TGS-REQ</div>
+                            <div class="wireshark-field"><span class="field-name">Message Type:</span> <span class="field-value">TGS-REQ (12)</span></div>
+                            <div class="wireshark-field"><span class="field-name">Realm:</span> <span class="field-value">CORP.LOCAL</span></div>
+                            <div class="wireshark-field"><span class="field-name">Server Name (SPN):</span> <span class="field-value">HTTP/intranet.corp.local</span></div>
+                            <div class="wireshark-field"><span class="field-name">padata:</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">PA-TGS-REQ:</span> <span class="field-value">[Authenticator encrypted with session key]</span></div>
+                            <div class="wireshark-field"><span class="field-name">req-body:</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">Requested EType:</span> <span class="field-value">aes256-cts-hmac-sha1-96 (18)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>SAML Assertion (Decoded)</h3>
+                <div class="wireshark-packet">
+                    <div class="wireshark-header">
+                        <span class="packet-num">SAML Response (Base64 Decoded)</span>
+                        <span class="packet-info">IdP → Service Provider</span>
+                    </div>
+                    <div class="wireshark-layers">
+                        <div class="wireshark-layer" style="border-color: #f85149;">
+                            <div class="wireshark-layer-title" style="color: #f85149;">▼ SAML 2.0 Assertion</div>
+                            <div class="wireshark-field"><span class="field-name">Issuer:</span> <span class="field-value">https://sts.windows.net/{tenant-id}/</span></div>
+                            <div class="wireshark-field"><span class="field-name">IssueInstant:</span> <span class="field-value">2024-01-15T10:30:00Z</span></div>
+                            <div class="wireshark-field"><span class="field-name">Subject NameID:</span> <span class="field-value">jsmith@company.com</span></div>
+                            <div class="wireshark-field"><span class="field-name">Subject NameID Format:</span> <span class="field-value">emailAddress</span></div>
+                            <div class="wireshark-field"><span class="field-name">Conditions NotBefore:</span> <span class="field-value">2024-01-15T10:25:00Z</span></div>
+                            <div class="wireshark-field"><span class="field-name">Conditions NotOnOrAfter:</span> <span class="field-value">2024-01-15T11:30:00Z</span></div>
+                            <div class="wireshark-field"><span class="field-name">AudienceRestriction:</span> <span class="field-value">https://app.example.com/saml</span></div>
+                            <div class="wireshark-field"><span class="field-name">AuthnStatement:</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">AuthnInstant:</span> <span class="field-value">2024-01-15T10:30:00Z</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">AuthnContext:</span> <span class="field-value">urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</span></div>
+                            <div class="wireshark-field"><span class="field-name">Attributes:</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">displayname:</span> <span class="field-value">John Smith</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">groups:</span> <span class="field-value">All-Employees, Sales-Team</span></div>
+                            <div class="wireshark-field" style="margin-left: 1rem;"><span class="field-name">upn:</span> <span class="field-value">jsmith@company.com</span></div>
+                            <div class="wireshark-field"><span class="field-name">Signature:</span> <span class="field-value">RSA-SHA256 (Valid ✓)</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TROUBLESHOOTING COMMANDS -->
+            <section class="content-section">
+                <h2>Troubleshooting Commands</h2>
+
+                <h3>Network Connectivity</h3>
+                <div class="step-code">
+# Test basic connectivity
+ping 10.1.20.100
+ping -c 4 www.example.com
+
+# Trace route to destination
+tracert 203.0.113.100          # Windows
+traceroute 203.0.113.100       # Linux
+
+# DNS lookup
+nslookup intranet.corp.local
+dig intranet.corp.local A
+dig intranet.corp.local ANY
+
+# Check listening ports
+netstat -an | find "443"        # Windows
+ss -tlnp | grep 443             # Linux
+
+# Test specific port connectivity
+Test-NetConnection -ComputerName server.corp.local -Port 443    # PowerShell
+nc -zv server.corp.local 443                                     # Linux
+                </div>
+
+                <h3>TLS/SSL Troubleshooting</h3>
+                <div class="step-code">
+# Check certificate
+openssl s_client -connect www.example.com:443 -servername www.example.com
+
+# Show certificate chain
+openssl s_client -connect www.example.com:443 -showcerts
+
+# Check certificate expiration
+openssl s_client -connect www.example.com:443 2>/dev/null | openssl x509 -noout -dates
+
+# Test specific TLS version
+openssl s_client -connect www.example.com:443 -tls1_2
+openssl s_client -connect www.example.com:443 -tls1_3
+
+# Check supported ciphers
+nmap --script ssl-enum-ciphers -p 443 www.example.com
+
+# PowerShell: Check certificate
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$request = [System.Net.HttpWebRequest]::Create("https://www.example.com")
+$request.GetResponse() | Out-Null
+$request.ServicePoint.Certificate | Format-List *
+                </div>
+
+                <h3>Kerberos Troubleshooting</h3>
+                <div class="step-code">
+# View cached Kerberos tickets (Windows)
+klist
+
+# View cached tickets (detailed)
+klist tickets
+
+# Purge all tickets (force re-authentication)
+klist purge
+
+# Request specific service ticket
+klist get HTTP/intranet.corp.local
+
+# Check SPN registration
+setspn -L computername
+setspn -Q HTTP/intranet.corp.local
+
+# Test Kerberos authentication
+runas /netonly /user:CORP\jsmith cmd
+  then: klist
+  
+# Linux: List Kerberos tickets
+klist -l
+
+# Linux: Get new ticket
+kinit username@CORP.LOCAL
+                </div>
+
+                <h3>Authentication Flow Troubleshooting</h3>
+                <div class="step-code">
+# Check Windows authentication events
+Get-WinEvent -FilterHashtable @{
+    LogName='Security'
+    Id=4624,4625,4768,4769,4776
+} -MaxEvents 50
+
+# Event IDs:
+# 4624 = Successful logon
+# 4625 = Failed logon
+# 4768 = Kerberos TGT requested
+# 4769 = Kerberos service ticket requested
+# 4776 = NTLM authentication
+
+# Check Entra ID sign-in logs (PowerShell)
+Connect-MgGraph -Scopes "AuditLog.Read.All"
+Get-MgAuditLogSignIn -Filter "userPrincipalName eq 'jsmith@company.com'" -Top 10
+
+# Browser: Check SAML traffic
+# Firefox: SAML Tracer extension
+# Chrome: SAML Chrome Panel extension
+
+# Decode SAML (Linux)
+echo "base64_saml_response" | base64 -d | xmllint --format -
+                </div>
+
+                <h3>Proxy Troubleshooting</h3>
+                <div class="step-code">
+# Check current proxy settings (Windows)
+netsh winhttp show proxy
+
+# Check proxy via PowerShell
+[System.Net.WebProxy]::GetDefaultProxy()
+
+# Check proxy environment variables (Linux)
+env | grep -i proxy
+
+# Test with specific proxy
+curl -x http://proxy.company.com:8080 https://www.example.com
+
+# Bypass proxy for test
+curl --noproxy '*' https://www.example.com
+
+# Check PAC file
+curl http://wpad.company.com/wpad.dat
+
+# Test PAC file logic (pactester tool)
+pactester -p proxy.pac -u https://www.example.com
+                </div>
+
+                <h3>Firewall/NAT Troubleshooting</h3>
+                <div class="step-code">
+# Check Windows Firewall rules
+Get-NetFirewallRule | Where-Object {$_.Enabled -eq 'True'} | Format-Table Name,Direction,Action
+
+# Check iptables (Linux)
+iptables -L -n -v
+iptables -t nat -L -n -v
+
+# Check NAT translations (Cisco ASA)
+show xlate
+
+# Check session table (Palo Alto)
+show session all filter source 10.1.10.50
+
+# Check connection tracking (Linux)
+conntrack -L
+
+# Packet capture on firewall interface
+tcpdump -i eth0 host 10.1.10.50 and port 443
+                </div>
+            </section>
+
+            <!-- Quick Reference -->
+            <section class="content-section">
+                <h2>Quick Reference</h2>
+
+                <h3>Common Ports</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Port</th>
+                        <th>Protocol</th>
+                        <th>Service</th>
+                    </tr>
+                    <tr><td>53</td><td>TCP/UDP</td><td>DNS</td></tr>
+                    <tr><td>80</td><td>TCP</td><td>HTTP</td></tr>
+                    <tr><td>88</td><td>TCP/UDP</td><td>Kerberos</td></tr>
+                    <tr><td>135</td><td>TCP</td><td>RPC Endpoint Mapper</td></tr>
+                    <tr><td>389</td><td>TCP/UDP</td><td>LDAP</td></tr>
+                    <tr><td>443</td><td>TCP</td><td>HTTPS</td></tr>
+                    <tr><td>445</td><td>TCP</td><td>SMB</td></tr>
+                    <tr><td>464</td><td>TCP/UDP</td><td>Kerberos Password Change</td></tr>
+                    <tr><td>500</td><td>UDP</td><td>IKE (VPN)</td></tr>
+                    <tr><td>636</td><td>TCP</td><td>LDAPS</td></tr>
+                    <tr><td>1433</td><td>TCP</td><td>SQL Server</td></tr>
+                    <tr><td>3268</td><td>TCP</td><td>Global Catalog (LDAP)</td></tr>
+                    <tr><td>3269</td><td>TCP</td><td>Global Catalog (LDAPS)</td></tr>
+                    <tr><td>3389</td><td>TCP</td><td>RDP</td></tr>
+                    <tr><td>4500</td><td>UDP</td><td>IPSec NAT-T</td></tr>
+                    <tr><td>8080</td><td>TCP</td><td>HTTP Proxy (common)</td></tr>
+                </table>
+
+                <h3>Authentication Protocol Comparison</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Protocol</th>
+                        <th>Token Type</th>
+                        <th>Use Case</th>
+                        <th>SSO Scope</th>
+                    </tr>
+                    <tr>
+                        <td>Kerberos</td>
+                        <td>Encrypted tickets</td>
+                        <td>On-prem Windows</td>
+                        <td>AD Domain</td>
+                    </tr>
+                    <tr>
+                        <td>NTLM</td>
+                        <td>Challenge-response</td>
+                        <td>Legacy, fallback</td>
+                        <td>Single server</td>
+                    </tr>
+                    <tr>
+                        <td>SAML 2.0</td>
+                        <td>XML assertions</td>
+                        <td>Enterprise web SSO</td>
+                        <td>Cross-domain</td>
+                    </tr>
+                    <tr>
+                        <td>OIDC</td>
+                        <td>JWT (ID + Access)</td>
+                        <td>Modern apps, APIs</td>
+                        <td>Cross-domain</td>
+                    </tr>
+                    <tr>
+                        <td>OAuth 2.0</td>
+                        <td>Access token</td>
+                        <td>API authorization</td>
+                        <td>Delegated access</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- Page Navigation -->
+            <nav class="page-nav">
+                <a href="enterprise-architecture.html" class="page-nav-link prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">← Enterprise Architecture</span>
+                </a>
+                <a href="iam-troubleshooting.html" class="page-nav-link next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Troubleshooting →</span>
+                </a>
+            </nav>
+
+            <footer class="footer">
+                <p>IAM Ultimate Guide — Enterprise Identity & Access Management Documentation</p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Scenario tab switching
+        document.querySelectorAll('.scenario-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active from all tabs and content
+                document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.scenario-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                const scenarioId = tab.dataset.scenario;
+                document.getElementById(scenarioId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BEC Attacks | SOC Analyst Guide by NIK</title>
+  <title>BEC Attacks | SOC Analyst Guide</title>
   <meta name="description" content="Business Email Compromise attacks: types, detection indicators, investigation, and response procedures.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="main.css">
 </head>
 <body>
@@ -18,33 +18,171 @@
   </button>
 
   <div class="page-wrapper">
-    <aside class="sidebar">
+        <aside class="sidebar">
       <div class="sidebar-header">
         <a href="index.html" class="sidebar-logo" style="text-decoration: none;">
-          <span>SOC Analyst Guide by NIK</span>
+          <span>SOC Analyst Guide</span>
         </a>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 92 Pages</p>
       </div>
+      
       <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide...">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🔥</span> Firewall Basics</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="network-forensics.html" class="nav-link"><span class="nav-link-icon">🔎</span> Network Forensics</a>
+          <a href="vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="network-segmentation.html" class="nav-link"><span class="nav-link-icon">🔀</span> Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🔐</span> Zero Trust</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔴</span> GCP Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">🔑</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
         <div class="nav-section">
           <div class="nav-section-title">7. Email & Phishing</div>
           <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
-          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Header Analysis</a>
-          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">🔐</span> SPF/DKIM/DMARC</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">🔐</span> Email Authentication</a>
           <a href="bec-attacks.html" class="nav-link active"><span class="nav-link-icon">💼</span> BEC Attacks</a>
         </div>
+
         <div class="nav-section">
-          <div class="nav-section-title">Related</div>
-          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Playbook</a>
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure AD Security</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> Data Classification</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📋</span> Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📦</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🔌</span> Common Ports</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔣</span> Regex Patterns</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">🗺️</span> MITRE Reference</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
         </div>
       </div>
     </aside>
 
-<!-- Sidebar Toggle -->
+    <!-- Sidebar Toggle -->
     <button class="sidebar-toggle" aria-label="Toggle sidebar">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M15 18l-6-6 6-6"/>
       </svg>
     </button>
+
     <main class="main-content">
       <div class="content-header">
         <nav class="breadcrumb">
@@ -307,27 +445,27 @@
             <tbody>
               <tr>
                 <td><strong>Display Name Spoof</strong></td>
-                <td>"John Smith CEO" &lt;attacker@gmail.com&gt;</td>
+                <td>"John Smith CEO" &lt;<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="94f5e0e0f5f7fff1e6d4f3f9f5fdf8baf7fbf9">[email&#160;protected]</a>&gt;</td>
                 <td>Check actual email address, not just name</td>
               </tr>
               <tr>
                 <td><strong>Lookalike Domain</strong></td>
-                <td>john@company-inc.com vs company.com</td>
+                <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="afc5c0c7c1efccc0c2dfcec1d682c6c1cc81ccc0c2">[email&#160;protected]</a> vs company.com</td>
                 <td>Verify domain registration, check carefully</td>
               </tr>
               <tr>
                 <td><strong>Cousin Domain</strong></td>
-                <td>john@company.co vs company.com</td>
+                <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5a303532341a3935372a3b3423743935">[email&#160;protected]</a> vs company.com</td>
                 <td>Check TLD matches expected</td>
               </tr>
               <tr>
                 <td><strong>Typosquat</strong></td>
-                <td>john@cornpany.com (rn vs m)</td>
+                <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1b717473755b787469756b7a756235787476">[email&#160;protected]</a> (rn vs m)</td>
                 <td>Examine each character carefully</td>
               </tr>
               <tr>
                 <td><strong>Reply-To Hijack</strong></td>
-                <td>From: legit@company.com, Reply-To: attacker@evil.com</td>
+                <td>From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="204c4547495460434f4d50414e590e434f4d">[email&#160;protected]</a>, Reply-To: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="08697c7c696b636d7a486d7e6164266b6765">[email&#160;protected]</a></td>
                 <td>Check Reply-To header</td>
               </tr>
             </tbody>
@@ -396,7 +534,7 @@
 <code>OfficeActivity
 | <span class="kw">where</span> TimeGenerated > <span class="fn">ago</span>(<span class="nu">30d</span>)
 | <span class="kw">where</span> Operation <span class="kw">in</span> (<span class="st">"New-InboxRule"</span>, <span class="st">"Set-InboxRule"</span>, <span class="st">"UpdateInboxRules"</span>)
-| <span class="kw">where</span> UserId == <span class="st">"compromised-user@company.com"</span>
+| <span class="kw">where</span> UserId == <span class="st">"<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3754585a4745585a5e4452531a424452457754585a4756594e1954585a">[email&#160;protected]</a>"</span>
 | <span class="kw">extend</span> RuleDetails = <span class="fn">tostring</span>(Parameters)
 | <span class="kw">project</span> TimeGenerated, UserId, Operation, RuleDetails, ClientIP</code>
           </div>
@@ -441,79 +579,8 @@
           <li>Notify recipients of fraudulent emails</li>
           <li>Review mailbox for data access</li>
         </ul>
-
-        <div class="callout callout-warning">
-          <div class="callout-title">Time is Critical for Wire Transfers</div>
-          <p style="margin: 0;">
-            Wire transfers can be recalled within 24-72 hours in some cases. The faster the 
-            bank is contacted, the higher the chance of recovery. Escalate immediately.
-          </p>
-        </div>
-
-        <h3>Escalation Path</h3>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Scenario</th>
-                <th>Escalate To</th>
-                <th>Timeframe</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Any BEC attempt detected</td>
-                <td>SOC Lead, Email Security</td>
-                <td>Within 1 hour</td>
-              </tr>
-              <tr>
-                <td>Payment made (any amount)</td>
-                <td>Finance, Legal, CISO, Executive</td>
-                <td>Immediately</td>
-              </tr>
-              <tr>
-                <td>Executive account compromised</td>
-                <td>CISO, HR, Legal</td>
-                <td>Immediately</td>
-              </tr>
-              <tr>
-                <td>Employee data (W-2/PII) sent</td>
-                <td>Legal, Privacy Officer, HR</td>
-                <td>Within 1 hour</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div class="callout callout-success">
-        <div class="callout-title">Key Takeaways</div>
-        <ul style="margin: 0;">
-          <li>BEC is financially devastating—average loss $125K+</li>
-          <li>Often bypasses technical controls (no links/attachments)</li>
-          <li>Always verify payment changes via known phone number</li>
-          <li>Check actual email address, not just display name</li>
-          <li>Time-critical: escalate payment issues immediately</li>
-          <li>Account compromise enables more convincing BEC</li>
-          <li>Report to FBI IC3 for any financial loss</li>
-        </ul>
-      </div>
-
-      <footer class="page-footer">
-        <div class="footer-nav">
-          <a href="email-auth.html" class="footer-link">
-            <span class="footer-link-label">← Previous</span>
-            <span class="footer-link-title">SPF/DKIM/DMARC</span>
-          </a>
-          <a href="pb-phishing.html" class="footer-link" style="text-align: right;">
-            <span class="footer-link-label">Next →</span>
-            <span class="footer-link-title">Phishing Playbook</span>
-          </a>
-        </div>
-      </footer>
     </main>
   </div>
-
   <script src="main.js"></script>
 </body>
 </html>

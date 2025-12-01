@@ -3,6 +3,8 @@
 
 document.addEventListener('DOMContentLoaded', function() {
   initSidebar();
+  initSidebarToggle();
+  initCollapsibleSections();
   initTabs();
   initAccordions();
   initCopyButtons();
@@ -11,29 +13,30 @@ document.addEventListener('DOMContentLoaded', function() {
   initMobileMenu();
 });
 
-/* Sidebar Navigation */
+/* ===================== */
+/* SIDEBAR FUNCTIONALITY */
+/* ===================== */
+
+/* Initialize Sidebar - Mark Active Link */
 function initSidebar() {
-  const currentPath = window.location.pathname;
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   const navLinks = document.querySelectorAll('.nav-link');
   
   navLinks.forEach(link => {
-    if (link.getAttribute('href') === currentPath || 
-        currentPath.endsWith(link.getAttribute('href'))) {
+    const href = link.getAttribute('href');
+    if (href === currentPage) {
       link.classList.add('active');
       
-      // Expand parent section if nested
+      // Expand parent section
       const section = link.closest('.nav-section');
       if (section) {
         section.classList.add('expanded');
       }
     }
   });
-  
-  // Initialize sidebar toggle
-  initSidebarToggle();
 }
 
-/* Sidebar Toggle */
+/* Sidebar Toggle (Show/Hide Entire Sidebar) */
 function initSidebarToggle() {
   const sidebar = document.querySelector('.sidebar');
   const toggleBtn = document.querySelector('.sidebar-toggle');
@@ -48,14 +51,76 @@ function initSidebarToggle() {
   
   toggleBtn.addEventListener('click', () => {
     document.body.classList.toggle('sidebar-collapsed');
-    
-    // Save state to localStorage
     const collapsed = document.body.classList.contains('sidebar-collapsed');
     localStorage.setItem('sidebarCollapsed', collapsed);
   });
 }
 
-/* Tab Component */
+/* Collapsible Navigation Sections */
+function initCollapsibleSections() {
+  const sections = document.querySelectorAll('.nav-section');
+  
+  // Load saved states from localStorage
+  const savedStates = JSON.parse(localStorage.getItem('navSectionStates') || '{}');
+  
+  sections.forEach((section, index) => {
+    const title = section.querySelector('.nav-section-title');
+    if (!title) return;
+    
+    // Make title clickable
+    title.style.cursor = 'pointer';
+    title.setAttribute('role', 'button');
+    title.setAttribute('aria-expanded', 'false');
+    
+    // Add chevron icon if not present
+    if (!title.querySelector('.section-chevron')) {
+      const chevron = document.createElement('span');
+      chevron.className = 'section-chevron';
+      chevron.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      title.appendChild(chevron);
+    }
+    
+    // Get section ID for localStorage
+    const sectionId = title.textContent.trim().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+    
+    // Check if section has active link or saved state
+    const hasActiveLink = section.querySelector('.nav-link.active');
+    const savedState = savedStates[sectionId];
+    
+    // Determine initial state
+    if (hasActiveLink || savedState === 'expanded') {
+      section.classList.add('expanded');
+      title.setAttribute('aria-expanded', 'true');
+    } else if (savedState === 'collapsed') {
+      section.classList.remove('expanded');
+    }
+    
+    // Toggle on click
+    title.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isExpanded = section.classList.toggle('expanded');
+      title.setAttribute('aria-expanded', isExpanded);
+      
+      // Save state
+      savedStates[sectionId] = isExpanded ? 'expanded' : 'collapsed';
+      localStorage.setItem('navSectionStates', JSON.stringify(savedStates));
+    });
+    
+    // Keyboard accessibility
+    title.setAttribute('tabindex', '0');
+    title.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        title.click();
+      }
+    });
+  });
+}
+
+/* =============== */
+/* TAB COMPONENT   */
+/* =============== */
+
 function initTabs() {
   const tabContainers = document.querySelectorAll('.tabs');
   
@@ -65,11 +130,9 @@ function initTabs() {
     
     buttons.forEach((btn, index) => {
       btn.addEventListener('click', () => {
-        // Remove active from all
         buttons.forEach(b => b.classList.remove('active'));
         contents.forEach(c => c.classList.remove('active'));
         
-        // Add active to clicked
         btn.classList.add('active');
         if (contents[index]) {
           contents[index].classList.add('active');
@@ -85,7 +148,10 @@ function initTabs() {
   });
 }
 
-/* Accordion Component */
+/* ==================== */
+/* ACCORDION COMPONENT  */
+/* ==================== */
+
 function initAccordions() {
   const accordions = document.querySelectorAll('.accordion');
   
@@ -98,10 +164,6 @@ function initAccordions() {
       header.addEventListener('click', () => {
         const isActive = item.classList.contains('active');
         
-        // Close all items in this accordion (optional: remove for multi-open)
-        // items.forEach(i => i.classList.remove('active'));
-        
-        // Toggle clicked item
         if (isActive) {
           item.classList.remove('active');
         } else {
@@ -112,17 +174,19 @@ function initAccordions() {
   });
 }
 
-/* Copy to Clipboard */
+/* =================== */
+/* COPY TO CLIPBOARD   */
+/* =================== */
+
 function initCopyButtons() {
-  // Add copy buttons to code blocks
   const codeBlocks = document.querySelectorAll('.code-block, .query-box');
   
   codeBlocks.forEach(block => {
-    if (block.querySelector('.copy-btn')) return; // Already has button
+    if (block.querySelector('.copy-btn')) return;
     
     const btn = document.createElement('button');
     btn.className = 'copy-btn';
-    btn.textContent = 'Copy';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
     btn.addEventListener('click', () => copyCode(block, btn));
     
     const header = block.querySelector('.query-header');
@@ -134,7 +198,7 @@ function initCopyButtons() {
     }
   });
   
-  // Also handle pre elements
+  // Handle standalone pre elements
   const preBlocks = document.querySelectorAll('pre:not(.no-copy)');
   preBlocks.forEach(pre => {
     if (pre.closest('.code-block') || pre.closest('.query-box')) return;
@@ -147,7 +211,7 @@ function initCopyButtons() {
     
     const btn = document.createElement('button');
     btn.className = 'copy-btn';
-    btn.textContent = 'Copy';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
     btn.addEventListener('click', () => copyCode(wrapper, btn));
     wrapper.appendChild(btn);
   });
@@ -160,11 +224,11 @@ function copyCode(block, btn) {
   const text = code.textContent;
   
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'Copied!';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
     btn.classList.add('copied');
     
     setTimeout(() => {
-      btn.textContent = 'Copy';
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
       btn.classList.remove('copied');
     }, 2000);
   }).catch(err => {
@@ -173,78 +237,94 @@ function copyCode(block, btn) {
   });
 }
 
-/* Search Functionality */
+/* =================== */
+/* SEARCH FUNCTIONALITY */
+/* =================== */
+
 function initSearch() {
   const searchInput = document.querySelector('.search-input');
   if (!searchInput) return;
   
-  const searchIndex = buildSearchIndex();
+  // Build search index from nav links
+  const searchIndex = [];
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const section = link.closest('.nav-section');
+    const sectionTitle = section ? section.querySelector('.nav-section-title')?.textContent?.trim() || '' : '';
+    searchIndex.push({
+      title: link.textContent.trim(),
+      url: link.getAttribute('href'),
+      section: sectionTitle
+    });
+  });
+  
+  let resultsContainer = null;
   
   searchInput.addEventListener('input', debounce((e) => {
     const query = e.target.value.toLowerCase().trim();
+    
     if (query.length < 2) {
       hideSearchResults();
       return;
     }
     
-    const results = searchIndex.filter(item => 
+    const results = searchIndex.filter(item =>
       item.title.toLowerCase().includes(query) ||
-      item.content.toLowerCase().includes(query) ||
-      item.tags.some(tag => tag.toLowerCase().includes(query))
+      item.section.toLowerCase().includes(query)
     );
     
     displaySearchResults(results, query);
-  }, 200));
-}
-
-function buildSearchIndex() {
-  // This would be populated by the actual page content
-  // For now, return empty array - will be generated per page
-  return window.searchIndex || [];
-}
-
-function displaySearchResults(results, query) {
-  let container = document.querySelector('.search-results');
+  }, 150));
   
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'search-results';
-    document.querySelector('.search-box').appendChild(container);
+  // Close results on click outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-box')) {
+      hideSearchResults();
+    }
+  });
+  
+  function displaySearchResults(results, query) {
+    if (!resultsContainer) {
+      resultsContainer = document.createElement('div');
+      resultsContainer.className = 'search-results';
+      searchInput.parentNode.appendChild(resultsContainer);
+    }
+    
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<div class="search-no-results">No results found</div>';
+      resultsContainer.classList.add('visible');
+      return;
+    }
+    
+    resultsContainer.innerHTML = results.slice(0, 8).map(result => `
+      <a href="${result.url}" class="search-result-item">
+        <span class="search-result-title">${highlightMatch(result.title, query)}</span>
+        <span class="search-result-section">${result.section}</span>
+      </a>
+    `).join('');
+    
+    resultsContainer.classList.add('visible');
   }
   
-  if (results.length === 0) {
-    container.innerHTML = '<div class="search-no-results">No results found</div>';
-    container.classList.add('visible');
-    return;
+  function hideSearchResults() {
+    if (resultsContainer) {
+      resultsContainer.classList.remove('visible');
+    }
   }
   
-  container.innerHTML = results.slice(0, 10).map(result => `
-    <a href="${result.url}" class="search-result-item">
-      <div class="search-result-title">${highlightMatch(result.title, query)}</div>
-      <div class="search-result-section">${result.section}</div>
-    </a>
-  `).join('');
-  
-  container.classList.add('visible');
-}
-
-function hideSearchResults() {
-  const container = document.querySelector('.search-results');
-  if (container) {
-    container.classList.remove('visible');
+  function highlightMatch(text, query) {
+    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
   }
-}
-
-function highlightMatch(text, query) {
-  const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
 }
 
 function escapeRegex(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/* Scroll Spy for TOC */
+/* ================ */
+/* SCROLL SPY (TOC) */
+/* ================ */
+
 function initScrollSpy() {
   const toc = document.querySelector('.toc');
   if (!toc) return;
@@ -281,40 +361,56 @@ function initScrollSpy() {
   sections.forEach(({ section }) => observer.observe(section));
 }
 
-/* Mobile Menu */
+/* ============ */
+/* MOBILE MENU  */
+/* ============ */
+
 function initMobileMenu() {
   const toggle = document.querySelector('.menu-toggle');
   const sidebar = document.querySelector('.sidebar');
   
   if (!toggle || !sidebar) return;
   
+  // Create overlay if it doesn't exist
+  let overlay = document.querySelector('.sidebar-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+  }
+  
   toggle.addEventListener('click', () => {
     sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
     toggle.classList.toggle('active');
+    document.body.classList.toggle('menu-open');
   });
   
-  // Close sidebar when clicking outside
-  document.addEventListener('click', (e) => {
-    if (sidebar.classList.contains('open') &&
-        !sidebar.contains(e.target) &&
-        !toggle.contains(e.target)) {
-      sidebar.classList.remove('open');
-      toggle.classList.remove('active');
-    }
+  // Close on overlay click
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    toggle.classList.remove('active');
+    document.body.classList.remove('menu-open');
   });
   
-  // Close sidebar when clicking a link (mobile)
+  // Close when clicking a nav link (mobile)
   sidebar.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
       if (window.innerWidth <= 1024) {
         sidebar.classList.remove('open');
+        overlay.classList.remove('open');
         toggle.classList.remove('active');
+        document.body.classList.remove('menu-open');
       }
     });
   });
 }
 
-/* Utility Functions */
+/* ================== */
+/* UTILITY FUNCTIONS  */
+/* ================== */
+
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {
@@ -328,17 +424,18 @@ function debounce(func, wait) {
 }
 
 /* Smooth Scroll for Anchor Links */
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
+document.addEventListener('click', (e) => {
+  const anchor = e.target.closest('a[href^="#"]');
+  if (anchor) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
+    const target = document.querySelector(anchor.getAttribute('href'));
     if (target) {
       target.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
     }
-  });
+  }
 });
 
 /* Keyboard Navigation */
@@ -347,13 +444,18 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const sidebar = document.querySelector('.sidebar');
     const toggle = document.querySelector('.menu-toggle');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
     if (sidebar && sidebar.classList.contains('open')) {
       sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('open');
       if (toggle) toggle.classList.remove('active');
+      document.body.classList.remove('menu-open');
     }
     
-    // Also close search results
-    hideSearchResults();
+    // Close search results
+    const searchResults = document.querySelector('.search-results');
+    if (searchResults) searchResults.classList.remove('visible');
   }
   
   // / to focus search
@@ -386,19 +488,18 @@ if ('IntersectionObserver' in window) {
   });
 }
 
-/* Print Button */
+/* Print & Theme Functions */
 function printPage() {
   window.print();
 }
 
-/* Dark/Light Theme Toggle (if needed) */
 function toggleTheme() {
   document.body.classList.toggle('light-theme');
   const isLight = document.body.classList.contains('light-theme');
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 
-// Check saved theme preference
+// Check saved theme
 (function() {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
@@ -406,7 +507,7 @@ function toggleTheme() {
   }
 })();
 
-/* Export for use in other scripts */
+/* Export for external use */
 window.SOCGuide = {
   initTabs,
   initAccordions,

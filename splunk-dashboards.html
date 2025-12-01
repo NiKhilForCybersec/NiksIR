@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Splunk Dashboards | SOC Analyst Guide</title>
+  <meta name="description" content="Guide to creating and using Splunk dashboards for security monitoring, investigations, and SOC operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 99 Pages</p>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide...">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="splunk-overview.html" class="nav-link"><span class="nav-link-icon">🟢</span> Splunk Overview</a>
+          <a href="splunk-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Splunk Queries</a>
+          <a href="spl-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> SPL Advanced</a>
+          <a href="spl-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> SPL Cheatsheet</a>
+          <a href="splunk-dashboards.html" class="nav-link active"><span class="nav-link-icon">📊</span> Splunk Dashboards</a>
+          <a href="splunk-alerts.html" class="nav-link"><span class="nav-link-icon">🔔</span> Splunk Alerts</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="network-forensics.html" class="nav-link"><span class="nav-link-icon">🔬</span> Network Forensics</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewall Basics</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🚪</span> Common Ports</a>
+          <a href="network-segmentation.html" class="nav-link"><span class="nav-link-icon">🗂️</span> Network Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🎯</span> Zero Trust</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> Azure AD Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔵</span> GCP Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">👤</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">✅</span> Email Authentication</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> IR Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link"><span class="nav-link-icon">📢</span> IR Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔤</span> Regex Patterns</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">📚</span> MITRE Reference</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="siem-fundamentals.html">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="current">Splunk Dashboards</span>
+        </nav>
+        <h1>Splunk Dashboards</h1>
+        <p class="lead">Create effective security dashboards for monitoring, threat detection, and SOC operations using Splunk's visualization capabilities.</p>
+      </div>
+
+      <div class="content-wrapper">
+
+        <!-- Dashboard Types -->
+        <section id="dashboard-types">
+          <h2>Dashboard Types</h2>
+          
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>📊 Classic Dashboards</h4>
+              <p>XML-based dashboards with Simple XML editor. Best for standard SOC dashboards with forms and drilldowns.</p>
+              <ul>
+                <li>Simple XML source code</li>
+                <li>Form inputs and tokens</li>
+                <li>Drilldown to searches</li>
+                <li>Wide compatibility</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>🎨 Dashboard Studio</h4>
+              <p>Modern visual editor with advanced layouts and styling. Best for executive dashboards and custom visualizations.</p>
+              <ul>
+                <li>Drag-and-drop editor</li>
+                <li>Flexible grid layouts</li>
+                <li>Rich styling options</li>
+                <li>Dynamic data sources</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ES Dashboards -->
+        <section id="es-dashboards">
+          <h2>Enterprise Security Dashboards</h2>
+          <p>Key dashboards every SOC analyst should know in Splunk ES:</p>
+
+          <div class="accordion">
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>🚨 Security Posture</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>High-level security health overview:</p>
+                <ul>
+                  <li><strong>Notable Events by Urgency:</strong> Critical, High, Medium, Low breakdown</li>
+                  <li><strong>Top Correlation Rules:</strong> Which detections are firing most</li>
+                  <li><strong>Key Indicators:</strong> Failed logins, blocked connections, malware detections</li>
+                  <li><strong>Trend Analysis:</strong> 24-hour and 7-day comparisons</li>
+                </ul>
+                <p><strong>Path:</strong> Enterprise Security → Security Posture</p>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📋 Incident Review</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Primary analyst work queue:</p>
+                <ul>
+                  <li><strong>Notable Event List:</strong> All triggered alerts with status</li>
+                  <li><strong>Quick Filters:</strong> By urgency, owner, status, time</li>
+                  <li><strong>Inline Actions:</strong> Assign, close, escalate, suppress</li>
+                  <li><strong>Drilldown:</strong> Full event details and contributing events</li>
+                </ul>
+                <p><strong>Path:</strong> Enterprise Security → Incident Review</p>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📈 Risk Analysis</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Risk-Based Alerting dashboard:</p>
+                <ul>
+                  <li><strong>Risk Score by Entity:</strong> Users and hosts with highest risk</li>
+                  <li><strong>Contributing Events:</strong> What caused the risk score</li>
+                  <li><strong>Risk Over Time:</strong> Trending analysis</li>
+                  <li><strong>Threshold Visualization:</strong> Entities approaching alert thresholds</li>
+                </ul>
+                <p><strong>Path:</strong> Enterprise Security → Risk Analysis</p>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>🔍 Asset Investigator</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Deep dive into specific hosts:</p>
+                <ul>
+                  <li><strong>Asset Details:</strong> Hostname, IP, owner, category</li>
+                  <li><strong>Activity Timeline:</strong> All events for the asset</li>
+                  <li><strong>Network Connections:</strong> Inbound/outbound traffic</li>
+                  <li><strong>Notable Events:</strong> Alerts involving this asset</li>
+                </ul>
+                <p><strong>Path:</strong> Enterprise Security → Asset Investigator</p>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>👤 Identity Investigator</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>User-centric investigation:</p>
+                <ul>
+                  <li><strong>Identity Details:</strong> Username, department, manager</li>
+                  <li><strong>Authentication Activity:</strong> Login history across sources</li>
+                  <li><strong>Access Patterns:</strong> Systems accessed, times active</li>
+                  <li><strong>Risk Events:</strong> Detections involving this user</li>
+                </ul>
+                <p><strong>Path:</strong> Enterprise Security → Identity Investigator</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Building Custom Dashboards -->
+        <section id="building-dashboards">
+          <h2>Building Custom Security Dashboards</h2>
+
+          <h3>SOC Overview Dashboard Example</h3>
+          <p>Key panels to include in a SOC monitoring dashboard:</p>
+
+          <div class="code-block">
+            <div class="code-header">Panel 1: Active Threats (Single Value)</div>
+            <pre><code class="language-spl">| `notable`
+| search status IN (new, "in progress") 
+         urgency IN (critical, high)
+| stats count as ActiveThreats</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Panel 2: Notable Events by Urgency (Pie Chart)</div>
+            <pre><code class="language-spl">| `notable`
+| search status!=closed
+| stats count by urgency
+| sort -count</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Panel 3: Top Triggering Rules (Bar Chart)</div>
+            <pre><code class="language-spl">| `notable`
+| stats count by rule_name
+| sort -count
+| head 10</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Panel 4: Event Trend (Timechart)</div>
+            <pre><code class="language-spl">index=* sourcetype=*
+| timechart span=1h count by index
+| head 24</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Panel 5: Failed Logins by Source (Table)</div>
+            <pre><code class="language-spl">index=wineventlog EventCode=4625
+| stats count as Failures, 
+        dc(Account_Name) as UniqueAccounts 
+  by src_ip
+| sort -Failures
+| head 15</code></pre>
+          </div>
+        </section>
+
+        <!-- Dashboard Inputs -->
+        <section id="inputs">
+          <h2>Dashboard Inputs & Tokens</h2>
+          <p>Make dashboards interactive with form inputs that filter all panels:</p>
+
+          <div class="code-block">
+            <div class="code-header">Simple XML - Time Range Picker</div>
+            <pre><code class="language-xml">&lt;input type="time" token="time_range"&gt;
+  &lt;label&gt;Time Range&lt;/label&gt;
+  &lt;default&gt;
+    &lt;earliest&gt;-24h&lt;/earliest&gt;
+    &lt;latest&gt;now&lt;/latest&gt;
+  &lt;/default&gt;
+&lt;/input&gt;</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Simple XML - Dropdown Filter</div>
+            <pre><code class="language-xml">&lt;input type="dropdown" token="urgency_filter"&gt;
+  &lt;label&gt;Urgency&lt;/label&gt;
+  &lt;choice value="*"&gt;All&lt;/choice&gt;
+  &lt;choice value="critical"&gt;Critical&lt;/choice&gt;
+  &lt;choice value="high"&gt;High&lt;/choice&gt;
+  &lt;choice value="medium"&gt;Medium&lt;/choice&gt;
+  &lt;choice value="low"&gt;Low&lt;/choice&gt;
+  &lt;default&gt;*&lt;/default&gt;
+&lt;/input&gt;
+
+&lt;!-- Use in search --&gt;
+&lt;query&gt;
+  | `notable` 
+  | search urgency=$urgency_filter$
+  | stats count by rule_name
+&lt;/query&gt;</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Simple XML - Text Input</div>
+            <pre><code class="language-xml">&lt;input type="text" token="user_search"&gt;
+  &lt;label&gt;Username&lt;/label&gt;
+  &lt;default&gt;*&lt;/default&gt;
+  &lt;prefix&gt;user=&lt;/prefix&gt;
+&lt;/input&gt;
+
+&lt;!-- Use in search --&gt;
+&lt;query&gt;
+  index=wineventlog EventCode=4624 $user_search$
+  | stats count by host
+&lt;/query&gt;</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Simple XML - Dynamic Dropdown from Search</div>
+            <pre><code class="language-xml">&lt;input type="dropdown" token="index_select"&gt;
+  &lt;label&gt;Index&lt;/label&gt;
+  &lt;search&gt;
+    &lt;query&gt;| eventcount summarize=false index=* | dedup index | fields index&lt;/query&gt;
+    &lt;earliest&gt;-24h&lt;/earliest&gt;
+    &lt;latest&gt;now&lt;/latest&gt;
+  &lt;/search&gt;
+  &lt;fieldForLabel&gt;index&lt;/fieldForLabel&gt;
+  &lt;fieldForValue&gt;index&lt;/fieldForValue&gt;
+  &lt;choice value="*"&gt;All Indexes&lt;/choice&gt;
+&lt;/input&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- Drilldowns -->
+        <section id="drilldowns">
+          <h2>Drilldown Configuration</h2>
+          <p>Enable click-through investigation from dashboard panels:</p>
+
+          <div class="code-block">
+            <div class="code-header">Drilldown to Search</div>
+            <pre><code class="language-xml">&lt;drilldown&gt;
+  &lt;link target="_blank"&gt;
+    /app/search/search?q=index=wineventlog user=$click.value$
+    &amp;earliest=$earliest$&amp;latest=$latest$
+  &lt;/link&gt;
+&lt;/drilldown&gt;</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Drilldown to Another Dashboard</div>
+            <pre><code class="language-xml">&lt;drilldown&gt;
+  &lt;link target="_blank"&gt;
+    /app/SplunkEnterpriseSecuritySuite/identity_investigator?
+    form.identity=$row.user$
+  &lt;/link&gt;
+&lt;/drilldown&gt;</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Set Token on Click</div>
+            <pre><code class="language-xml">&lt;drilldown&gt;
+  &lt;set token="selected_user"&gt;$click.value$&lt;/set&gt;
+  &lt;set token="show_details"&gt;true&lt;/set&gt;
+&lt;/drilldown&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- Visualization Types -->
+        <section id="visualizations">
+          <h2>Visualization Best Practices</h2>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Visualization</th>
+                  <th>Best For</th>
+                  <th>Example Use Case</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Single Value</strong></td>
+                  <td>Key metrics, counts</td>
+                  <td>Active alerts, total events</td>
+                </tr>
+                <tr>
+                  <td><strong>Timechart</strong></td>
+                  <td>Trends over time</td>
+                  <td>Event volume, login patterns</td>
+                </tr>
+                <tr>
+                  <td><strong>Bar Chart</strong></td>
+                  <td>Comparisons, rankings</td>
+                  <td>Top sources, rule triggers</td>
+                </tr>
+                <tr>
+                  <td><strong>Pie Chart</strong></td>
+                  <td>Distribution/proportions</td>
+                  <td>Events by severity, action breakdown</td>
+                </tr>
+                <tr>
+                  <td><strong>Table</strong></td>
+                  <td>Detailed data, drill-down</td>
+                  <td>Event lists, investigation queues</td>
+                </tr>
+                <tr>
+                  <td><strong>Choropleth Map</strong></td>
+                  <td>Geographic data</td>
+                  <td>Attack origins, user locations</td>
+                </tr>
+                <tr>
+                  <td><strong>Sankey Diagram</strong></td>
+                  <td>Flow visualization</td>
+                  <td>Network traffic, user journeys</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-title">Dashboard Design Tips</div>
+            <ul>
+              <li>Put critical metrics at the top left (highest visibility)</li>
+              <li>Use consistent color coding (red=critical, yellow=warning, green=normal)</li>
+              <li>Limit to 6-8 panels per dashboard for focus</li>
+              <li>Include time range selector for flexibility</li>
+              <li>Add drilldowns for investigation workflows</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Real-Time Dashboards -->
+        <section id="realtime">
+          <h2>Real-Time Dashboards</h2>
+          <p>Monitor events as they happen with real-time searches:</p>
+
+          <div class="code-block">
+            <div class="code-header">Real-Time Search Options</div>
+            <pre><code class="language-spl"># 1-minute sliding window (updated every second)
+earliest=rt-1m latest=rt
+
+# 5-minute sliding window
+earliest=rt-5m latest=rt
+
+# Real-time all time (resource intensive!)
+earliest=rt latest=rt</code></pre>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-title">Real-Time Performance</div>
+            <p>Real-time searches consume significant resources. Use sparingly and prefer scheduled searches with short intervals (e.g., every 1-5 minutes) for most monitoring needs.</p>
+          </div>
+        </section>
+
+        <!-- Performance -->
+        <section id="performance">
+          <h2>Dashboard Performance Optimization</h2>
+
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>✅ Do</h4>
+              <ul>
+                <li>Use accelerated data models with <code>tstats</code></li>
+                <li>Limit time ranges by default</li>
+                <li>Use report acceleration for complex searches</li>
+                <li>Stagger panel refresh intervals</li>
+                <li>Use <code>fields</code> command to limit data</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>❌ Avoid</h4>
+              <ul>
+                <li>Wildcards in index names</li>
+                <li>Long time ranges without filters</li>
+                <li>Too many real-time panels</li>
+                <li>Complex subsearches in every panel</li>
+                <li>Refreshing all panels simultaneously</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Set Refresh Interval in XML</div>
+            <pre><code class="language-xml">&lt;search&gt;
+  &lt;query&gt;index=firewall | stats count&lt;/query&gt;
+  &lt;earliest&gt;-15m&lt;/earliest&gt;
+  &lt;latest&gt;now&lt;/latest&gt;
+  &lt;refresh&gt;60s&lt;/refresh&gt;
+  &lt;refreshType&gt;delay&lt;/refreshType&gt;
+&lt;/search&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="page-navigation">
+          <a href="spl-cheatsheet.html" class="nav-prev">
+            <span class="direction">Previous</span>
+            <span class="title">SPL Cheatsheet</span>
+          </a>
+          <a href="splunk-alerts.html" class="nav-next">
+            <span class="direction">Next</span>
+            <span class="title">Splunk Alerts</span>
+          </a>
+        </div>
+      </div>
+
+      <footer class="content-footer">
+        <p>SOC Analyst Guide © 2025 | For educational purposes only</p>
+      </footer>
+    </main>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

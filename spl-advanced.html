@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPL Advanced | SOC Analyst Guide</title>
+  <meta name="description" content="Advanced SPL techniques including subsearches, lookups, macros, data models, and statistical analysis for threat detection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 99 Pages</p>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide...">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="splunk-overview.html" class="nav-link"><span class="nav-link-icon">🟢</span> Splunk Overview</a>
+          <a href="splunk-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Splunk Queries</a>
+          <a href="spl-advanced.html" class="nav-link active"><span class="nav-link-icon">🚀</span> SPL Advanced</a>
+          <a href="spl-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> SPL Cheatsheet</a>
+          <a href="splunk-dashboards.html" class="nav-link"><span class="nav-link-icon">📊</span> Splunk Dashboards</a>
+          <a href="splunk-alerts.html" class="nav-link"><span class="nav-link-icon">🔔</span> Splunk Alerts</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="network-forensics.html" class="nav-link"><span class="nav-link-icon">🔬</span> Network Forensics</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewall Basics</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🚪</span> Common Ports</a>
+          <a href="network-segmentation.html" class="nav-link"><span class="nav-link-icon">🗂️</span> Network Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🎯</span> Zero Trust</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> Azure AD Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔵</span> GCP Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">👤</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">✅</span> Email Authentication</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> IR Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link"><span class="nav-link-icon">📢</span> IR Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔤</span> Regex Patterns</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">📚</span> MITRE Reference</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="siem-fundamentals.html">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="current">SPL Advanced</span>
+        </nav>
+        <h1>SPL Advanced Techniques</h1>
+        <p class="lead">Master advanced SPL features including subsearches, lookups, data models, statistical analysis, and performance optimization for complex security investigations.</p>
+      </div>
+
+      <div class="content-wrapper">
+
+        <!-- Subsearches -->
+        <section id="subsearches">
+          <h2>Subsearches</h2>
+          <p>Subsearches run first and their results are used by the outer search. Use them to dynamically filter or enrich your searches.</p>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Basic Subsearch - Find IPs from Threat Intel</span>
+            </div>
+            <pre><code class="language-spl"># Find network traffic to known bad IPs
+index=firewall 
+  [search index=threat_intel type="malicious_ip" 
+   | fields ip 
+   | rename ip as dest_ip]
+| stats count by src_ip, dest_ip, action
+| sort -count</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Subsearch with format</span>
+            </div>
+            <pre><code class="language-spl"># Find all activity from users who failed login > 10 times
+index=* 
+  [search index=wineventlog EventCode=4625 
+   | stats count by Account_Name 
+   | where count > 10 
+   | fields Account_Name 
+   | rename Account_Name as user
+   | format]
+| stats count by index, sourcetype, user
+| sort -count</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Subsearch with return</span>
+            </div>
+            <pre><code class="language-spl"># return command gives more control over subsearch output
+index=firewall action=blocked
+  [search index=assets priority="critical" 
+   | return 100 $ip]
+| stats count by dest_ip, dest_port</code></pre>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-title">Subsearch Limits</div>
+            <p>Subsearches have default limits: 60 seconds runtime and 50,000 results. Use <code>return</code> or <code>head</code> to control output size. For large datasets, consider using <code>join</code> or <code>lookup</code> instead.</p>
+          </div>
+        </section>
+
+        <!-- Lookups -->
+        <section id="lookups">
+          <h2>Lookup Commands</h2>
+          <p>Lookups enrich events with data from CSV files, KV stores, or external databases.</p>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Basic lookup - Asset Enrichment</span>
+            </div>
+            <pre><code class="language-spl"># Enrich firewall logs with asset information
+index=firewall
+| lookup asset_lookup ip as dest_ip 
+    OUTPUT hostname, owner, department, criticality
+| where criticality="high"
+| stats count by dest_ip, hostname, owner, action</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">inputlookup - Query Lookup Directly</span>
+            </div>
+            <pre><code class="language-spl"># Search the lookup table directly
+| inputlookup threat_ip_list.csv
+| where last_seen > relative_time(now(), "-7d")
+| table ip, threat_type, source, last_seen
+
+# Use inputlookup in subsearch
+index=dns 
+  query IN 
+    [| inputlookup malicious_domains.csv 
+     | fields domain 
+     | rename domain as query]
+| stats count by src_ip, query</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">outputlookup - Save Results</span>
+            </div>
+            <pre><code class="language-spl"># Save search results to a lookup table
+index=firewall action=blocked
+| stats count as block_count, 
+        latest(_time) as last_blocked
+  by src_ip
+| where block_count > 100
+| outputlookup blocked_ips.csv
+
+# Append to existing lookup
+| outputlookup append=true blocked_ips.csv</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Geolocation Lookup</span>
+            </div>
+            <pre><code class="language-spl"># Add geographic information to IP addresses
+index=firewall direction=inbound
+| iplocation src_ip
+| stats count by src_ip, Country, City, Region
+| sort -count
+| head 50</code></pre>
+          </div>
+        </section>
+
+        <!-- Join and Append -->
+        <section id="join-append">
+          <h2>Join and Append</h2>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">join - Correlate Different Data Sources</span>
+            </div>
+            <pre><code class="language-spl"># Join authentication failures with VPN connections
+index=wineventlog EventCode=4625
+| stats count as failures by src_ip, Account_Name
+| join type=inner src_ip 
+    [search index=vpn action=connected
+     | stats latest(connection_time) as vpn_connect by src_ip, vpn_user]
+| where failures > 5
+| table src_ip, Account_Name, failures, vpn_user, vpn_connect</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">append - Combine Search Results</span>
+            </div>
+            <pre><code class="language-spl"># Combine failed logins from multiple sources
+index=wineventlog EventCode=4625
+| stats count as failures by user, src_ip
+| eval source="Windows"
+| append 
+    [search index=linux_auth action=failed
+     | stats count as failures by user, src_ip
+     | eval source="Linux"]
+| append 
+    [search index=vpn action=failed
+     | stats count as failures by user, src_ip
+     | eval source="VPN"]
+| stats sum(failures) as total_failures, values(source) as sources by user, src_ip
+| sort -total_failures</code></pre>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-title">Join Types</div>
+            <p><strong>inner:</strong> Only matching events (default)<br>
+            <strong>outer:</strong> All events from main search, matching from subsearch<br>
+            <strong>left:</strong> Same as outer</p>
+          </div>
+        </section>
+
+        <!-- Data Models and tstats -->
+        <section id="datamodels">
+          <h2>Data Models and tstats</h2>
+          <p>The <code>tstats</code> command queries accelerated data models for dramatically faster searches.</p>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">tstats - Authentication Data Model</span>
+            </div>
+            <pre><code class="language-spl"># Fast query using accelerated data model
+| tstats count from datamodel=Authentication 
+  where Authentication.action=failure 
+  by Authentication.user, Authentication.src, Authentication.app
+| rename Authentication.* as *
+| where count > 10
+| sort -count</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">tstats - Network Traffic Analysis</span>
+            </div>
+            <pre><code class="language-spl"># Network traffic summary using data model
+| tstats sum(All_Traffic.bytes) as total_bytes,
+         count as connection_count
+  from datamodel=Network_Traffic 
+  where All_Traffic.action=allowed
+  by All_Traffic.src_ip, All_Traffic.dest_ip, _time span=1h
+| rename All_Traffic.* as *
+| where total_bytes > 100000000
+| eval MB=round(total_bytes/1024/1024, 2)</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">from datamodel - Full Access</span>
+            </div>
+            <pre><code class="language-spl"># Access all fields from data model
+| from datamodel:"Endpoint"."Processes"
+| search process_name="powershell.exe"
+| stats count by dest, user, process, parent_process
+| sort -count</code></pre>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-title">tstats vs from</div>
+            <p><code>tstats</code> is faster but only accesses indexed fields. Use <code>from datamodel</code> when you need access to all extracted fields, but it's slower on large datasets.</p>
+          </div>
+        </section>
+
+        <!-- Statistical Analysis -->
+        <section id="statistics">
+          <h2>Statistical Analysis for Anomaly Detection</h2>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">streamstats - Running Calculations</span>
+            </div>
+            <pre><code class="language-spl"># Calculate running average and detect spikes
+index=firewall
+| timechart span=1h count as hourly_connections
+| streamstats window=24 avg(hourly_connections) as avg_24h,
+                        stdev(hourly_connections) as stdev_24h
+| eval upper_threshold=avg_24h + (stdev_24h * 3)
+| eval is_anomaly=if(hourly_connections > upper_threshold, 1, 0)
+| where is_anomaly=1</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">eventstats - Add Aggregations to Events</span>
+            </div>
+            <pre><code class="language-spl"># Find outliers - users with unusual login counts
+index=wineventlog EventCode=4624
+| stats count by Account_Name
+| eventstats avg(count) as avg_logins, stdev(count) as stdev_logins
+| eval zscore=round((count - avg_logins) / stdev_logins, 2)
+| where zscore > 3 OR zscore < -3
+| sort -zscore</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">anomalydetection - Built-in Command</span>
+            </div>
+            <pre><code class="language-spl"># Use ML-based anomaly detection
+index=proxy
+| timechart span=1h sum(bytes_out) as bytes_uploaded by user
+| anomalydetection bytes_uploaded
+| where isOutlier=1
+| table _time, user, bytes_uploaded, expectedValue, deviation</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Percentile Analysis</span>
+            </div>
+            <pre><code class="language-spl"># Find bytes transferred above 99th percentile
+index=proxy
+| stats sum(bytes_out) as total_bytes by user
+| eventstats perc95(total_bytes) as p95, 
+             perc99(total_bytes) as p99
+| where total_bytes > p99
+| eval MB=round(total_bytes/1024/1024, 2)
+| sort -total_bytes</code></pre>
+          </div>
+        </section>
+
+        <!-- Transaction -->
+        <section id="transactions">
+          <h2>Transaction Command</h2>
+          <p>Group related events into transactions based on common fields or time windows.</p>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Session Analysis</span>
+            </div>
+            <pre><code class="language-spl"># Group user web activity into sessions
+index=proxy
+| transaction user maxspan=30m maxpause=5m
+| stats count as requests,
+        sum(bytes_in) as total_bytes,
+        values(category) as categories
+  by user
+| eval session_duration=duration
+| where session_duration > 3600
+| sort -session_duration</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Login Session Tracking</span>
+            </div>
+            <pre><code class="language-spl"># Track login to logout sessions
+index=wineventlog (EventCode=4624 OR EventCode=4634)
+| eval action=case(EventCode=4624, "login", EventCode=4634, "logout")
+| transaction Account_Name, host startswith=(action="login") 
+                                 endswith=(action="logout")
+                                 maxspan=12h
+| eval session_hours=round(duration/3600, 2)
+| table Account_Name, host, session_hours, eventcount
+| sort -session_hours</code></pre>
+          </div>
+        </section>
+
+        <!-- Time Functions -->
+        <section id="time-functions">
+          <h2>Time Manipulation</h2>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Time Formatting and Calculation</span>
+            </div>
+            <pre><code class="language-spl"># Convert and format timestamps
+index=wineventlog EventCode=4624
+| eval login_time=strftime(_time, "%Y-%m-%d %H:%M:%S")
+| eval day_of_week=strftime(_time, "%A")
+| eval hour_of_day=strftime(_time, "%H")
+| eval is_business_hours=if(hour_of_day >= 8 AND hour_of_day <= 18 
+                           AND NOT match(day_of_week, "Saturday|Sunday"), 
+                           "yes", "no")
+| stats count by Account_Name, is_business_hours
+| where is_business_hours="no"</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Relative Time Functions</span>
+            </div>
+            <pre><code class="language-spl"># Compare current vs historical baseline
+index=firewall
+| timechart span=1d count as daily_events
+| eval week_ago=relative_time(_time, "-7d")
+| appendcols 
+    [search index=firewall earliest=-14d latest=-7d
+     | timechart span=1d count as baseline_events]
+| eval deviation=round(((daily_events - baseline_events) / baseline_events) * 100, 1)
+| where abs(deviation) > 50</code></pre>
+          </div>
+        </section>
+
+        <!-- Eval Functions -->
+        <section id="eval-functions">
+          <h2>Advanced Eval Functions</h2>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">String Manipulation</span>
+            </div>
+            <pre><code class="language-spl"># Extract domain from URL
+index=proxy
+| eval domain=mvindex(split(url, "/"), 2)
+| eval domain_parts=split(domain, ".")
+| eval tld=mvindex(domain_parts, -1)
+| eval sld=mvindex(domain_parts, -2)
+| eval root_domain=sld + "." + tld
+| stats count by root_domain
+| sort -count
+
+# Extract username from email
+| eval username=mvindex(split(email, "@"), 0)
+| eval email_domain=mvindex(split(email, "@"), 1)</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Coalesce and Null Handling</span>
+            </div>
+            <pre><code class="language-spl"># Use first non-null value
+index=*
+| eval user=coalesce(Account_Name, user, src_user, "unknown")
+| eval ip=coalesce(src_ip, dest_ip, host_ip)
+| stats count by user, ip</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Multi-value Field Operations</span>
+            </div>
+            <pre><code class="language-spl"># Work with multi-value fields
+index=sysmon EventCode=1
+| eval cmd_parts=split(CommandLine, " ")
+| eval cmd_count=mvcount(cmd_parts)
+| eval has_suspicious_flag=if(
+    mvfind(cmd_parts, "(?i)(bypass|hidden|encoded)") >= 0, 
+    "yes", "no")
+| where has_suspicious_flag="yes"
+| table _time, host, user, process_name, CommandLine</code></pre>
+          </div>
+        </section>
+
+        <!-- Regex -->
+        <section id="regex">
+          <h2>Regular Expressions</h2>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">rex - Field Extraction</span>
+            </div>
+            <pre><code class="language-spl"># Extract fields from unstructured data
+index=syslog
+| rex field=_raw "user=(?<username>\w+)"
+| rex field=_raw "src=(?<source_ip>\d+\.\d+\.\d+\.\d+)"
+| rex field=_raw "action=(?<action>\w+)"
+| stats count by username, source_ip, action
+
+# Named capture groups with mode=sed (replacement)
+| rex field=email mode=sed "s/(\w+)@.*/\1/"</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">regex - Filter Events</span>
+            </div>
+            <pre><code class="language-spl"># Filter using regex
+index=proxy
+| regex url="(?i)\.(exe|dll|ps1|bat|vbs|js)(\?|$)"
+| stats count by src_ip, url
+
+# Negative regex (exclude matches)
+| regex user!="^svc_.*"</code></pre>
+          </div>
+        </section>
+
+        <!-- Performance Optimization -->
+        <section id="performance">
+          <h2>Performance Optimization</h2>
+
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>🚀 Search Optimization Tips</h4>
+              <ul>
+                <li>Specify index and sourcetype first</li>
+                <li>Use time ranges as narrow as possible</li>
+                <li>Filter with indexed fields before <code>|</code></li>
+                <li>Use <code>tstats</code> for data models</li>
+                <li>Avoid wildcards at start of terms</li>
+                <li>Use <code>fields</code> to limit output</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>⚠️ Avoid These Patterns</h4>
+              <ul>
+                <li><code>index=*</code> - always specify indexes</li>
+                <li><code>*password*</code> - leading wildcards are slow</li>
+                <li>Large time ranges without filtering</li>
+                <li>Subsearches returning many results</li>
+                <li><code>join</code> on large datasets</li>
+                <li>Unnecessary <code>table</code> at end</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Efficient vs Inefficient</span>
+            </div>
+            <pre><code class="language-spl"># SLOW - Don't do this
+index=* user=admin
+| stats count by sourcetype
+
+# FAST - Do this instead
+index=wineventlog OR index=linux_auth OR index=vpn user=admin
+| stats count by sourcetype
+
+# SLOW - Calculated field in where
+index=firewall
+| eval total=bytes_in + bytes_out
+| where total > 1000000
+
+# FAST - Use search command for indexed fields
+index=firewall bytes_in>500000 bytes_out>500000
+| eval total=bytes_in + bytes_out</code></pre>
+          </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="page-navigation">
+          <a href="splunk-queries.html" class="nav-prev">
+            <span class="direction">Previous</span>
+            <span class="title">Splunk Queries</span>
+          </a>
+          <a href="spl-cheatsheet.html" class="nav-next">
+            <span class="direction">Next</span>
+            <span class="title">SPL Cheatsheet</span>
+          </a>
+        </div>
+      </div>
+
+      <footer class="content-footer">
+        <p>SOC Analyst Guide © 2025 | For educational purposes only</p>
+      </footer>
+    </main>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPL Cheatsheet | SOC Analyst Guide</title>
+  <meta name="description" content="Quick reference cheatsheet for Splunk SPL commands, functions, and common search patterns.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 99 Pages</p>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide...">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="splunk-overview.html" class="nav-link"><span class="nav-link-icon">🟢</span> Splunk Overview</a>
+          <a href="splunk-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Splunk Queries</a>
+          <a href="spl-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> SPL Advanced</a>
+          <a href="spl-cheatsheet.html" class="nav-link active"><span class="nav-link-icon">📋</span> SPL Cheatsheet</a>
+          <a href="splunk-dashboards.html" class="nav-link"><span class="nav-link-icon">📊</span> Splunk Dashboards</a>
+          <a href="splunk-alerts.html" class="nav-link"><span class="nav-link-icon">🔔</span> Splunk Alerts</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="network-forensics.html" class="nav-link"><span class="nav-link-icon">🔬</span> Network Forensics</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewall Basics</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🚪</span> Common Ports</a>
+          <a href="network-segmentation.html" class="nav-link"><span class="nav-link-icon">🗂️</span> Network Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🎯</span> Zero Trust</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> Azure AD Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔵</span> GCP Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">👤</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">✅</span> Email Authentication</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> IR Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link"><span class="nav-link-icon">📢</span> IR Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔤</span> Regex Patterns</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">📚</span> MITRE Reference</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="siem-fundamentals.html">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="current">SPL Cheatsheet</span>
+        </nav>
+        <h1>SPL Quick Reference</h1>
+        <p class="lead">Essential SPL commands, operators, functions, and patterns for rapid lookup during investigations.</p>
+      </div>
+
+      <div class="content-wrapper">
+
+        <!-- Search Operators -->
+        <section id="operators">
+          <h2>Search Operators</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Operator</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>AND</code></td><td>Both conditions (default)</td><td><code>error AND critical</code></td></tr>
+                <tr><td><code>OR</code></td><td>Either condition</td><td><code>error OR warning</code></td></tr>
+                <tr><td><code>NOT</code></td><td>Exclude matches</td><td><code>NOT status=200</code></td></tr>
+                <tr><td><code>=</code></td><td>Exact match</td><td><code>user=admin</code></td></tr>
+                <tr><td><code>!=</code></td><td>Not equal</td><td><code>action!=allowed</code></td></tr>
+                <tr><td><code>*</code></td><td>Wildcard</td><td><code>user=admin*</code></td></tr>
+                <tr><td><code>IN</code></td><td>Match any value</td><td><code>status IN (500, 502, 503)</code></td></tr>
+                <tr><td><code>&gt; &lt; &gt;= &lt;=</code></td><td>Comparison</td><td><code>bytes > 10000</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Time Modifiers -->
+        <section id="time">
+          <h2>Time Modifiers</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Modifier</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>earliest=</code></td><td>Start time</td><td><code>earliest=-24h</code></td></tr>
+                <tr><td><code>latest=</code></td><td>End time</td><td><code>latest=now</code></td></tr>
+                <tr><td><code>-Nh</code></td><td>N hours ago</td><td><code>earliest=-4h</code></td></tr>
+                <tr><td><code>-Nd</code></td><td>N days ago</td><td><code>earliest=-7d</code></td></tr>
+                <tr><td><code>-Nw</code></td><td>N weeks ago</td><td><code>earliest=-2w</code></td></tr>
+                <tr><td><code>-Nm</code></td><td>N months ago</td><td><code>earliest=-1m</code></td></tr>
+                <tr><td><code>@d</code></td><td>Snap to day</td><td><code>earliest=-1d@d</code></td></tr>
+                <tr><td><code>@h</code></td><td>Snap to hour</td><td><code>earliest=@h</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Time Range Examples</div>
+            <pre><code class="language-spl"># Last 24 hours
+earliest=-24h latest=now
+
+# Yesterday only
+earliest=-1d@d latest=@d
+
+# Business hours today (8 AM - 6 PM)
+earliest=@d+8h latest=@d+18h
+
+# Last 7 days excluding today
+earliest=-7d@d latest=-1d@d
+
+# Specific date range
+earliest="01/15/2025:00:00:00" latest="01/15/2025:23:59:59"</code></pre>
+          </div>
+        </section>
+
+        <!-- Core Commands -->
+        <section id="commands">
+          <h2>Essential Commands</h2>
+          
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Purpose</th>
+                  <th>Syntax</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>stats</code></td><td>Aggregate data</td><td><code>stats count, sum(bytes) by user</code></td></tr>
+                <tr><td><code>table</code></td><td>Display columns</td><td><code>table _time, src, dest, action</code></td></tr>
+                <tr><td><code>sort</code></td><td>Order results</td><td><code>sort -count</code> (descending)</td></tr>
+                <tr><td><code>head</code></td><td>First N results</td><td><code>head 20</code></td></tr>
+                <tr><td><code>tail</code></td><td>Last N results</td><td><code>tail 10</code></td></tr>
+                <tr><td><code>dedup</code></td><td>Remove duplicates</td><td><code>dedup user, src_ip</code></td></tr>
+                <tr><td><code>where</code></td><td>Filter results</td><td><code>where count > 10</code></td></tr>
+                <tr><td><code>eval</code></td><td>Create/modify fields</td><td><code>eval MB=bytes/1024/1024</code></td></tr>
+                <tr><td><code>rename</code></td><td>Rename fields</td><td><code>rename src_ip as Source</code></td></tr>
+                <tr><td><code>fields</code></td><td>Include/exclude fields</td><td><code>fields user, action</code></td></tr>
+                <tr><td><code>rex</code></td><td>Regex extraction</td><td><code>rex "user=(?&lt;user&gt;\w+)"</code></td></tr>
+                <tr><td><code>timechart</code></td><td>Time-series chart</td><td><code>timechart span=1h count by action</code></td></tr>
+                <tr><td><code>chart</code></td><td>Non-time charts</td><td><code>chart count by user over action</code></td></tr>
+                <tr><td><code>lookup</code></td><td>Enrich with lookup</td><td><code>lookup assets ip as dest OUTPUT hostname</code></td></tr>
+                <tr><td><code>join</code></td><td>Join datasets</td><td><code>join user [search index=hr]</code></td></tr>
+                <tr><td><code>append</code></td><td>Combine results</td><td><code>append [search index=linux]</code></td></tr>
+                <tr><td><code>transaction</code></td><td>Group events</td><td><code>transaction user maxspan=30m</code></td></tr>
+                <tr><td><code>tstats</code></td><td>Fast data model query</td><td><code>tstats count from datamodel=Auth</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Stats Functions -->
+        <section id="stats-functions">
+          <h2>Stats Functions</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Function</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>count</code></td><td>Count events</td><td><code>stats count</code></td></tr>
+                <tr><td><code>dc()</code></td><td>Distinct count</td><td><code>stats dc(user) as unique_users</code></td></tr>
+                <tr><td><code>sum()</code></td><td>Sum values</td><td><code>stats sum(bytes)</code></td></tr>
+                <tr><td><code>avg()</code></td><td>Average</td><td><code>stats avg(response_time)</code></td></tr>
+                <tr><td><code>min()</code> / <code>max()</code></td><td>Min/Max value</td><td><code>stats min(bytes), max(bytes)</code></td></tr>
+                <tr><td><code>values()</code></td><td>All unique values</td><td><code>stats values(action) as actions</code></td></tr>
+                <tr><td><code>list()</code></td><td>All values (with dupes)</td><td><code>stats list(event)</code></td></tr>
+                <tr><td><code>earliest()</code></td><td>First occurrence</td><td><code>stats earliest(_time) as first_seen</code></td></tr>
+                <tr><td><code>latest()</code></td><td>Last occurrence</td><td><code>stats latest(_time) as last_seen</code></td></tr>
+                <tr><td><code>stdev()</code></td><td>Standard deviation</td><td><code>stats stdev(bytes)</code></td></tr>
+                <tr><td><code>perc95()</code></td><td>95th percentile</td><td><code>stats perc95(response_time)</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Eval Functions -->
+        <section id="eval-functions">
+          <h2>Eval Functions</h2>
+
+          <div class="code-block">
+            <div class="code-header">String Functions</div>
+            <pre><code class="language-spl">len(string)                    # String length
+lower(string) / upper(string)  # Case conversion  
+trim(string) / ltrim() / rtrim() # Trim whitespace
+substr(string, start, len)     # Substring
+replace(string, regex, new)    # Replace pattern
+split(string, delim)           # Split to multivalue
+mvindex(mv_field, index)       # Get MV element
+mvjoin(mv_field, delim)        # Join MV to string</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Conditional Functions</div>
+            <pre><code class="language-spl"># if(condition, true_val, false_val)
+| eval status=if(code>=400, "error", "success")
+
+# case(cond1, val1, cond2, val2, ..., default)
+| eval severity=case(
+    code>=500, "critical",
+    code>=400, "warning",
+    1=1, "normal")
+
+# coalesce - first non-null value
+| eval user=coalesce(Account_Name, user, src_user)
+
+# null handling
+| eval result=if(isnull(value), "missing", value)
+| where isnotnull(user)</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Time Functions</div>
+            <pre><code class="language-spl"># Format timestamp
+| eval timestamp=strftime(_time, "%Y-%m-%d %H:%M:%S")
+| eval day=strftime(_time, "%A")
+| eval hour=strftime(_time, "%H")
+
+# Parse time string
+| eval epoch=strptime(date_str, "%m/%d/%Y %H:%M")
+
+# Time calculations  
+| eval age_hours=round((_time - creation_time)/3600, 2)
+| eval future=_time + 86400  # Add 1 day</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Math Functions</div>
+            <pre><code class="language-spl">round(num, decimals)   # Round number
+floor(num) / ceil(num) # Floor/ceiling
+abs(num)               # Absolute value
+sqrt(num)              # Square root
+pow(base, exp)         # Power
+log(num, base)         # Logarithm
+random()               # Random 0-1</code></pre>
+          </div>
+        </section>
+
+        <!-- Windows Event Codes -->
+        <section id="windows-events">
+          <h2>Critical Windows Event IDs</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Event ID</th>
+                  <th>Description</th>
+                  <th>Detection Use</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>4624</code></td><td>Successful logon</td><td>Account activity baseline</td></tr>
+                <tr><td><code>4625</code></td><td>Failed logon</td><td>Brute force detection</td></tr>
+                <tr><td><code>4648</code></td><td>Explicit credential logon</td><td>Lateral movement</td></tr>
+                <tr><td><code>4672</code></td><td>Admin logon</td><td>Privilege escalation</td></tr>
+                <tr><td><code>4688</code></td><td>Process created</td><td>Malware execution</td></tr>
+                <tr><td><code>4698</code></td><td>Scheduled task created</td><td>Persistence</td></tr>
+                <tr><td><code>4720</code></td><td>User account created</td><td>Unauthorized accounts</td></tr>
+                <tr><td><code>4728/4732</code></td><td>User added to group</td><td>Privilege escalation</td></tr>
+                <tr><td><code>4740</code></td><td>Account lockout</td><td>Brute force indicator</td></tr>
+                <tr><td><code>4768</code></td><td>Kerberos TGT request</td><td>Auth anomalies</td></tr>
+                <tr><td><code>4769</code></td><td>Kerberos service ticket</td><td>Kerberoasting</td></tr>
+                <tr><td><code>7045</code></td><td>Service installed</td><td>Persistence/Malware</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Quick Patterns -->
+        <section id="patterns">
+          <h2>Common Search Patterns</h2>
+
+          <div class="code-block">
+            <div class="code-header">Failed Logins</div>
+            <pre><code class="language-spl">index=wineventlog EventCode=4625
+| stats count by Account_Name, src_ip
+| where count > 5
+| sort -count</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Top Talkers</div>
+            <pre><code class="language-spl">index=firewall
+| stats sum(bytes) as total_bytes by src_ip, dest_ip
+| eval MB=round(total_bytes/1024/1024, 2)
+| sort -MB | head 20</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Suspicious PowerShell</div>
+            <pre><code class="language-spl">index=wineventlog EventCode=4688 process_name="powershell.exe"
+| search CommandLine="*-enc*" OR CommandLine="*bypass*" 
+         OR CommandLine="*hidden*" OR CommandLine="*download*"
+| table _time, host, user, CommandLine</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">New Services</div>
+            <pre><code class="language-spl">index=wineventlog EventCode=7045
+| table _time, host, Service_Name, Service_File_Name
+| sort -_time</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Data Exfiltration Detection</div>
+            <pre><code class="language-spl">index=proxy http_method=POST
+| stats sum(bytes_out) as uploaded by src_ip, user
+| where uploaded > 100000000
+| eval MB=round(uploaded/1024/1024, 2)
+| sort -MB</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">DNS to Rare Domains</div>
+            <pre><code class="language-spl">index=dns
+| stats count dc(src_ip) as clients by query
+| where count < 5 AND clients = 1
+| sort count</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Notable Events (ES)</div>
+            <pre><code class="language-spl">| `notable`
+| search status=new urgency IN (critical, high)
+| stats count by rule_name, urgency
+| sort -urgency, -count</code></pre>
+          </div>
+        </section>
+
+        <!-- Keyboard Shortcuts -->
+        <section id="shortcuts">
+          <h2>Keyboard Shortcuts</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Shortcut</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td><td>Run search</td></tr>
+                <tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd></td><td>Open in new search tab</td></tr>
+                <tr><td><kbd>Ctrl</kbd> + <kbd>\</kbd></td><td>Format/indent SPL</td></tr>
+                <tr><td><kbd>Ctrl</kbd> + <kbd>/</kbd></td><td>Comment line</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Cancel running search</td></tr>
+                <tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></td><td>Search preferences</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="page-navigation">
+          <a href="spl-advanced.html" class="nav-prev">
+            <span class="direction">Previous</span>
+            <span class="title">SPL Advanced</span>
+          </a>
+          <a href="splunk-dashboards.html" class="nav-next">
+            <span class="direction">Next</span>
+            <span class="title">Splunk Dashboards</span>
+          </a>
+        </div>
+      </div>
+
+      <footer class="content-footer">
+        <p>SOC Analyst Guide © 2025 | For educational purposes only</p>
+      </footer>
+    </main>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

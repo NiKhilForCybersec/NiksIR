@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Splunk Alerts | SOC Analyst Guide</title>
+  <meta name="description" content="Complete guide to Splunk alerting, correlation searches, notable events, and ES alert management for SOC operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 99 Pages</p>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide...">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="splunk-overview.html" class="nav-link"><span class="nav-link-icon">🟢</span> Splunk Overview</a>
+          <a href="splunk-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Splunk Queries</a>
+          <a href="spl-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> SPL Advanced</a>
+          <a href="spl-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> SPL Cheatsheet</a>
+          <a href="splunk-dashboards.html" class="nav-link"><span class="nav-link-icon">📊</span> Splunk Dashboards</a>
+          <a href="splunk-alerts.html" class="nav-link active"><span class="nav-link-icon">🔔</span> Splunk Alerts</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="network-forensics.html" class="nav-link"><span class="nav-link-icon">🔬</span> Network Forensics</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewall Basics</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🚪</span> Common Ports</a>
+          <a href="network-segmentation.html" class="nav-link"><span class="nav-link-icon">🗂️</span> Network Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🎯</span> Zero Trust</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> Azure AD Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔵</span> GCP Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">👤</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">✅</span> Email Authentication</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> IR Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link"><span class="nav-link-icon">📢</span> IR Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔤</span> Regex Patterns</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">📚</span> MITRE Reference</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="siem-fundamentals.html">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="current">Splunk Alerts</span>
+        </nav>
+        <h1>Splunk Alerts & Correlation Searches</h1>
+        <p class="lead">Configure effective security alerts, manage notable events, implement risk-based alerting, and reduce alert fatigue in your SOC.</p>
+      </div>
+
+      <div class="content-wrapper">
+
+        <!-- Alert Types -->
+        <section id="alert-types">
+          <h2>Alert Types</h2>
+          
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>⏱️ Scheduled Alerts</h4>
+              <p>Run at defined intervals (every 5 min, hourly, daily)</p>
+              <ul>
+                <li>Best for: Most security use cases</li>
+                <li>Performance: Low resource usage</li>
+                <li>Latency: Depends on schedule</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>🔴 Real-Time Alerts</h4>
+              <p>Continuous monitoring with immediate notification</p>
+              <ul>
+                <li>Best for: Critical, time-sensitive events</li>
+                <li>Performance: High resource usage</li>
+                <li>Latency: Near-instant</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>📊 Rolling Window</h4>
+              <p>Real-time search over a sliding time window</p>
+              <ul>
+                <li>Best for: Threshold-based detection</li>
+                <li>Performance: Moderate resource usage</li>
+                <li>Latency: Within window size</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-title">Real-Time Alert Considerations</div>
+            <p>Use real-time alerts sparingly. They consume significant resources and can impact Splunk performance. For most SOC use cases, scheduled alerts running every 5-15 minutes provide adequate coverage with better efficiency.</p>
+          </div>
+        </section>
+
+        <!-- Creating Alerts -->
+        <section id="creating-alerts">
+          <h2>Creating Effective Alerts</h2>
+
+          <h3>Alert Workflow</h3>
+          <ol>
+            <li><strong>Define the search:</strong> Start with a tested SPL query</li>
+            <li><strong>Set trigger conditions:</strong> When should this alert?</li>
+            <li><strong>Configure actions:</strong> What happens when it triggers?</li>
+            <li><strong>Set throttling:</strong> Prevent alert storms</li>
+            <li><strong>Test and tune:</strong> Validate and reduce false positives</li>
+          </ol>
+
+          <h3>Trigger Conditions</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Condition</th>
+                  <th>Use Case</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Number of results &gt; 0</td>
+                  <td>Any match detection</td>
+                  <td>Malware detected, known bad IP</td>
+                </tr>
+                <tr>
+                  <td>Number of results &gt; N</td>
+                  <td>Threshold alerting</td>
+                  <td>More than 10 failed logins</td>
+                </tr>
+                <tr>
+                  <td>Number of results drops below N</td>
+                  <td>Health monitoring</td>
+                  <td>Log source went silent</td>
+                </tr>
+                <tr>
+                  <td>Custom condition</td>
+                  <td>Complex logic</td>
+                  <td>Statistical anomaly</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Alert Actions -->
+        <section id="alert-actions">
+          <h2>Alert Actions</h2>
+
+          <div class="accordion">
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📧 Send Email</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Send email notifications with alert details:</p>
+                <ul>
+                  <li>Configure recipients (individuals or distribution lists)</li>
+                  <li>Customize subject line with tokens</li>
+                  <li>Include search results inline or as attachment</li>
+                  <li>Add priority and formatting</li>
+                </ul>
+                <div class="code-block">
+                  <pre><code>Subject: [CRITICAL] $name$ - $result.count$ events detected
+To: soc-team@company.com
+Include: Inline results (first 10)</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>🔔 Create Notable Event (ES)</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Generate a notable event in Enterprise Security:</p>
+                <ul>
+                  <li><strong>Security Domain:</strong> Access, Endpoint, Network, Threat, Identity</li>
+                  <li><strong>Severity/Urgency:</strong> Critical, High, Medium, Low, Informational</li>
+                  <li><strong>Default Owner:</strong> Assign to specific analyst or queue</li>
+                  <li><strong>Drilldown Search:</strong> Link to investigation search</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📊 Add to Risk Index (ES)</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Contribute to risk-based alerting:</p>
+                <ul>
+                  <li><strong>Risk Score:</strong> Points to add (1-100)</li>
+                  <li><strong>Risk Object:</strong> Field containing the entity (user, host)</li>
+                  <li><strong>Risk Object Type:</strong> user, system, or other</li>
+                  <li><strong>Risk Message:</strong> Description for analysts</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>🔗 Webhook</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Send data to external systems:</p>
+                <ul>
+                  <li>SOAR platforms (Splunk SOAR, Phantom)</li>
+                  <li>Ticketing systems (ServiceNow, Jira)</li>
+                  <li>Chat platforms (Slack, Teams)</li>
+                  <li>Custom APIs</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📝 Run Script</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Execute custom scripts for automated response:</p>
+                <ul>
+                  <li>Block IP on firewall</li>
+                  <li>Disable user account</li>
+                  <li>Isolate endpoint</li>
+                  <li>Enrich with threat intel</li>
+                </ul>
+                <div class="callout callout-warning">
+                  <p><strong>Caution:</strong> Script actions run with Splunk service account permissions. Ensure proper security controls.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Correlation Search Examples -->
+        <section id="correlation-searches">
+          <h2>Correlation Search Examples</h2>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Brute Force Detection</span>
+              <span class="badge badge-red">Critical</span>
+            </div>
+            <pre><code class="language-spl">index=wineventlog EventCode=4625
+| bin _time span=10m
+| stats count as failures, 
+        dc(Account_Name) as unique_accounts,
+        values(Account_Name) as targeted_accounts
+  by src_ip, _time
+| where failures > 20
+| eval description="Brute force attempt: ".failures." failed logins from ".src_ip</code></pre>
+            <p><strong>Trigger:</strong> Results &gt; 0 | <strong>Schedule:</strong> Every 5 minutes</p>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Successful Login After Failures</span>
+              <span class="badge badge-orange">High</span>
+            </div>
+            <pre><code class="language-spl">index=wineventlog (EventCode=4624 OR EventCode=4625)
+| stats count(eval(EventCode=4625)) as failures,
+        count(eval(EventCode=4624)) as successes,
+        latest(_time) as last_event
+  by Account_Name, src_ip
+| where failures > 5 AND successes > 0
+| eval risk_score=failures * 2
+| eval description="Potential compromised account: ".Account_Name</code></pre>
+            <p><strong>Trigger:</strong> Results &gt; 0 | <strong>Schedule:</strong> Every 15 minutes</p>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Suspicious PowerShell Execution</span>
+              <span class="badge badge-red">Critical</span>
+            </div>
+            <pre><code class="language-spl">index=wineventlog EventCode=4688 
+  (process_name="powershell.exe" OR process_name="pwsh.exe")
+| search CommandLine="*-enc*" OR CommandLine="*bypass*" 
+         OR CommandLine="*hidden*" OR CommandLine="*downloadstring*"
+         OR CommandLine="*invoke-expression*" OR CommandLine="*iex*"
+| eval risk_score=case(
+    like(CommandLine, "%downloadstring%"), 80,
+    like(CommandLine, "%-enc%"), 70,
+    like(CommandLine, "%bypass%"), 60,
+    1=1, 50)
+| table _time, host, user, process_name, CommandLine, risk_score</code></pre>
+            <p><strong>Trigger:</strong> Results &gt; 0 | <strong>Schedule:</strong> Every 5 minutes</p>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Large Data Upload</span>
+              <span class="badge badge-orange">High</span>
+            </div>
+            <pre><code class="language-spl">index=proxy http_method=POST
+| stats sum(bytes_out) as total_uploaded by src_ip, user, dest
+| where total_uploaded > 100000000
+| eval MB_uploaded=round(total_uploaded/1024/1024, 2)
+| eval description="Large upload detected: ".MB_uploaded."MB to ".dest</code></pre>
+            <p><strong>Trigger:</strong> Results &gt; 0 | <strong>Schedule:</strong> Every 15 minutes</p>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">New Admin Account Created</span>
+              <span class="badge badge-red">Critical</span>
+            </div>
+            <pre><code class="language-spl">index=wineventlog EventCode=4720 
+| join type=inner Account_Name 
+    [search index=wineventlog EventCode=4728 
+     | search TargetUserName="Domain Admins" OR 
+              TargetUserName="Administrators" OR
+              TargetUserName="Enterprise Admins"
+     | rename MemberName as Account_Name]
+| table _time, host, SubjectUserName, Account_Name, TargetUserName
+| eval description="New admin account created: ".Account_Name." by ".SubjectUserName</code></pre>
+            <p><strong>Trigger:</strong> Results &gt; 0 | <strong>Schedule:</strong> Every 5 minutes</p>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Log Source Health</span>
+              <span class="badge badge-blue">Informational</span>
+            </div>
+            <pre><code class="language-spl">| tstats count where index=* by index, sourcetype, _time span=1h
+| stats latest(_time) as last_event, count as event_count by index, sourcetype
+| eval hours_since_event=round((now() - last_event)/3600, 1)
+| where hours_since_event > 4
+| eval description="No events from ".sourcetype." in ".hours_since_event." hours"</code></pre>
+            <p><strong>Trigger:</strong> Results &gt; 0 | <strong>Schedule:</strong> Every hour</p>
+          </div>
+        </section>
+
+        <!-- Risk-Based Alerting -->
+        <section id="rba">
+          <h2>Risk-Based Alerting (RBA)</h2>
+          <p>RBA aggregates multiple low-fidelity detections into high-fidelity alerts, reducing alert fatigue while maintaining coverage.</p>
+
+          <div class="info-card" style="margin-bottom: 1.5rem;">
+            <h4>How RBA Works</h4>
+            <ol>
+              <li><strong>Risk Rules:</strong> Detections assign risk points to entities instead of creating alerts</li>
+              <li><strong>Risk Accumulation:</strong> Points aggregate in the risk index by user/host</li>
+              <li><strong>Threshold Alert:</strong> Notable event fires when entity exceeds threshold</li>
+              <li><strong>Full Context:</strong> All contributing events available for investigation</li>
+            </ol>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Risk Rule Template</span>
+            </div>
+            <pre><code class="language-spl"># Instead of triggering alert directly, add to risk index
+index=wineventlog EventCode=4625
+| stats count as failures by Account_Name, src_ip
+| where failures > 3
+| eval risk_score=failures * 5
+| eval risk_object=Account_Name
+| eval risk_object_type="user"
+| eval risk_message="Multiple failed logins (".failures.") from ".src_ip
+| collect index=risk</code></pre>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Risk Threshold Correlation Search</span>
+            </div>
+            <pre><code class="language-spl"># Alert when accumulated risk exceeds threshold
+| from datamodel:"Risk"."All_Risk"
+| stats sum(risk_score) as total_risk,
+        values(risk_message) as contributing_events,
+        dc(source) as detection_count
+  by risk_object, risk_object_type
+| where total_risk > 100
+| eval urgency=case(
+    total_risk > 200, "critical",
+    total_risk > 150, "high",
+    total_risk > 100, "medium")</code></pre>
+          </div>
+
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>✅ RBA Benefits</h4>
+              <ul>
+                <li>Reduces alert volume by 80-90%</li>
+                <li>Higher fidelity notable events</li>
+                <li>Full attack chain visibility</li>
+                <li>Contextual investigation</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>📊 Risk Score Guidelines</h4>
+              <ul>
+                <li>Low confidence: 5-20 points</li>
+                <li>Medium confidence: 20-50 points</li>
+                <li>High confidence: 50-80 points</li>
+                <li>Critical events: 80-100 points</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Throttling -->
+        <section id="throttling">
+          <h2>Alert Throttling</h2>
+          <p>Prevent alert storms while ensuring coverage:</p>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Setting</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Suppress results</strong></td>
+                  <td>Don't alert on same condition</td>
+                  <td>Suppress for 1 hour per src_ip</td>
+                </tr>
+                <tr>
+                  <td><strong>Suppress fields</strong></td>
+                  <td>Group suppression by field values</td>
+                  <td>src_ip, user, dest</td>
+                </tr>
+                <tr>
+                  <td><strong>Suppress period</strong></td>
+                  <td>How long to suppress</td>
+                  <td>1h, 4h, 24h</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-title">Throttling Best Practices</div>
+            <ul>
+              <li>Throttle by the most specific field (user+src combination)</li>
+              <li>Match throttle period to attack patterns (brute force: 1h, recon: 24h)</li>
+              <li>Don't over-throttle critical alerts</li>
+              <li>Review suppressed alerts periodically</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Managing Notable Events -->
+        <section id="managing-notables">
+          <h2>Managing Notable Events</h2>
+
+          <h3>Notable Event Workflow</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Meaning</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-blue">New</span></td>
+                  <td>Unassigned, uninvestigated</td>
+                  <td>Assign to analyst</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-orange">In Progress</span></td>
+                  <td>Under investigation</td>
+                  <td>Continue investigation</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-purple">Pending</span></td>
+                  <td>Waiting on external action</td>
+                  <td>Follow up on blockers</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-green">Resolved</span></td>
+                  <td>Incident handled</td>
+                  <td>Document findings</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-gray">Closed</span></td>
+                  <td>No action needed (FP/benign)</td>
+                  <td>Consider tuning rule</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="query-box">
+            <div class="query-header">
+              <span class="query-title">Bulk Update Notable Events</span>
+            </div>
+            <pre><code class="language-spl"># Find notables to update
+| `notable`
+| search rule_name="My Alert" status=new
+| eval new_status="closed", 
+       comment="Bulk closed - known FP pattern"
+| outputlookup append=true notable_update_queue</code></pre>
+          </div>
+        </section>
+
+        <!-- Alert Tuning -->
+        <section id="tuning">
+          <h2>Alert Tuning Process</h2>
+
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>📉 Reducing False Positives</h4>
+              <ol>
+                <li>Review closed/FP notables for patterns</li>
+                <li>Add exclusions (known tools, IPs, users)</li>
+                <li>Increase thresholds if appropriate</li>
+                <li>Add time-based filters (business hours)</li>
+                <li>Refine search logic</li>
+              </ol>
+            </div>
+            <div class="info-card">
+              <h4>📈 Improving Detection</h4>
+              <ol>
+                <li>Review missed incidents</li>
+                <li>Lower thresholds if missing attacks</li>
+                <li>Add variant patterns</li>
+                <li>Expand data sources</li>
+                <li>Implement RBA for low-signal detections</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Exclusion List Pattern</div>
+            <pre><code class="language-spl"># Use lookup for exclusions
+index=wineventlog EventCode=4625
+| lookup auth_exclusions src_ip OUTPUT is_excluded
+| where isnull(is_excluded) OR is_excluded!="true"
+| stats count by Account_Name, src_ip
+| where count > 10</code></pre>
+          </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="page-navigation">
+          <a href="splunk-dashboards.html" class="nav-prev">
+            <span class="direction">Previous</span>
+            <span class="title">Splunk Dashboards</span>
+          </a>
+          <a href="alert-creation.html" class="nav-next">
+            <span class="direction">Next</span>
+            <span class="title">Alert Creation</span>
+          </a>
+        </div>
+      </div>
+
+      <footer class="content-footer">
+        <p>SOC Analyst Guide © 2025 | For educational purposes only</p>
+      </footer>
+    </main>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

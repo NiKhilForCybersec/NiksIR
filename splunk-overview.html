@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Splunk Overview | SOC Analyst Guide</title>
+  <meta name="description" content="Comprehensive guide to Splunk Enterprise and Splunk Enterprise Security for SOC analysts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <button class="menu-toggle" aria-label="Toggle navigation">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo" style="text-decoration: none;">
+          <span>SOC Analyst Guide</span>
+        </a>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">v2.0 | 99 Pages</p>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" class="search-input" placeholder="Search guide...">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">1. SOC Foundations</div>
+          <a href="getting-started.html" class="nav-link"><span class="nav-link-icon">🚀</span> Getting Started</a>
+          <a href="soc-overview.html" class="nav-link"><span class="nav-link-icon">📋</span> SOC Overview</a>
+          <a href="soc-roles.html" class="nav-link"><span class="nav-link-icon">👥</span> SOC Roles & Tiers</a>
+          <a href="analyst-skills.html" class="nav-link"><span class="nav-link-icon">🎯</span> Analyst Skills</a>
+          <a href="analyst-toolkit.html" class="nav-link"><span class="nav-link-icon">🧰</span> Analyst Toolkit</a>
+          <a href="soc-metrics.html" class="nav-link"><span class="nav-link-icon">📊</span> SOC Metrics</a>
+          <a href="shift-handoff.html" class="nav-link"><span class="nav-link-icon">🔄</span> Shift Handoff</a>
+          <a href="alert-triage.html" class="nav-link"><span class="nav-link-icon">⚡</span> Alert Triage</a>
+          <a href="investigation-methodology.html" class="nav-link"><span class="nav-link-icon">🔍</span> Investigation Methodology</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">2. Ticketing & ITSM</div>
+          <a href="ticket-management.html" class="nav-link"><span class="nav-link-icon">🎫</span> Ticket Management</a>
+          <a href="escalation-management.html" class="nav-link"><span class="nav-link-icon">📈</span> Escalation</a>
+          <a href="communication-practices.html" class="nav-link"><span class="nav-link-icon">💬</span> Communication</a>
+          <a href="status-reporting.html" class="nav-link"><span class="nav-link-icon">📊</span> Status Reporting</a>
+          <a href="handoff-procedures.html" class="nav-link"><span class="nav-link-icon">🔄</span> Handoff Procedures</a>
+          <a href="sla-management.html" class="nav-link"><span class="nav-link-icon">⏱️</span> SLA Management</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">3. SIEM & Log Analysis</div>
+          <a href="siem-fundamentals.html" class="nav-link"><span class="nav-link-icon">📡</span> SIEM Fundamentals</a>
+          <a href="sentinel-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> Microsoft Sentinel</a>
+          <a href="sentinel-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Sentinel Queries</a>
+          <a href="kql-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> KQL Advanced</a>
+          <a href="kql-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> KQL Cheatsheet</a>
+          <a href="splunk-overview.html" class="nav-link active"><span class="nav-link-icon">🟢</span> Splunk Overview</a>
+          <a href="splunk-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> Splunk Queries</a>
+          <a href="spl-advanced.html" class="nav-link"><span class="nav-link-icon">🚀</span> SPL Advanced</a>
+          <a href="spl-cheatsheet.html" class="nav-link"><span class="nav-link-icon">📋</span> SPL Cheatsheet</a>
+          <a href="splunk-dashboards.html" class="nav-link"><span class="nav-link-icon">📊</span> Splunk Dashboards</a>
+          <a href="splunk-alerts.html" class="nav-link"><span class="nav-link-icon">🔔</span> Splunk Alerts</a>
+          <a href="alert-creation.html" class="nav-link"><span class="nav-link-icon">🔔</span> Alert Creation</a>
+          <a href="siem-tuning.html" class="nav-link"><span class="nav-link-icon">🎚️</span> SIEM Tuning</a>
+          <a href="workbook-creation.html" class="nav-link"><span class="nav-link-icon">📈</span> Workbook Creation</a>
+          <a href="log-sources.html" class="nav-link"><span class="nav-link-icon">📋</span> Log Sources</a>
+          <a href="log-correlation.html" class="nav-link"><span class="nav-link-icon">🔗</span> Log Correlation</a>
+          <a href="threat-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> Threat Hunting</a>
+          <a href="hunting-queries.html" class="nav-link"><span class="nav-link-icon">🔎</span> Hunting Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">4. EDR/XDR</div>
+          <a href="edr-fundamentals.html" class="nav-link"><span class="nav-link-icon">🔒</span> EDR Fundamentals</a>
+          <a href="edr-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔬</span> EDR Deep Dive</a>
+          <a href="edr-investigation.html" class="nav-link"><span class="nav-link-icon">🕵️</span> EDR Investigation</a>
+          <a href="edr-hunting.html" class="nav-link"><span class="nav-link-icon">🎯</span> EDR Hunting</a>
+          <a href="isolation-procedures.html" class="nav-link"><span class="nav-link-icon">🔒</span> Isolation Procedures</a>
+          <a href="xdr-overview.html" class="nav-link"><span class="nav-link-icon">🌐</span> XDR Overview</a>
+          <a href="mde-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> MDE Overview</a>
+          <a href="mde-queries.html" class="nav-link"><span class="nav-link-icon">💻</span> MDE Queries</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">5. Network Security</div>
+          <a href="network-fundamentals.html" class="nav-link"><span class="nav-link-icon">🌐</span> Network Fundamentals</a>
+          <a href="traffic-analysis.html" class="nav-link"><span class="nav-link-icon">📊</span> Traffic Analysis</a>
+          <a href="network-forensics.html" class="nav-link"><span class="nav-link-icon">🔬</span> Network Forensics</a>
+          <a href="firewall-basics.html" class="nav-link"><span class="nav-link-icon">🧱</span> Firewall Basics</a>
+          <a href="ids-ips.html" class="nav-link"><span class="nav-link-icon">🚨</span> IDS/IPS</a>
+          <a href="proxy-analysis.html" class="nav-link"><span class="nav-link-icon">🔀</span> Proxy Analysis</a>
+          <a href="dns-security.html" class="nav-link"><span class="nav-link-icon">🌍</span> DNS Security</a>
+          <a href="vpn-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> VPN Security</a>
+          <a href="common-ports.html" class="nav-link"><span class="nav-link-icon">🚪</span> Common Ports</a>
+          <a href="network-segmentation.html" class="nav-link"><span class="nav-link-icon">🗂️</span> Network Segmentation</a>
+          <a href="zero-trust.html" class="nav-link"><span class="nav-link-icon">🎯</span> Zero Trust</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">6. Cloud Security</div>
+          <a href="cloud-overview.html" class="nav-link"><span class="nav-link-icon">☁️</span> Cloud Overview</a>
+          <a href="azure-security.html" class="nav-link"><span class="nav-link-icon">🔷</span> Azure Security</a>
+          <a href="azure-ad-security.html" class="nav-link"><span class="nav-link-icon">🔐</span> Azure AD Security</a>
+          <a href="m365-security.html" class="nav-link"><span class="nav-link-icon">📧</span> M365 Security</a>
+          <a href="aws-security.html" class="nav-link"><span class="nav-link-icon">🔶</span> AWS Security</a>
+          <a href="gcp-security.html" class="nav-link"><span class="nav-link-icon">🔵</span> GCP Security</a>
+          <a href="cloud-iam.html" class="nav-link"><span class="nav-link-icon">👤</span> Cloud IAM</a>
+          <a href="container-security.html" class="nav-link"><span class="nav-link-icon">📦</span> Container Security</a>
+          <a href="serverless-security.html" class="nav-link"><span class="nav-link-icon">⚡</span> Serverless Security</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">7. Email & Phishing</div>
+          <a href="email-security.html" class="nav-link"><span class="nav-link-icon">📧</span> Email Security</a>
+          <a href="phishing-analysis.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing Analysis</a>
+          <a href="email-headers.html" class="nav-link"><span class="nav-link-icon">📋</span> Email Headers</a>
+          <a href="email-auth.html" class="nav-link"><span class="nav-link-icon">✅</span> Email Authentication</a>
+          <a href="bec-attacks.html" class="nav-link"><span class="nav-link-icon">💼</span> BEC Attacks</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">8. Identity & Access</div>
+          <a href="identity-overview.html" class="nav-link"><span class="nav-link-icon">👤</span> Identity Overview</a>
+          <a href="ad-security.html" class="nav-link"><span class="nav-link-icon">🏢</span> AD Security</a>
+          <a href="mfa-deep-dive.html" class="nav-link"><span class="nav-link-icon">🔐</span> MFA Deep Dive</a>
+          <a href="privileged-access.html" class="nav-link"><span class="nav-link-icon">👑</span> Privileged Access</a>
+          <a href="service-accounts.html" class="nav-link"><span class="nav-link-icon">⚙️</span> Service Accounts</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">9. Data Protection</div>
+          <a href="data-classification.html" class="nav-link"><span class="nav-link-icon">🏷️</span> Data Classification</a>
+          <a href="dlp-overview.html" class="nav-link"><span class="nav-link-icon">🛡️</span> DLP Overview</a>
+          <a href="dlp-investigation.html" class="nav-link"><span class="nav-link-icon">🔍</span> DLP Investigation</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">10. Incident Response</div>
+          <a href="ir-overview.html" class="nav-link"><span class="nav-link-icon">🚨</span> IR Overview</a>
+          <a href="ir-classification.html" class="nav-link"><span class="nav-link-icon">📊</span> IR Classification</a>
+          <a href="ir-containment.html" class="nav-link"><span class="nav-link-icon">🔒</span> Containment</a>
+          <a href="ir-eradication.html" class="nav-link"><span class="nav-link-icon">🧹</span> Eradication</a>
+          <a href="ir-recovery.html" class="nav-link"><span class="nav-link-icon">🔄</span> Recovery</a>
+          <a href="ir-communication.html" class="nav-link"><span class="nav-link-icon">📢</span> IR Communication</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="lessons-learned.html" class="nav-link"><span class="nav-link-icon">📝</span> Lessons Learned</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">11. Playbooks</div>
+          <a href="pb-phishing.html" class="nav-link"><span class="nav-link-icon">🎣</span> Phishing</a>
+          <a href="pb-malware.html" class="nav-link"><span class="nav-link-icon">🦠</span> Malware</a>
+          <a href="pb-ransomware.html" class="nav-link"><span class="nav-link-icon">💰</span> Ransomware</a>
+          <a href="pb-brute-force.html" class="nav-link"><span class="nav-link-icon">🔓</span> Brute Force</a>
+          <a href="pb-account-compromise.html" class="nav-link"><span class="nav-link-icon">👤</span> Account Compromise</a>
+          <a href="pb-insider-threat.html" class="nav-link"><span class="nav-link-icon">🕵️</span> Insider Threat</a>
+          <a href="pb-data-exfiltration.html" class="nav-link"><span class="nav-link-icon">📤</span> Data Exfiltration</a>
+          <a href="pb-lateral-movement.html" class="nav-link"><span class="nav-link-icon">↔️</span> Lateral Movement</a>
+          <a href="pb-impossible-travel.html" class="nav-link"><span class="nav-link-icon">✈️</span> Impossible Travel</a>
+          <a href="pb-c2.html" class="nav-link"><span class="nav-link-icon">📡</span> C2 Detection</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">12. Reference</div>
+          <a href="quick-reference.html" class="nav-link"><span class="nav-link-icon">⚡</span> Quick Reference</a>
+          <a href="regex-patterns.html" class="nav-link"><span class="nav-link-icon">🔤</span> Regex Patterns</a>
+          <a href="ioc-tools.html" class="nav-link"><span class="nav-link-icon">🔧</span> IOC Tools</a>
+          <a href="windows-events.html" class="nav-link"><span class="nav-link-icon">🪟</span> Windows Events</a>
+          <a href="mitre-reference.html" class="nav-link"><span class="nav-link-icon">📚</span> MITRE Reference</a>
+          <a href="evidence-handling.html" class="nav-link"><span class="nav-link-icon">📁</span> Evidence Handling</a>
+          <a href="documentation.html" class="nav-link"><span class="nav-link-icon">📝</span> Documentation</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <main class="main-content">
+      <div class="content-header">
+        <nav class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="siem-fundamentals.html">SIEM & Log Analysis</a>
+          <span class="breadcrumb-separator">›</span>
+          <span class="current">Splunk Overview</span>
+        </nav>
+        <h1>Splunk Overview</h1>
+        <p class="lead">Master Splunk Enterprise and Splunk Enterprise Security (ES) for effective security operations, threat detection, and incident investigation.</p>
+      </div>
+
+      <div class="content-wrapper">
+
+        <!-- Platform Overview -->
+        <section id="platform-overview">
+          <h2>Splunk Platform Architecture</h2>
+          <p>Splunk is a leading SIEM platform that enables SOC analysts to collect, index, search, and analyze machine-generated data from virtually any source. Understanding its architecture is essential for effective security operations.</p>
+
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>🟢 Splunk Enterprise</h4>
+              <p>Core platform for data collection, indexing, and search. Provides the foundation for all security use cases.</p>
+              <ul>
+                <li>Universal and Heavy Forwarders</li>
+                <li>Indexers and Search Heads</li>
+                <li>Deployment Server</li>
+                <li>License Master</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>🔒 Splunk Enterprise Security</h4>
+              <p>Premium security solution built on Splunk Enterprise with advanced analytics and incident management.</p>
+              <ul>
+                <li>Notable Events & Incidents</li>
+                <li>Risk-Based Alerting (RBA)</li>
+                <li>Threat Intelligence Framework</li>
+                <li>Security Posture Dashboards</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>🤖 Splunk SOAR</h4>
+              <p>Security Orchestration, Automation, and Response platform for automating security workflows.</p>
+              <ul>
+                <li>Playbook Automation</li>
+                <li>Case Management</li>
+                <li>Integration with 300+ tools</li>
+                <li>Response Actions</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Component Architecture -->
+        <section id="architecture">
+          <h2>Splunk Component Architecture</h2>
+          
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Function</th>
+                  <th>Port</th>
+                  <th>SOC Relevance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-blue">Universal Forwarder</span></td>
+                  <td>Lightweight log collection agent</td>
+                  <td>9997</td>
+                  <td>Deployed on endpoints for log forwarding</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-blue">Heavy Forwarder</span></td>
+                  <td>Full Splunk instance for parsing/routing</td>
+                  <td>9997</td>
+                  <td>Used for complex data transformations</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-green">Indexer</span></td>
+                  <td>Stores and indexes data</td>
+                  <td>9997, 8089</td>
+                  <td>Core data storage - check index health</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-purple">Search Head</span></td>
+                  <td>User interface for searches</td>
+                  <td>8000, 8089</td>
+                  <td>Primary analyst interface</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-orange">Deployment Server</span></td>
+                  <td>Manages forwarder configurations</td>
+                  <td>8089</td>
+                  <td>Check for forwarder deployment status</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-cyan">Cluster Master</span></td>
+                  <td>Manages indexer clustering</td>
+                  <td>8089</td>
+                  <td>Monitor cluster health during incidents</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-title">Data Flow Path</div>
+            <p><strong>Data Sources → Forwarders → Indexers → Search Heads → Analysts</strong></p>
+            <p>Understanding this flow helps troubleshoot when logs are missing or delayed.</p>
+          </div>
+        </section>
+
+        <!-- Splunk Web Interface -->
+        <section id="interface">
+          <h2>Splunk Web Interface</h2>
+          <p>The Splunk Web interface is your primary tool for security investigations. Key areas include:</p>
+
+          <div class="accordion">
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>🔍 Search & Reporting</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Primary interface for running SPL queries and investigations:</p>
+                <ul>
+                  <li><strong>Search Bar:</strong> Enter SPL queries (time range selector on right)</li>
+                  <li><strong>Events Tab:</strong> Raw event view with field extraction</li>
+                  <li><strong>Statistics Tab:</strong> Tabular results from transforming commands</li>
+                  <li><strong>Visualization Tab:</strong> Charts and graphs</li>
+                  <li><strong>Patterns Tab:</strong> Auto-discovered event patterns</li>
+                </ul>
+                <div class="code-block">
+                  <div class="code-header">Quick Search Tips</div>
+                  <pre><code># Click field values to add to search
+# Use Ctrl+Shift+E to open search in new tab
+# Use Ctrl+\ to format SPL query
+# Use Job Inspector for performance analysis</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📊 Dashboards</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Pre-built and custom visualizations for security monitoring:</p>
+                <ul>
+                  <li><strong>Security Posture:</strong> Overall security health metrics</li>
+                  <li><strong>Incident Review:</strong> Notable events and investigation queue</li>
+                  <li><strong>Risk Analysis:</strong> Risk scores by asset/identity</li>
+                  <li><strong>Threat Activity:</strong> IOC matches and threat intelligence</li>
+                  <li><strong>Access Anomalies:</strong> Unusual authentication patterns</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>🔔 Alerts</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Scheduled searches that trigger on specific conditions:</p>
+                <ul>
+                  <li><strong>Alert Type:</strong> Real-time, scheduled, or rolling window</li>
+                  <li><strong>Trigger Conditions:</strong> Number of results, custom conditions</li>
+                  <li><strong>Actions:</strong> Email, webhook, script, notable event</li>
+                  <li><strong>Throttling:</strong> Prevent alert fatigue with suppression</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <span>📋 Reports</span>
+                <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div class="accordion-content">
+                <p>Saved searches for recurring analysis:</p>
+                <ul>
+                  <li><strong>Scheduled Reports:</strong> Run automatically at intervals</li>
+                  <li><strong>Acceleration:</strong> Pre-computed results for faster searches</li>
+                  <li><strong>Export:</strong> PDF, CSV, or XML output</li>
+                  <li><strong>Permissions:</strong> Share with specific roles/users</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Enterprise Security (ES) -->
+        <section id="enterprise-security">
+          <h2>Splunk Enterprise Security (ES)</h2>
+          <p>ES is the premium security solution that transforms Splunk into a full-featured SIEM. Key features for SOC analysts:</p>
+
+          <div class="tabs">
+            <div class="tab-nav">
+              <button class="tab-btn active">Notable Events</button>
+              <button class="tab-btn">Risk-Based Alerting</button>
+              <button class="tab-btn">Threat Intelligence</button>
+              <button class="tab-btn">Assets & Identities</button>
+            </div>
+
+            <div class="tab-content active">
+              <h4>Notable Events</h4>
+              <p>Notable events are the primary unit of work in ES - similar to alerts in other SIEMs:</p>
+              
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Description</th>
+                      <th>Usage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>rule_name</code></td>
+                      <td>Correlation search that generated the notable</td>
+                      <td>Identify detection logic</td>
+                    </tr>
+                    <tr>
+                      <td><code>urgency</code></td>
+                      <td>Critical, High, Medium, Low, Informational</td>
+                      <td>Prioritize response</td>
+                    </tr>
+                    <tr>
+                      <td><code>status</code></td>
+                      <td>New, In Progress, Pending, Resolved, Closed</td>
+                      <td>Track investigation state</td>
+                    </tr>
+                    <tr>
+                      <td><code>owner</code></td>
+                      <td>Analyst assigned to the notable</td>
+                      <td>Workload distribution</td>
+                    </tr>
+                    <tr>
+                      <td><code>src</code> / <code>dest</code></td>
+                      <td>Source and destination from the event</td>
+                      <td>Identify affected systems</td>
+                    </tr>
+                    <tr>
+                      <td><code>risk_score</code></td>
+                      <td>Cumulative risk points for the entity</td>
+                      <td>Assess overall threat level</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="code-block">
+                <div class="code-header">Query Notable Events</div>
+                <pre><code class="language-spl">| `notable`
+| search status="new" urgency IN ("critical", "high")
+| table _time, rule_name, src, dest, user, urgency, status
+| sort -_time</code></pre>
+              </div>
+            </div>
+
+            <div class="tab-content">
+              <h4>Risk-Based Alerting (RBA)</h4>
+              <p>RBA aggregates risk scores from multiple detections to surface high-fidelity alerts:</p>
+              
+              <div class="info-card" style="margin-bottom: 1rem;">
+                <h4>How RBA Works</h4>
+                <ol>
+                  <li><strong>Risk Rules:</strong> Detections assign risk points to entities (users, hosts)</li>
+                  <li><strong>Risk Aggregation:</strong> Points accumulate in the risk index</li>
+                  <li><strong>Threshold Alerts:</strong> Notable events fire when thresholds exceeded</li>
+                  <li><strong>Context:</strong> All contributing events available for investigation</li>
+                </ol>
+              </div>
+
+              <div class="code-block">
+                <div class="code-header">View Risk Scores by User</div>
+                <pre><code class="language-spl">| from datamodel:"Risk"."All_Risk"
+| stats sum(risk_score) as total_risk, 
+        values(source) as contributing_rules,
+        count as event_count
+  by risk_object
+| where total_risk > 50
+| sort -total_risk</code></pre>
+              </div>
+            </div>
+
+            <div class="tab-content">
+              <h4>Threat Intelligence Framework</h4>
+              <p>ES integrates threat intelligence for automatic IOC matching:</p>
+              
+              <ul>
+                <li><strong>Threat Lists:</strong> IP addresses, domains, file hashes, URLs</li>
+                <li><strong>STIX/TAXII:</strong> Automated threat feed ingestion</li>
+                <li><strong>Lookups:</strong> Custom threat intelligence files</li>
+                <li><strong>Threat Artifacts:</strong> Matched IOCs across your data</li>
+              </ul>
+
+              <div class="code-block">
+                <div class="code-header">Search for IOC Matches</div>
+                <pre><code class="language-spl">| tstats count from datamodel=Network_Traffic 
+  where All_Traffic.dest_ip IN 
+    [| inputlookup threat_ip_list | fields ip | rename ip as All_Traffic.dest_ip]
+  by All_Traffic.src_ip, All_Traffic.dest_ip
+| rename All_Traffic.* as *</code></pre>
+              </div>
+            </div>
+
+            <div class="tab-content">
+              <h4>Assets & Identities</h4>
+              <p>ES maintains inventories for context enrichment:</p>
+              
+              <div class="card-grid">
+                <div class="info-card">
+                  <h4>Asset Framework</h4>
+                  <ul>
+                    <li>Host inventory with categories</li>
+                    <li>Priority assignments (critical servers)</li>
+                    <li>Business unit mappings</li>
+                    <li>DNS/IP correlation</li>
+                  </ul>
+                </div>
+                <div class="info-card">
+                  <h4>Identity Framework</h4>
+                  <ul>
+                    <li>User account inventory</li>
+                    <li>Manager hierarchy</li>
+                    <li>Department/location</li>
+                    <li>Watchlist status</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="code-block">
+                <div class="code-header">Enrich Events with Asset Data</div>
+                <pre><code class="language-spl">index=firewall action=blocked
+| lookup asset_lookup_by_str ip as dest_ip OUTPUT 
+    priority, category, bunit
+| where priority="critical"
+| table _time, src_ip, dest_ip, category, bunit</code></pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Common Data Models -->
+        <section id="data-models">
+          <h2>Common Information Model (CIM)</h2>
+          <p>The CIM provides standardized field names across different data sources, enabling consistent searches:</p>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data Model</th>
+                  <th>Key Fields</th>
+                  <th>Common Sources</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Authentication</strong></td>
+                  <td><code>user</code>, <code>src</code>, <code>dest</code>, <code>action</code>, <code>app</code></td>
+                  <td>Windows Security, AD, VPN, SSO</td>
+                </tr>
+                <tr>
+                  <td><strong>Network_Traffic</strong></td>
+                  <td><code>src_ip</code>, <code>dest_ip</code>, <code>src_port</code>, <code>dest_port</code>, <code>bytes</code></td>
+                  <td>Firewalls, NetFlow, Zeek</td>
+                </tr>
+                <tr>
+                  <td><strong>Endpoint</strong></td>
+                  <td><code>dest</code>, <code>process</code>, <code>process_path</code>, <code>user</code>, <code>parent_process</code></td>
+                  <td>EDR, Sysmon, Windows Events</td>
+                </tr>
+                <tr>
+                  <td><strong>Web</strong></td>
+                  <td><code>url</code>, <code>http_method</code>, <code>status</code>, <code>src</code>, <code>dest</code></td>
+                  <td>Proxy logs, WAF, Web servers</td>
+                </tr>
+                <tr>
+                  <td><strong>Email</strong></td>
+                  <td><code>src_user</code>, <code>recipient</code>, <code>subject</code>, <code>file_name</code></td>
+                  <td>Exchange, O365, Email gateway</td>
+                </tr>
+                <tr>
+                  <td><strong>Malware</strong></td>
+                  <td><code>file_hash</code>, <code>file_name</code>, <code>signature</code>, <code>action</code></td>
+                  <td>AV, EDR, Sandbox</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Using Data Models with tstats</div>
+            <pre><code class="language-spl"># Fast search using accelerated data models
+| tstats count from datamodel=Authentication 
+  where Authentication.action=failure 
+  by Authentication.user, Authentication.src
+| rename Authentication.* as *
+| where count > 10</code></pre>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-title">Performance Tip</div>
+            <p>Always use <code>tstats</code> with accelerated data models for better performance on large datasets. Standard searches should use indexed fields when possible.</p>
+          </div>
+        </section>
+
+        <!-- Index Management -->
+        <section id="indexes">
+          <h2>Index Management for Analysts</h2>
+          <p>Understanding indexes helps you search the right data efficiently:</p>
+
+          <div class="code-block">
+            <div class="code-header">Common Security Indexes</div>
+            <pre><code class="language-spl"># List all indexes you have access to
+| eventcount summarize=false index=* 
+| dedup index 
+| table index
+
+# Common security index naming conventions
+index=main              # Default (avoid in production)
+index=wineventlog       # Windows Event Logs
+index=firewall          # Firewall logs
+index=proxy             # Web proxy logs  
+index=dns               # DNS query logs
+index=edr               # Endpoint Detection & Response
+index=syslog            # Linux/Unix syslog
+index=o365              # Microsoft 365 logs
+index=aws               # AWS CloudTrail/VPC Flow
+index=azure             # Azure Activity/Sign-in logs</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Check Index Health</div>
+            <pre><code class="language-spl"># Check data ingestion rate
+| tstats count where index=* by index, _time span=1h
+| timechart span=1h sum(count) by index
+
+# Find gaps in data
+| tstats count where index=wineventlog by _time span=1h
+| timechart span=1h count
+| where count < 1000  # Adjust threshold as needed</code></pre>
+          </div>
+        </section>
+
+        <!-- Best Practices -->
+        <section id="best-practices">
+          <h2>SOC Analyst Best Practices</h2>
+          
+          <div class="card-grid">
+            <div class="info-card">
+              <h4>🔍 Search Efficiency</h4>
+              <ul>
+                <li>Always specify index and sourcetype</li>
+                <li>Use time ranges as narrow as possible</li>
+                <li>Filter early with indexed fields</li>
+                <li>Use <code>tstats</code> for data models</li>
+                <li>Save common searches as reports</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>📊 Investigation Workflow</h4>
+              <ul>
+                <li>Start with notable event context</li>
+                <li>Pivot using drilldown searches</li>
+                <li>Check asset/identity enrichment</li>
+                <li>Review contributing risk events</li>
+                <li>Document findings in notable</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h4>⚡ Performance Tips</h4>
+              <ul>
+                <li>Avoid wildcards at start of terms</li>
+                <li>Use <code>fields</code> to limit output</li>
+                <li>Run expensive searches off-peak</li>
+                <li>Use Job Inspector for optimization</li>
+                <li>Consider summary indexing</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Reference -->
+        <section id="quick-reference">
+          <h2>Quick Reference</h2>
+          
+          <div class="code-block">
+            <div class="code-header">Essential Keyboard Shortcuts</div>
+            <pre><code># Search Page
+Ctrl+Enter     Run search
+Ctrl+Shift+E   Open in new search tab
+Ctrl+\         Format SPL
+Ctrl+Shift+P   Open search preferences
+
+# General
+Ctrl+K         Command palette (Splunk Cloud)
+Esc            Cancel running search</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">Important URLs (Replace with your instance)</div>
+            <pre><code>Search & Reporting:  https://splunk.company.com/en-US/app/search/search
+Enterprise Security: https://splunk.company.com/en-US/app/SplunkEnterpriseSecuritySuite/
+Incident Review:     https://splunk.company.com/en-US/app/SplunkEnterpriseSecuritySuite/incident_review
+Settings:            https://splunk.company.com/en-US/manager/</code></pre>
+          </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="page-navigation">
+          <a href="kql-cheatsheet.html" class="nav-prev">
+            <span class="direction">Previous</span>
+            <span class="title">KQL Cheatsheet</span>
+          </a>
+          <a href="splunk-queries.html" class="nav-next">
+            <span class="direction">Next</span>
+            <span class="title">Splunk Queries</span>
+          </a>
+        </div>
+      </div>
+
+      <footer class="content-footer">
+        <p>SOC Analyst Guide © 2025 | For educational purposes only</p>
+      </footer>
+    </main>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
